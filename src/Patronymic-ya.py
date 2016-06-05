@@ -78,6 +78,7 @@ if __name__ == "__main__":
     assert p.get_patro("Фока") == "Фокич"
     assert p.get_patro("Никита") == "Никитич"
     assert p.get_patro("Фока", True) == "Фокична"
+    assert p.get_patro("Фёдор", True) == "Фёдоровна"
     assert p.get_patro("Фома", True) == "Фоминична"
     assert p.get_patro("Егор") == "Егорович"
     assert p.get_patro("Фрол") == "Фролович"
