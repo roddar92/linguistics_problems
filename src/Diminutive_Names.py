@@ -9,12 +9,38 @@ class Diminutiver(object):
         return symbol in "чшщ"
 
     @staticmethod
-    def is_sonant(symbol):
-        return symbol in "мр"
+    def is_endings_with_a(symbol):
+        return symbol in "влмнрст"
 
     def get_diminutive(self, name):
-        if self.is_sonant(name[-2]):
-            suffix = "очка"
-        else:
-            suffix = "енька"
+        suffix = ""
+        if name[-1] == "а":
+            if name[-2] == "к":
+                return name[:-1] + "уся"
+            else:
+                if self.is_endings_with_a(name[-2]):
+                    suffix = "очк"
+                else:
+                    suffix = "еньк"
+        elif name[-1] == "я":
+            if name[-2] == "н":
+                suffix = "ечк"
+            else:
+                suffix = "еньк"
+        suffix += "а"
+
         return name[:-1] + suffix
+
+
+if __name__ == "__main__":
+    diminutiver = Diminutiver()
+    assert diminutiver.get_diminutive("Вова") == "Вовочка"
+    assert diminutiver.get_diminutive("Саша") == "Сашенька"
+    assert diminutiver.get_diminutive("Вася") == "Васенька"
+    assert diminutiver.get_diminutive("Анфиса") == "Анфисочка"
+    assert diminutiver.get_diminutive("Женя") == "Женечка"
+    assert diminutiver.get_diminutive("Тима") == "Тимочка"
+    assert diminutiver.get_diminutive("Таня") == "Танечка"
+    assert diminutiver.get_diminutive("Рита") == "Риточка"
+    assert diminutiver.get_diminutive("Вика") == "Викуся"
+    assert diminutiver.get_diminutive("Диана") == "Дианочка"
