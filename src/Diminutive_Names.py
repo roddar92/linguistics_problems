@@ -10,12 +10,16 @@ class Diminutiver(object):
 
     @staticmethod
     def is_endings_with_a(symbol):
-        return symbol in "влмнрст"
+        return symbol in "бдвлмнпрст"
 
     def get_diminutive(self, name):
         suffix = ""
-        if name[-1] == "а":
+        if not self.is_vowel(name[-1]):
+            return name + "ик"
+        elif name[-1] == "а":
             if name[-2] == "к":
+                if not self.is_vowel(name[-3]):
+                    return "Cannot parse names with suffix '{}'!".format("К")
                 return name[:-1] + "уся"
             else:
                 if self.is_endings_with_a(name[-2]):
@@ -41,6 +45,19 @@ if __name__ == "__main__":
     assert diminutiver.get_diminutive("Женя") == "Женечка"
     assert diminutiver.get_diminutive("Тима") == "Тимочка"
     assert diminutiver.get_diminutive("Таня") == "Танечка"
+    assert diminutiver.get_diminutive("Клава") == "Клавочка"
+    assert diminutiver.get_diminutive("Клара") == "Кларочка"
+    assert diminutiver.get_diminutive("Лапа") == "Лапочка"
     assert diminutiver.get_diminutive("Рита") == "Риточка"
+    assert diminutiver.get_diminutive("Влад") == "Владик"
     assert diminutiver.get_diminutive("Вика") == "Викуся"
+    assert diminutiver.get_diminutive("Витя") == "Витенька"
+    assert diminutiver.get_diminutive("Витька") == "Cannot parse names with suffix '{}'!".format("К")
     assert diminutiver.get_diminutive("Диана") == "Дианочка"
+    assert diminutiver.get_diminutive("Люда") == "Людочка"
+    assert diminutiver.get_diminutive("Людка") == "Cannot parse names with suffix '{}'!".format("К")
+    assert diminutiver.get_diminutive("Люба") == "Любочка"
+    assert diminutiver.get_diminutive("Влада") == "Владочка"
+    assert diminutiver.get_diminutive("Лампа") == "Лампочка"
+    assert diminutiver.get_diminutive("Лавка") == "Cannot parse names with suffix '{}'!".format("К")
+    assert diminutiver.get_diminutive("Дамба") == "Дамбочка"
