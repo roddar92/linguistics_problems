@@ -2,5 +2,6 @@
 Problems:
  - Russian Cities (game)
  - Russian patronymic generator
+ - Russian diminutive names generator
  - Family tree
  - Common English question generator
