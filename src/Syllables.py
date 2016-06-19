@@ -22,7 +22,7 @@ class SyllableModule(object):
                     cnt += 1
                 prev = word[i]
             else:
-                if (prev == "" or not self.is_russian_vowel(prev)) and self.is_russian_vowel(word[i]):
+                if self.is_russian_vowel(word[i]):
                     cnt += 1
                 prev = word[i]
 
