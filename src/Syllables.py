@@ -24,6 +24,5 @@ class SyllableModule(object):
             else:
                 if self.is_russian_vowel(word[i]):
                     cnt += 1
-                prev = word[i]
 
         return cnt
