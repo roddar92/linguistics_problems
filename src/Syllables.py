@@ -32,7 +32,7 @@ class SyllableModule(object):
         cnt = 0
         prev = ""
         for i in range(leng):
-            if (prev == "" or not self.is_english_vowel(prev)) and self.is_english_vowel(word[i]):
+            if (prev == "" or self.is_english_consonant(prev)) and self.is_english_vowel(word[i]):
                 cnt += 1
             prev = word[i]
 
