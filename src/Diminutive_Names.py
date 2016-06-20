@@ -54,6 +54,7 @@ if __name__ == "__main__":
     assert diminutiver.get_diminutive("Витя") == "Витенька"
     assert diminutiver.get_diminutive("Витька") == "Cannot parse names with suffix '{}'!".format("К")
     assert diminutiver.get_diminutive("Диана") == "Дианочка"
+    assert diminutiver.get_diminutive("Дина") == "Диночка"
     assert diminutiver.get_diminutive("Люда") == "Людочка"
     assert diminutiver.get_diminutive("Людка") == "Cannot parse names with suffix '{}'!".format("К")
     assert diminutiver.get_diminutive("Люба") == "Любочка"
