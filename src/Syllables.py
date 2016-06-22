@@ -60,6 +60,10 @@ class SyllableModule(object):
                     last = syllables.pop(len(syllables) - 1)
                     syllables.append(last + cur_syllab)
                     cur_syllab = ""
+                elif len(cur_syllab) >= 2 and cur_syllab[-2] in "лмнр" and self.is_russian_consonant(letter):
+                    last = syllables.pop(len(syllables) - 1)
+                    syllables.append(last + cur_syllab[0])
+                    cur_syllab = cur_syllab[1:]
 
         if cur_syllab:
             last = syllables.pop(len(syllables) - 1)
@@ -74,13 +78,15 @@ if __name__ == "__main__":
     assert sm.russian_syllables("Вовочка") == ["во", "во", "чка"]
     assert sm.russian_syllables_count("Коронация") == 5
     assert sm.russian_syllables_count("водоПад") == 3
-    assert sm.russian_syllables("Анфиса") == ["а", "нфи", "са"]
+    assert sm.russian_syllables("Анфиса") == ["ан", "фи", "са"]
     assert sm.russian_syllables("снайпер") == ["снай", "пер"]
     assert sm.russian_syllables("Петрополь") == ["пе", "тро", "поль"]
     assert sm.russian_syllables_count("жест") == 1
     assert sm.russian_syllables("жест") == ["жест"]
     assert sm.russian_syllables("коронация") == ["ко", "ро", "на", "ци", "я"]
     assert sm.russian_syllables("йогурт") == ["йо", "гурт"]
+    assert sm.russian_syllables("дверца") == ["двер", "ца"]
+    assert sm.russian_syllables("корка") == ["кор", "ка"]
     assert sm.russian_syllables_count("санаторий") == 4
     assert sm.russian_syllables("санаторий") == ["са", "на", "то", "рий"]
     assert sm.russian_syllables_count("Ломоносовская") == 6
@@ -98,6 +104,6 @@ if __name__ == "__main__":
     assert sm.russian_syllables("резюме") == ["ре", "зю", "ме"]
     assert sm.russian_syllables_count("вечер") == 2
     assert sm.russian_syllables_count("землетрясение") == 6
-    assert sm.russian_syllables("землетрясение") == ["зе", "мле", "тря", "се", "ни", "е"]
+    assert sm.russian_syllables("землетрясение") == ["зем", "ле", "тря", "се", "ни", "е"]
     assert sm.russian_syllables_count("Исландия") == 4
-    assert sm.russian_syllables("Шотландия") == ["шо", "тла", "нди", "я"]
+    assert sm.russian_syllables("Шотландия") == ["шо", "тлан", "ди", "я"]
