@@ -55,10 +55,11 @@ class SyllableModule(object):
             if self.is_russian_vowel(letter):
                 syllables.append(cur_syllab)
                 cur_syllab = ""
-            if letter == "ь":
-                last = syllables.pop(len(syllables) - 1)
-                syllables.append(last + cur_syllab)
-                cur_syllab = ""
+            if syllables:
+                if letter == "ь" or self.is_russian_vowel(syllables[len(syllables)-1][-1]) and letter == "й":
+                    last = syllables.pop(len(syllables) - 1)
+                    syllables.append(last + cur_syllab)
+                    cur_syllab = ""
 
         if cur_syllab:
             last = syllables.pop(len(syllables) - 1)
@@ -74,6 +75,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables_count("Коронация") == 5
     assert sm.russian_syllables_count("водоПад") == 3
     assert sm.russian_syllables("Анфиса") == ["а", "нфи", "са"]
+    assert sm.russian_syllables("снайпер") == ["снай", "пер"]
     assert sm.russian_syllables("Петрополь") == ["пе", "тро", "поль"]
     assert sm.russian_syllables_count("жест") == 1
     assert sm.russian_syllables("жест") == ["жест"]
