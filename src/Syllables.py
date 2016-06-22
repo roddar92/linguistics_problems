@@ -80,6 +80,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables_count("жест") == 1
     assert sm.russian_syllables("жест") == ["жест"]
     assert sm.russian_syllables("коронация") == ["ко", "ро", "на", "ци", "я"]
+    assert sm.russian_syllables("йогурт") == ["йо", "гурт"]
     assert sm.russian_syllables_count("санаторий") == 4
     assert sm.russian_syllables("санаторий") == ["са", "на", "то", "рий"]
     assert sm.russian_syllables_count("Ломоносовская") == 6
