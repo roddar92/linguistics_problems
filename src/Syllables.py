@@ -61,7 +61,8 @@ class SyllableModule(object):
                     last = syllables.pop(len(syllables) - 1)
                     syllables.append(last + cur_syllab)
                     cur_syllab = ""
-                elif len(cur_syllab) >= 2 and cur_syllab[-2] in "лмнр" and self.is_russian_consonant(letter):
+                elif len(cur_syllab) >= 2 and cur_syllab[-2] in "лмнр" and \
+                                cur_syllab not in "лл мм нн рр" and self.is_russian_consonant(letter):
                     last = syllables.pop(len(syllables) - 1)
                     syllables.append(last + cur_syllab[0])
                     cur_syllab = cur_syllab[1:]
@@ -98,6 +99,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables_count("Василеостровская") == 7
     assert sm.russian_syllables_count("лапа") == 2
     assert sm.russian_syllables("наледь") == ["на", "ледь"]
+    assert sm.russian_syllables("лемма") == ["ле", "мма"]
     assert sm.russian_syllables("дождь") == ["дождь"]
     assert sm.russian_syllables("ветерочек") == ["ве", "те", "ро", "чек"]
     assert sm.russian_syllables("развиваться") == ["ра", "зви", "ва", "ться"]
@@ -106,6 +108,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables("резюме") == ["ре", "зю", "ме"]
     assert sm.russian_syllables("белочка") == ["бе", "ло", "чка"]
     assert sm.russian_syllables_count("вечер") == 2
+    assert sm.russian_syllables_count("лемма") == 2
     assert sm.russian_syllables_count("землетрясение") == 6
     assert sm.russian_syllables("землетрясение") == ["зем", "ле", "тря", "се", "ни", "е"]
     assert sm.russian_syllables_count("Исландия") == 4
