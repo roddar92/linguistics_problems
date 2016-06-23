@@ -117,6 +117,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables_count("лемма") == 2
     assert sm.russian_syllables_count("землетрясение") == 6
     assert sm.russian_syllables("землетрясение") == ["зем", "ле", "тря", "се", "ни", "е"]
+    assert sm.russian_syllables("интервенция") == ["ин", "тер", "вен", "ци", "я"]
     assert sm.russian_syllables_count("Исландия") == 4
     assert sm.russian_syllables("Шотландия") == ["шо", "тлан", "ди", "я"]
     assert sm.russian_syllables("фальшь") == ["фальшь"]
