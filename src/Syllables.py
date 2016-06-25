@@ -10,7 +10,7 @@ class SyllableModule(object):
 
     @staticmethod
     def is_english_vowel(symbol):
-        return symbol in "aeiouy"
+        return symbol in "aeiou"
 
     @staticmethod
     def is_english_consonant(symbol):
@@ -35,8 +35,10 @@ class SyllableModule(object):
         cnt = 0
         prev = ""
         for i in range(leng):
-            if (prev == "" or self.is_english_consonant(prev)) and self.is_english_vowel(word[i]):
+            if self.is_english_vowel(word[i]) or (word[i] == "y" and self.is_english_consonant(prev)):
                 cnt += 1
+            elif word[i-3:i] in "au oy oo" or word[i-3:i] in ["iou"]:
+                cnt -= 0
             prev = word[i]
 
         return cnt
