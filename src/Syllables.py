@@ -44,6 +44,9 @@ class SyllableModule(object):
         if word.endswith("le") and self.is_english_consonant(word[-3]):
             cnt += 1
 
+        if word.endswith("ed"):
+            cnt -= 1
+
         return cnt
 
     def russian_syllables(self, word):
