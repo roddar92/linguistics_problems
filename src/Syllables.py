@@ -16,18 +16,17 @@ class SyllableModule(object):
     def is_english_consonant(symbol):
         return symbol in "bcdfghjklmnpqrstvwxz"
 
-    def has_silent_ending(self, substr):
-        return substr in "sh ch bb pp ss tt"
+    @staticmethod
+    def has_silent_ending(consonants):
+        return consonants in "sh ch bb pp ss tt"
 
-    def russian_syllables_count(self, word):
-        """Return count of the word syllables"""
-        word = word.lower()
-        cnt = 0
-        for letter in word:
-            if self.is_russian_vowel(letter):
-                cnt += 1
+    @staticmethod
+    def is_diphthong(vowels):
+        return vowels in "ea ae ie oe ai oi ui eo io oo au ou ay oy"
 
-        return cnt
+    @staticmethod
+    def is_triphthong(vowels):
+        return vowels in "eau iou"
 
     def english_syllables_count(self, word):
         """Return count of thw word syllables"""
@@ -41,17 +40,28 @@ class SyllableModule(object):
         for i in range(leng):
             if self.is_english_vowel(word[i]) or (word[i] == "y" and self.is_english_consonant(prev)):
                 cnt += 1
-            if (i >= 2 and word[i-2:i] in "ea ae ie oe ai oi ui eo io oo au ou ay oy") or \
-                    (i >= 3 and word[i-3:i] in "eau iou"):
+            if (i >= 1 and self.is_diphthong(word[i - 1] + word[i])) or \
+                    (i >= 2 and self.is_triphthong(word[i - 2:i] + word[i])):
                 cnt -= 1
             prev = word[i]
 
         if word.endswith("le") and self.is_english_consonant(word[-3]):
             cnt += 1
 
-        if word.endswith("ed") and len(word) >= 5 and (self.has_silent_ending(word[-4:-2]) or word[-3] in "cgklv") or \
-                word.endswith("ly") and word[-3] == "e":
+        if word.endswith("ed") and len(word) >= 5 and \
+                (self.has_silent_ending(word[-4:-2]) or word[-3] in "cgklmnv") or \
+                        word.endswith("ly") and word[-3] == "e":
             cnt -= 1
+
+        return cnt
+
+    def russian_syllables_count(self, word):
+        """Return count of the word syllables"""
+        word = word.lower()
+        cnt = 0
+        for letter in word:
+            if self.is_russian_vowel(letter):
+                cnt += 1
 
         return cnt
 
@@ -68,7 +78,7 @@ class SyllableModule(object):
                 syllables.append(cur_syllable)
                 cur_syllable = ""
             if syllables:
-                if letter == "ь" or self.is_russian_vowel(syllables[len(syllables)-1][-1]) and letter == "й":
+                if letter == "ь" or self.is_russian_vowel(syllables[len(syllables) - 1][-1]) and letter == "й":
                     last = syllables.pop(len(syllables) - 1)
                     syllables.append(last + cur_syllable)
                     cur_syllable = ""
@@ -88,6 +98,7 @@ class SyllableModule(object):
             syllables += [prev[:-2], prev[-2:] + last]
 
         return syllables
+
 
 if __name__ == "__main__":
     sm = SyllableModule()
@@ -139,12 +150,14 @@ if __name__ == "__main__":
     assert sm.russian_syllables("стажировка") == ["ста", "жи", "ро", "вка"]
 
     assert sm.english_syllables_count("bed") == 1
+    assert sm.english_syllables_count("some") == 1
     assert sm.english_syllables_count("oil") == 1
     assert sm.english_syllables_count("cocked") == 1
     assert sm.english_syllables_count("piled") == 1
     assert sm.english_syllables_count("sad") == 1
     assert sm.english_syllables_count("mirror") == 2
-    assert sm.english_syllables_count("tatoos") == 2
+    assert sm.english_syllables_count("tattoos") == 2
     assert sm.english_syllables_count("butter") == 2
     assert sm.english_syllables_count("syllable") == 3
     assert sm.english_syllables_count("technology") == 4
+    assert sm.english_syllables_count("tattoo") == 2
