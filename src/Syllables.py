@@ -37,14 +37,14 @@ class SyllableModule(object):
         for i in range(leng):
             if self.is_english_vowel(word[i]) or (word[i] == "y" and self.is_english_consonant(prev)):
                 cnt += 1
-            if word[i-2:i] in "ea ae oe ai oi ui eo oo au ou ay oy" or word[i-3:i] in "eau iou":
+            if word[i-2:i] in "ea ae ie oe ai oi ui eo io oo au ou ay oy" or word[i-3:i] in "eau iou":
                 cnt -= 1
             prev = word[i]
 
         if word.endswith("le") and self.is_english_consonant(word[-3]):
             cnt += 1
 
-        if word.endswith("ed"):
+        if word.endswith("ed") and word[-4:-2] in "sh ch bb pp ss tt":
             cnt -= 1
 
         return cnt
