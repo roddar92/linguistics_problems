@@ -18,7 +18,7 @@ class SyllableModule(object):
 
     @staticmethod
     def has_silent_ending(consonants):
-        return consonants in "sh ch ck bb pp ss"
+        return consonants in "sh ch ck gh bb pp ss"
 
     @staticmethod
     def is_diphthong(vowels):
@@ -151,15 +151,20 @@ if __name__ == "__main__":
     assert sm.russian_syllables("стажировка") == ["ста", "жи", "ро", "вка"]
 
     assert sm.english_syllables_count("bed") == 1
-    assert sm.english_syllables_count("waites") == 1
+    assert sm.english_syllables_count("waits") == 1
+    assert sm.english_syllables_count("bought") == 1
+    assert sm.english_syllables_count("please") == 1
     assert sm.english_syllables_count("fates") == 1
+    assert sm.english_syllables_count("little") == 2
     assert sm.english_syllables_count("some") == 1
+    assert sm.english_syllables_count("coughed") == 1
     assert sm.english_syllables_count("oil") == 1
     assert sm.english_syllables_count("cocked") == 1
     assert sm.english_syllables_count("piled") == 1
     assert sm.english_syllables_count("sad") == 1
     assert sm.english_syllables_count("mirror") == 2
     assert sm.english_syllables_count("tattoos") == 2
+    assert sm.english_syllables_count("freshly") == 2
     assert sm.english_syllables_count("butter") == 2
     assert sm.english_syllables_count("syllable") == 3
     assert sm.english_syllables_count("technology") == 4
