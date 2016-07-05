@@ -16,8 +16,11 @@ class SyllableModule(object):
     def is_english_consonant(symbol):
         return symbol in "bcdfghjklmnpqrstvwxz"
 
+    def has_silent_ending(self, substr):
+        return substr in "sh ch bb pp ss tt"
+
     def russian_syllables_count(self, word):
-        """Retirn count of thw word syllables"""
+        """Return count of thw word syllables"""
         word = word.lower()
         cnt = 0
         for letter in word:
@@ -27,6 +30,7 @@ class SyllableModule(object):
         return cnt
 
     def english_syllables_count(self, word):
+        """Return count of thw word syllables"""
         word = word.lower()
         leng = len(word)
         if word[-1] == "e":
@@ -44,7 +48,8 @@ class SyllableModule(object):
         if word.endswith("le") and self.is_english_consonant(word[-3]):
             cnt += 1
 
-        if word.endswith("ed") and word[-4:-2] in "sh ch bb pp ss tt":
+        if word.endswith("ed") and len(word) > 5 and (self.has_silent_ending(word[-4:-2]) or word[-3] in "cgkv") or \
+                word.endswith("ly") and word[-3] == "e":
             cnt -= 1
 
         return cnt
