@@ -54,7 +54,6 @@ class SyllableModule(object):
         elif word.endswith("es") and len(word) >= 5 and word[-3] == "t" and self.is_english_vowel(word[-4]):
             cnt -= 1
 
-
         return cnt
 
     def russian_syllables_count(self, word):
