@@ -46,7 +46,7 @@ class SyllableModule(object):
         if word.endswith("le") and self.is_english_consonant(word[-3]):
             cnt += 1
         elif word.endswith("ed") and len(word) >= 5 and \
-                (self.has_silent_ending(word[-4:-2]) or word[-3] in "cgklmnv") or \
+                (self.has_silent_ending(word[-4:-2]) or word[-3] in "cgklmnsv") or \
                 (word.endswith("ely") or word.endswith("eless") or word.endswith("eful")):
             cnt -= 1
         elif word.endswith("es") and len(word) >= 5 and word[-3] == "t" and self.is_english_vowel(word[-4]):
@@ -150,6 +150,8 @@ if __name__ == "__main__":
 
     assert sm.english_syllables_count("bed") == 1
     assert sm.english_syllables_count("beer") == 1
+    assert sm.english_syllables_count("close") == 1
+    assert sm.english_syllables_count("closed") == 1
     assert sm.english_syllables_count("sway") == 1
     assert sm.english_syllables_count("waits") == 1
     assert sm.english_syllables_count("bought") == 1
