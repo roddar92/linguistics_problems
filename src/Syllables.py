@@ -18,7 +18,7 @@ class SyllableModule(object):
 
     @staticmethod
     def has_silent_ending(consonants):
-        return consonants in "sh ch ck gh bb pp ss"
+        return consonants in "sh ch ck dg gh bb pp ss"
 
     @staticmethod
     def is_diphthong(vowels):
@@ -150,6 +150,9 @@ if __name__ == "__main__":
 
     assert sm.english_syllables_count("bed") == 1
     assert sm.english_syllables_count("beer") == 1
+    assert sm.english_syllables_count("plates") == 1
+    assert sm.english_syllables_count("bridges") == 2
+    assert sm.english_syllables_count("bridges") == 2
     assert sm.english_syllables_count("close") == 1
     assert sm.english_syllables_count("closed") == 1
     assert sm.english_syllables_count("sway") == 1
