@@ -10,7 +10,7 @@ class SyllableModule(object):
 
     @staticmethod
     def is_english_vowel(symbol):
-        return symbol in "aeiou"
+        return symbol in "aeiouy"
 
     @staticmethod
     def is_english_consonant(symbol):
@@ -22,7 +22,7 @@ class SyllableModule(object):
 
     @staticmethod
     def is_diphthong(vowels):
-        return vowels in "ea ae ie oe ai oi ui eo io oo au ou ay oy"
+        return vowels in "ea ae ee ie oe ai oi ui eo io oo au ou ay oy"
 
     @staticmethod
     def is_triphthong(vowels):
@@ -36,14 +36,12 @@ class SyllableModule(object):
             leng -= 1
 
         cnt = 0
-        prev = ""
         for i in range(leng):
-            if self.is_english_vowel(word[i]) or (word[i] == "y" and self.is_english_consonant(prev)):
+            if self.is_english_vowel(word[i]):
                 cnt += 1
             if (i >= 1 and self.is_diphthong(word[i - 1] + word[i])) or \
                     (i >= 2 and self.is_triphthong(word[i - 2:i] + word[i])):
                 cnt -= 1
-            prev = word[i]
 
         if word.endswith("le") and self.is_english_consonant(word[-3]):
             cnt += 1
@@ -151,16 +149,22 @@ if __name__ == "__main__":
     assert sm.russian_syllables("стажировка") == ["ста", "жи", "ро", "вка"]
 
     assert sm.english_syllables_count("bed") == 1
+    assert sm.english_syllables_count("beer") == 1
+    assert sm.english_syllables_count("sway") == 1
     assert sm.english_syllables_count("waits") == 1
     assert sm.english_syllables_count("bought") == 1
     assert sm.english_syllables_count("please") == 1
     assert sm.english_syllables_count("fates") == 1
+    assert sm.english_syllables_count("chess") == 1
+    assert sm.english_syllables_count("cheese") == 1
     assert sm.english_syllables_count("little") == 2
     assert sm.english_syllables_count("some") == 1
     assert sm.english_syllables_count("coughed") == 1
     assert sm.english_syllables_count("oil") == 1
     assert sm.english_syllables_count("cocked") == 1
     assert sm.english_syllables_count("piled") == 1
+    assert sm.english_syllables_count("train") == 1
+    assert sm.english_syllables_count("training") == 2
     assert sm.english_syllables_count("sad") == 1
     assert sm.english_syllables_count("mirror") == 2
     assert sm.english_syllables_count("tattoos") == 2
@@ -170,6 +174,7 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("technology") == 4
     assert sm.english_syllables_count("tattoo") == 2
     assert sm.english_syllables_count("lovely") == 2
+    assert sm.english_syllables_count("family") == 3
     assert sm.english_syllables_count("peaceful") == 2
     assert sm.english_syllables_count("beautiful") == 3
     assert sm.english_syllables_count("tilted") == 2
