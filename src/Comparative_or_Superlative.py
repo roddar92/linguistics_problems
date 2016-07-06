@@ -25,10 +25,9 @@ class AdjectiveComparisoner(object):
 
                 prefix = ("" if not superlative else "the ")
                 if word.endswith("y"):
-                    return prefix + word[:-1] + "ie" + suffix
+                    word = word[:-1] + "ie"
                 elif word[-1] in "bglpt" and self.is_english_vowel(word[-2]):
-                    return prefix + word + word[-1] + suffix
-                else:
-                    return prefix + word + suffix
+                    word += word[-1]
+                return prefix + word + suffix
             else:
                 return ("more " if not superlative else "the most ") + word
