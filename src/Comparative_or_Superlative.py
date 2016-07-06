@@ -12,6 +12,7 @@ class AdjectiveComparisoner(object):
         return symbol in "bcdfghjklmnpqrstvwxz"
 
     def get_adjective_comparation(self, word, superlative=False):
+        word = word.lower()
         if word == "good":
             return "better" if not superlative else "best"
         elif word == "bad":
@@ -21,6 +22,13 @@ class AdjectiveComparisoner(object):
             if sm.english_syllables_count(word) == 1:
                 suffix = ("r" if word.endswith("e") else "er") if not superlative \
                     else ("st" if word.endswith("e") else "est")
-                return ("" if not superlative else "the ") + word + suffix
+
+                prefix = ("" if not superlative else "the ")
+                if word.endswith("y"):
+                    return prefix + word[:-1] + "ie" + suffix
+                elif word[-1] in "bglpt" and self.is_english_vowel(word[-2]):
+                    return prefix + word + word[-1] + suffix
+                else:
+                    return prefix + word + suffix
             else:
                 return ("more " if not superlative else "the most ") + word
