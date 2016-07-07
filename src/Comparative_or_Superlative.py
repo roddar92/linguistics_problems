@@ -11,7 +11,8 @@ class AdjectiveComparisoner(object):
     def is_english_consonant(symbol):
         return symbol in "bcdfghjklmnpqrstvwxz"
 
-    def get_adjective_comparison(self, word, superlative=False):
+    def get_adjective_in_the_comparative_degree(self, word, superlative=False):
+        """Return adjective in the comparative degree"""
         word = word.lower()
         prefix = "" if not superlative else "the"
 
@@ -40,4 +41,5 @@ class AdjectiveComparisoner(object):
         return " ".join([prefix, word])
 
     def get_all_comparisons(self, word):
-        return [self.get_adjective_comparison(word), self.get_adjective_comparison(word, True)]
+        return [self.get_adjective_in_the_comparative_degree(word),
+                self.get_adjective_in_the_comparative_degree(word, True)]
