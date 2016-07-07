@@ -14,20 +14,21 @@ class AdjectiveComparisoner(object):
     def get_adjective_comparation(self, word, superlative=False):
         word = word.lower()
         if word == "good":
-            return "better" if not superlative else "best"
+            word = "better" if not superlative else "best"
         elif word == "bad":
-            return "worse" if not superlative else "worst"
+            word = "worse" if not superlative else "worst"
         else:
             sm = SyllableModule()
             if sm.english_syllables_count(word) == 1:
                 suffix = ("r" if word.endswith("e") else "er") if not superlative \
                     else ("st" if word.endswith("e") else "est")
 
-                prefix = ("" if not superlative else "the ")
+                prefix = ("" if not superlative else "the")
                 if word.endswith("y"):
                     word = word[:-1] + "ie"
                 elif word[-1] in "bglpt" and self.is_english_vowel(word[-2]):
                     word += word[-1]
-                return prefix + word + suffix
+                return " ".join([prefix, word + suffix])
             else:
-                return ("more " if not superlative else "the most ") + word
+                prefix = ("more" if not superlative else "the most")
+                return " ".join([prefix, word])
