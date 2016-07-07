@@ -39,5 +39,5 @@ class AdjectiveComparisoner(object):
 
         return " ".join([prefix, word])
 
-    def get_all_comparisions(self, word):
+    def get_all_comparisons(self, word):
         return [self.get_adjective_comparison(word), self.get_adjective_comparison(word, True)]
