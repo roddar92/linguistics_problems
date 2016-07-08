@@ -3,6 +3,15 @@ from Syllables import SyllableModule
 
 
 class AdjectiveComparisoner(object):
+
+    def __init__(self):
+        self.irregular_adjectives = dict()
+        self.irregular_adjectives["good"] = ["better", "best"]
+        self.irregular_adjectives["bad"] = ["worse", "worst"]
+        self.irregular_adjectives["far"] = ["farther", "farthest"]
+        self.irregular_adjectives["little"] = ["less", "least"]
+        self.irregular_adjectives["much"] = ["more", "most"]
+
     @staticmethod
     def is_english_vowel(symbol):
         return symbol in "aeiouy"
@@ -16,21 +25,21 @@ class AdjectiveComparisoner(object):
         word = word.lower()
         prefix = "" if not superlative else "the"
 
-        if word == "good":
-            word = "better" if not superlative else "best"
-        elif word == "bad":
-            word = "worse" if not superlative else "worst"
+        if word in self.irregular_adjectives:
+            word = self.irregular_adjectives[word][0] if not superlative else self.irregular_adjectives[word][1]
         else:
             sm = SyllableModule()
             if sm.english_syllables_count(word) == 1:
-                suffix = ("r" if word.endswith("e") else "er") if not superlative \
-                    else ("st" if word.endswith("e") else "est")
+                suffix = "er" if not superlative else "est"
 
-                if word.endswith("y"):
-                    word = word[:-1] + "i"
-                elif word[-1] in "bglpt" and self.is_english_vowel(word[-2]):
+                if word[-1] in "bdglpt" and self.is_english_vowel(word[-2]) and self.is_english_consonant(word[-3]):
                     word += word[-1]
 
+                word += suffix
+            elif word.endswith("y"):
+                word = word[:-1] + "i"
+            elif word.endswith("e"):
+                suffix = "r" if not superlative else "st"
                 word += suffix
             else:
                 if not superlative:
