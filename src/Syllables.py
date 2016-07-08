@@ -153,6 +153,7 @@ if __name__ == "__main__":
 
     assert sm.english_syllables_count("bed") == 1
     assert sm.english_syllables_count("skinned") == 1
+    assert sm.english_syllables_count("apple") == 2
     assert sm.english_syllables_count("beer") == 1
     assert sm.english_syllables_count("plates") == 1
     assert sm.english_syllables_count("bridges") == 2
@@ -201,4 +202,5 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("peaceful") == 2
     assert sm.english_syllables_count("beautiful") == 3
     assert sm.english_syllables_count("tilted") == 2
+    assert sm.english_syllables_count("environment") == 4
     assert sm.english_syllables_count("limited") == 3
