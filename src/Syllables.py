@@ -152,6 +152,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables("стажировка") == ["ста", "жи", "ро", "вка"]
 
     assert sm.english_syllables_count("bed") == 1
+    assert sm.english_syllables_count("skinned") == 1
     assert sm.english_syllables_count("beer") == 1
     assert sm.english_syllables_count("plates") == 1
     assert sm.english_syllables_count("bridges") == 2
