@@ -24,8 +24,9 @@ class AdjectiveComparisoner(object):
 
     @staticmethod
     def has_e_ending(word):
-        # todo add new words ending with 'e'
-        return (word + "e") in "able close fickle gentle handsome huge nice large polite rude simple strange wise"
+        # todo add new words ending with 'e' from http://www.enchantedlearning.com/wordlist/adjectives.shtml
+        return (word + "e") in "able close fickle gentle handsome huge nice large polite " \
+                               "rude simple strange whole wide wise"
 
     def get_comparative_degree(self, word, superlative=False):
         """Return adjective in the comparative degree"""
