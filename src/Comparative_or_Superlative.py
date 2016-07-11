@@ -22,6 +22,10 @@ class AdjectiveComparisoner(object):
     def is_english_consonant(symbol):
         return symbol in "bcdfghjklmnpqrstvwxz"
 
+    @staticmethod
+    def has_e_ending(word):
+        return (word + "e") in "nice large simple"
+
     def get_comparative_degree(self, word, superlative=False):
         """Return adjective in the comparative degree"""
         word = word.lower()
@@ -71,16 +75,14 @@ class AdjectiveComparisoner(object):
                 return word
             elif word.endswith(word[-1] + word[-1]):
                 return word[:-1]
-            # todo case when adjective ends with 'e'
-            # elif self.has_not_pronounced_e_ending(word):
-            #    return word + "e"
+            elif self.has_e_ending(word):
+                return word + "e"
             else:
                 return word
 
     def get_all_comparisons(self, word):
         return [self.get_comparative_degree(word),
                 self.get_comparative_degree(word, True)]
-
 
 if __name__ == "__main__":
     ac = AdjectiveComparisoner()
@@ -100,5 +102,4 @@ if __name__ == "__main__":
     assert ac.get_comparative_degree("strong", True) == "the strongest"
     assert ac.get_normalize_adjective("the strongest") == "strong"
     assert ac.get_normalize_adjective("bigger") == "big"
-    # todo tests for adjective that ends with 'e'
-    # assert ac.get_normalize_adjective("the nicest") == "nice"
+    assert ac.get_normalize_adjective("the nicest") == "nice"
