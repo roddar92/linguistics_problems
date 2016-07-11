@@ -24,6 +24,7 @@ class AdjectiveComparisoner(object):
 
     @staticmethod
     def has_e_ending(word):
+        # todo add new words ending with 'e'
         return (word + "e") in "able close fickle gentle handsome huge nice large polite rude simple strange wise"
 
     def get_comparative_degree(self, word, superlative=False):
