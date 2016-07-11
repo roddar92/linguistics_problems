@@ -24,7 +24,7 @@ class AdjectiveComparisoner(object):
 
     @staticmethod
     def has_e_ending(word):
-        return (word + "e") in "close huge nice large simple strange wise"
+        return (word + "e") in "able close fickle gentle handsome huge nice large polite simple strange wise"
 
     def get_comparative_degree(self, word, superlative=False):
         """Return adjective in the comparative degree"""
@@ -34,8 +34,9 @@ class AdjectiveComparisoner(object):
         if word in self.irregular_adjectives:
             word = self.irregular_adjectives[word][0] if not superlative else self.irregular_adjectives[word][1]
         else:
+            suffix = ""
             sm = SyllableModule()
-            if word.endswith("y"):
+            if word.endswith("y") and sm.english_syllables_count(word) <= 2:
                 word = word[:-1] + "i" + ("er" if not superlative else "est")
             elif sm.english_syllables_count(word) == 1:
                 suffix = "er" if not superlative else "est"
@@ -47,8 +48,11 @@ class AdjectiveComparisoner(object):
                     word += word[-1]
 
                 word += suffix
-            elif word.endswith("e") and sm.english_syllables_count(word) == 2:
-                suffix = "r" if not superlative else "st"
+            elif sm.english_syllables_count(word) == 2:
+                if word.endswith("e"):
+                    suffix = "r" if not superlative else "st"
+                elif word.endswith("ow"):
+                    suffix = "er" if not superlative else "est"
                 word += suffix
             else:
                 if not superlative:
@@ -101,6 +105,7 @@ if __name__ == "__main__":
     assert ac.get_normalize_adjective("happier") == "happy"
     assert ac.get_normalize_adjective("the silliest") == "silly"
     assert ac.get_comparative_degree("strong", True) == "the strongest"
+    assert ac.get_comparative_degree("narrow", True) == "the narrowest"
     assert ac.get_normalize_adjective("the strongest") == "strong"
     assert ac.get_normalize_adjective("bigger") == "big"
     assert ac.get_normalize_adjective("the nicest") == "nice"
