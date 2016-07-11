@@ -24,7 +24,7 @@ class AdjectiveComparisoner(object):
 
     @staticmethod
     def has_e_ending(word):
-        return (word + "e") in "nice large simple strange"
+        return (word + "e") in "close huge nice large simple strange wise"
 
     def get_comparative_degree(self, word, superlative=False):
         """Return adjective in the comparative degree"""
