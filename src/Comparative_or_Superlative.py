@@ -24,7 +24,7 @@ class AdjectiveComparisoner(object):
 
     @staticmethod
     def has_e_ending(word):
-        return (word + "e") in "nice large simple"
+        return (word + "e") in "nice large simple strange"
 
     def get_comparative_degree(self, word, superlative=False):
         """Return adjective in the comparative degree"""
@@ -90,6 +90,7 @@ if __name__ == "__main__":
     assert ac.get_comparative_degree("impressive") == "more impressive"
     assert ac.get_comparative_degree("impressive", True) == "the most impressive"
     assert ac.get_comparative_degree("big") == "bigger"
+    assert ac.get_comparative_degree("strange") == "stranger"
     assert ac.get_comparative_degree("happy") == "happier"
     assert ac.get_comparative_degree("far", True) == "the farthest"
     assert ac.get_normalize_adjective("the furthest") == "far"
@@ -103,3 +104,4 @@ if __name__ == "__main__":
     assert ac.get_normalize_adjective("the strongest") == "strong"
     assert ac.get_normalize_adjective("bigger") == "big"
     assert ac.get_normalize_adjective("the nicest") == "nice"
+    assert ac.get_normalize_adjective("stranger") == "strange"
