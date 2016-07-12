@@ -77,7 +77,7 @@ class Questioner(object):
 
     @staticmethod
     def has_not_pronounced_e_ending(word):
-        return word[-3] in 'BDGKLT'
+        return word[-3] in 'BDGKLTZ'
 
     def get_verb_lemma(self, word):
         word = word.upper()
@@ -183,6 +183,7 @@ if __name__ == "__main__":
     assert q.request("TIM CHANGED* HIS LAST NAME") == "DID TIM CHANGE HIS LAST NAME?"
     assert q.request("KING FREED* THE PRISONER") == "DID KING FREE THE PRISONER?"
     assert q.request("QUEEN VISITED* THE HOSPITAL") == "DID QUEEN VISIT THE HOSPITAL?"
+    assert q.request("QUEEN ORGANIZED* THE FESTIVAL") == "DID QUEEN ORGANIZE THE FESTIVAL?"
     assert q.request("DOCTOR TREATED* HIS PATIENTS") == "DID DOCTOR TREAT HIS PATIENTS?"
     assert q.request("HELEN BAKED* CAKES YESTERDAY") == "DID HELEN BAKE CAKES YESTERDAY?"
     assert q.request("HELEN MET* HER FATHER IN THE AIRPORT YESTERDAY") == "DID HELEN MEET HER FATHER IN THE AIRPORT YESTERDAY?"
