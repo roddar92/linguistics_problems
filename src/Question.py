@@ -161,6 +161,7 @@ if __name__ == "__main__":
     assert q.request("ANDREW'S SISTER KISSES* HIM TO THE CHEEKS") == "DOES ANDREW'S SISTER KISS HIM TO THE CHEEKS?"
     assert q.request("ANDREW'S SISTER KISSED* HIM TO THE CHEEKS") == "DID ANDREW'S SISTER KISS HIM TO THE CHEEKS?"
     assert q.request("YOU DIE* IN THE WAR") == "DO YOU DIE IN THE WAR?"
+    assert q.request("HE DIES* IN THE WAR") == "DOES HE DIE IN THE WAR?"
     assert q.request("THE LITTLE BEE BUZZES* OVER MY HEAD") == "DOES THE LITTLE BEE BUZZ OVER MY HEAD?"
     assert q.request("MICHAEL PLAYS* FOOTBALL") == "DOES MICHAEL PLAY FOOTBALL?"
     assert q.request("EDWARD ENJOYS* HIS PLAY") == "DOES EDWARD ENJOY HIS PLAY?"
