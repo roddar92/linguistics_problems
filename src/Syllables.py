@@ -44,7 +44,7 @@ class SyllableModule(object):
             leng -= 4
 
         if (word.endswith("ed") or word.endswith("es") or word.endswith("er") or word.endswith("est")) and \
-                self.is_english_consonant(word[leng-1]) and \
+                self.is_english_consonant(word[leng - 1]) and \
                 not word[:leng].endswith("ll") and word[:leng].endswith(word[leng - 1] + word[leng - 1]):
             leng -= 1
 
@@ -60,16 +60,19 @@ class SyllableModule(object):
                 cnt -= 1
 
         if leng < len(word):
-            if word[leng - 1:leng + 1].endswith(word[leng] + word[leng]):
+            if (word.endswith("ed") or word.endswith("es") or word.endswith("er") or word.endswith("est")) and \
+                    self.is_english_consonant(word[leng - 1]) and word[leng - 1:leng + 1].endswith(
+                        word[leng] + word[leng]):
                 leng += 1
 
             if word[leng] == "e":
                 leng += 1
 
         if word.endswith("ed"):
-            if word[leng - 3:leng - 1] not in "bb ll mm nn pp ss" and \
+            if (word[leng - 3:leng - 1] not in "bb ll mm nn pp ss" and \
                     not self.has_silent_ending(word[leng - 3:leng - 1]) and \
-                    not (self.is_english_consonant(word[leng - 2]) and self.is_english_vowel(word[leng - 3])):
+                    not (self.is_english_consonant(word[leng - 2]) and self.is_english_vowel(word[leng - 3]))) or \
+                word[leng - 3:leng - 1] == 'it' and self.is_english_consonant(word[leng - 4]):
                 cnt += 1
         elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
             cnt += 1
@@ -232,5 +235,7 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("beautiful") == 3
     assert sm.english_syllables_count("tilted") == 2
     assert sm.english_syllables_count("environment") == 4
-    #assert sm.english_syllables_count("limited") == 3
+    assert sm.english_syllables_count("likes") == 1
+    assert sm.english_syllables_count("liked") == 1
     assert sm.english_syllables_count("tangled") == 2
+    assert sm.english_syllables_count("limited") == 3
