@@ -18,7 +18,7 @@ class SyllableModule(object):
 
     @staticmethod
     def has_silent_ending(consonants):
-        return consonants in "sh ch ck dg gh bb pp ss"
+        return consonants in "ch sh dg ng gh ck"
 
     @staticmethod
     def is_diphthong(vowels):
@@ -30,9 +30,25 @@ class SyllableModule(object):
 
     def english_syllables_count(self, word):
         """Return count of thw word syllables"""
+        if len(word) <= 3 and ("a" in word or "e" in word or "i" in word or "o" in word or "u" in word or "y" in word):
+            return 1
+
         word = word.lower()
         leng = len(word)
-        if word[-1] == "e":
+
+        if word.endswith("ed") or word[:leng].endswith("es") or word.endswith("ly"):
+            leng -= 2
+        elif word.endswith("ful") or word.endswith("est"):
+            leng -= 3
+        elif word.endswith("less"):
+            leng -= 4
+
+        if (word.endswith("ed") or word.endswith("es") or word.endswith("er") or word.endswith("est")) and \
+                self.is_english_consonant(word[leng-1]) and \
+                not word[:leng].endswith("ll") and word[:leng].endswith(word[leng - 1] + word[leng - 1]):
+            leng -= 1
+
+        if word[leng - 1] == "e":
             leng -= 1
 
         cnt = 0
@@ -43,17 +59,30 @@ class SyllableModule(object):
                     (i >= 2 and self.is_triphthong(word[i - 2:i] + word[i])):
                 cnt -= 1
 
+        if leng < len(word):
+            if word[leng - 1:leng + 1].endswith(word[leng] + word[leng]):
+                leng += 1
+
+            if word[leng] == "e":
+                leng += 1
+
+        if word.endswith("ed"):
+            if word[leng - 3:leng - 1] not in "bb ll mm nn pp ss" and \
+                    not self.has_silent_ending(word[leng - 3:leng - 1]) and \
+                    not (self.is_english_consonant(word[leng - 2]) and self.is_english_vowel(word[leng - 3])):
+                cnt += 1
+        elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
+            cnt += 1
+
         if word.endswith("le") and self.is_english_consonant(word[-3]):
             cnt += 1
-        elif word.endswith("ery"):
+
+        if word.endswith("ery"):
             if word[-4] == "v" and word == "every" or word[-4] == "w":
                 cnt -= 1
-        elif word.endswith("ed") and len(word) >= 5 and \
-                (self.has_silent_ending(word[-4:-2]) or word[-3] in "cgklmnsvxz") or \
-                (word.endswith("ely") or word.endswith("eless") or word.endswith("eful")):
-            cnt -= 1
-        elif word.endswith("es") and len(word) >= 5 and word[-3] == "t" and self.is_english_vowel(word[-4]):
-            cnt -= 1
+
+        if word.endswith("ful") or word.endswith("less") or word.endswith("ly"):
+            cnt += 1
 
         return cnt
 
@@ -203,4 +232,5 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("beautiful") == 3
     assert sm.english_syllables_count("tilted") == 2
     assert sm.english_syllables_count("environment") == 4
-    assert sm.english_syllables_count("limited") == 3
+    #assert sm.english_syllables_count("limited") == 3
+    assert sm.english_syllables_count("tangled") == 2
