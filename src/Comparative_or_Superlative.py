@@ -59,14 +59,19 @@ class AdjectiveComparisoner(object):
             elif sm.english_syllables_count(word) == 2:
                 if word.endswith("e"):
                     suffix = "r" if not superlative else "st"
-                elif word.endswith("ow"):
+                elif word.endswith("ow") or word.endswith("er"):
                     suffix = "er" if not superlative else "est"
+                else:
+                    prefix = get_prefix(superlative)
                 word += suffix
             else:
+                prefix = get_prefix(superlative)
+                    
+            def get_prefix(superlative):
                 if not superlative:
-                    prefix += "more"
-                else:
-                    prefix = " ".join([prefix, "most"])
+                        return "more"
+                    else:
+                        return " ".join([prefix, "most"])
 
         return " ".join([prefix, word]).strip()
 
