@@ -36,6 +36,12 @@ class AdjectiveComparisoner(object):
 
     def get_comparative_degree(self, word, superlative=False):
         """Return adjective in the comparative degree"""
+        def get_prefix(is_superlative):
+            if not is_superlative:
+                return "more"
+            else:
+                return " ".join([prefix, "most"])
+
         word = word.lower()
         prefix = "" if not superlative else "the"
 
@@ -66,12 +72,6 @@ class AdjectiveComparisoner(object):
                 word += suffix
             else:
                 prefix = get_prefix(superlative)
-                    
-            def get_prefix(superlative):
-                if not superlative:
-                        return "more"
-                    else:
-                        return " ".join([prefix, "most"])
 
         return " ".join([prefix, word]).strip()
 
@@ -115,6 +115,9 @@ if __name__ == "__main__":
     assert ac.get_comparative_degree("simple", True) == "the simplest"
     assert ac.get_normalize_adjective("the hottest") == "hot"
     assert ac.get_normalize_adjective("the cheapest") == "cheap"
+    assert ac.get_normalize_adjective("the cleverest") == "clever"
+    assert ac.get_comparative_degree("clever", True) == "the cleverest"
+    assert ac.get_comparative_degree("tangled") == "more tangled"
     assert ac.get_normalize_adjective("happier") == "happy"
     assert ac.get_normalize_adjective("the silliest") == "silly"
     assert ac.get_comparative_degree("strong", True) == "the strongest"
