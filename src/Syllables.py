@@ -69,10 +69,10 @@ class SyllableModule(object):
                 leng += 1
 
         if word.endswith("ed"):
-            if (word[leng - 3:leng - 1] not in "bb ll mm nn pp ss" and \
-                    not self.has_silent_ending(word[leng - 3:leng - 1]) and \
-                    not (self.is_english_consonant(word[leng - 2]) and self.is_english_vowel(word[leng - 3]))) or \
-                word[leng - 3:leng - 1] == 'it' and self.is_english_consonant(word[leng - 4]):
+            if (word[leng - 3:leng - 1] not in "bb ll mm nn pp ss" and
+                    not self.has_silent_ending(word[leng - 3:leng - 1]) and
+                    not (self.is_english_consonant(word[leng - 2]) and self.is_english_vowel(word[leng - 3]))) \
+                    or word[leng - 3:leng - 1] == 'it' and self.is_english_consonant(word[leng - 4]):
                 cnt += 1
         elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
             cnt += 1
