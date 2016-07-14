@@ -61,10 +61,11 @@ class SyllableModule(object):
 
         if word.endswith("ed"):
             if (word[-4:-2] not in "bb ll mm nn pp ss" and
-                    not self.has_silent_ending(word[-4:-2]) and
-                    not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])) and
-                    not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) \
-                    or self.is_english_vowel(word[-4]) and word[-3] in "dt":
+                not self.has_silent_ending(word[-4:-2]) and
+                not (word[-3] not in "dt" and self.is_english_consonant(word[-3])
+                     and self.is_english_vowel(word[-4])) and
+                not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) or \
+                            self.is_english_vowel(word[-4]) and word[-3] in "dt":
                 cnt += 1
         elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
             cnt += 1
@@ -245,3 +246,5 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("player") == 2
     assert sm.english_syllables_count("later") == 2
     assert sm.english_syllables_count("latest") == 2
+    assert sm.english_syllables_count("missed") == 1
+    assert sm.english_syllables_count("committed") == 3
