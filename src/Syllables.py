@@ -244,3 +244,7 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("load") == 1
     assert sm.english_syllables_count("watches") == 2
     assert sm.english_syllables_count("loaded") == 2
+    assert sm.english_syllables_count("bee") == 1
+    assert sm.english_syllables_count("air") == 1
+    assert sm.english_syllables_count("handmade") == 2
+    assert sm.english_syllables_count("lated") == 2
