@@ -22,7 +22,7 @@ class SyllableModule(object):
 
     @staticmethod
     def is_diphthong(vowels):
-        return vowels in "ea ia ae ee ie oe ue ai oi ui eo io oo au ou ay oy"
+        return vowels in "ea ia oa ua ae ee ie oe ue ai oi ui eo io oo au ou ay oy"
 
     @staticmethod
     def is_triphthong(vowels):
@@ -72,7 +72,7 @@ class SyllableModule(object):
             if (word[leng - 3:leng - 1] not in "bb ll mm nn pp ss" and
                     not self.has_silent_ending(word[leng - 3:leng - 1]) and
                     not (self.is_english_consonant(word[leng - 2]) and self.is_english_vowel(word[leng - 3]))) \
-                    or word[leng - 3:leng - 1] == 'it' and self.is_english_consonant(word[leng - 4]):
+                    or self.is_english_vowel(word[leng - 3]) and word[leng - 2] in "dt":
                 cnt += 1
         elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
             cnt += 1
@@ -239,3 +239,8 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("liked") == 1
     assert sm.english_syllables_count("tangled") == 2
     assert sm.english_syllables_count("limited") == 3
+    assert sm.english_syllables_count("unfortunately") == 5
+    assert sm.english_syllables_count("square") == 1
+    assert sm.english_syllables_count("load") == 1
+    assert sm.english_syllables_count("watches") == 2
+    assert sm.english_syllables_count("loaded") == 2
