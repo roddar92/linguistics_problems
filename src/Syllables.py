@@ -36,7 +36,7 @@ class SyllableModule(object):
         word = word.lower()
         leng = len(word)
 
-        if word.endswith("ed") or word[:leng].endswith("es") or word.endswith("ly"):
+        if word.endswith("ed") or word[:leng].endswith("er") or word[:leng].endswith("es") or word.endswith("ly"):
             leng -= 2
         elif word.endswith("ful") or word.endswith("est"):
             leng -= 3
@@ -59,20 +59,12 @@ class SyllableModule(object):
                     (i >= 2 and self.is_triphthong(word[i - 2:i] + word[i])):
                 cnt -= 1
 
-        if leng < len(word):
-            if (word.endswith("ed") or word.endswith("es") or word.endswith("er") or word.endswith("est")) and \
-                    self.is_english_consonant(word[leng - 1]) and word[leng - 1:leng + 1].endswith(
-                        word[leng] + word[leng]):
-                leng += 1
-
-            if word[leng] == "e":
-                leng += 1
-
         if word.endswith("ed"):
-            if (word[leng - 3:leng - 1] not in "bb ll mm nn pp ss" and
-                    not self.has_silent_ending(word[leng - 3:leng - 1]) and
-                    not (self.is_english_consonant(word[leng - 2]) and self.is_english_vowel(word[leng - 3]))) \
-                    or self.is_english_vowel(word[leng - 3]) and word[leng - 2] in "dt":
+            if (word[-4:-2] not in "bb ll mm nn pp ss" and
+                    not self.has_silent_ending(word[-4:-2]) and
+                    not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])) and
+                    not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) \
+                    or self.is_english_vowel(word[-4]) and word[-3] in "dt":
                 cnt += 1
         elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
             cnt += 1
@@ -84,7 +76,8 @@ class SyllableModule(object):
             if word[-4] == "v" and word == "every" or word[-4] == "w":
                 cnt -= 1
 
-        if word.endswith("ful") or word.endswith("less") or word.endswith("ly"):
+        if word.endswith("ful") or word.endswith("less") or word.endswith("ly") \
+                or word.endswith("er") or word.endswith("est"):
             cnt += 1
 
         return cnt
@@ -247,4 +240,8 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("bee") == 1
     assert sm.english_syllables_count("air") == 1
     assert sm.english_syllables_count("handmade") == 2
-    assert sm.english_syllables_count("lated") == 2
+    assert sm.english_syllables_count("payed") == 1
+    assert sm.english_syllables_count("played") == 1
+    assert sm.english_syllables_count("player") == 2
+    assert sm.english_syllables_count("later") == 2
+    assert sm.english_syllables_count("latest") == 2
