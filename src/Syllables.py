@@ -40,7 +40,7 @@ class SyllableModule(object):
             leng -= 2
         elif word.endswith("ful") or word.endswith("est"):
             leng -= 3
-        elif word.endswith("less"):
+        elif word.endswith("less") or word.endswith("ment"):
             leng -= 4
 
         if (word.endswith("ed") or word.endswith("es") or word.endswith("er") or word.endswith("est")) and \
@@ -77,7 +77,7 @@ class SyllableModule(object):
             if word[-4] == "v" and word == "every" or word[-4] == "w":
                 cnt -= 1
 
-        if word.endswith("ful") or word.endswith("less") or word.endswith("ly") \
+        if word.endswith("ful") or word.endswith("less") or word.endswith("ment") or word.endswith("ly") \
                 or word.endswith("er") or word.endswith("est"):
             cnt += 1
 
@@ -246,6 +246,7 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("player") == 2
     assert sm.english_syllables_count("later") == 2
     assert sm.english_syllables_count("latest") == 2
+    assert sm.english_syllables_count("statement") == 2
     assert sm.english_syllables_count("missed") == 1
     assert sm.english_syllables_count("marked") == 1
     assert sm.english_syllables_count("committed") == 3
