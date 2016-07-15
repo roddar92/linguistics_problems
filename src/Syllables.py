@@ -18,15 +18,15 @@ class SyllableModule(object):
 
     @staticmethod
     def has_silent_ending(consonants):
-        return consonants in "ch sh dg ng gh ck rk rn"
+        return consonants in "ch sh dg ng gh ck rk gn rn"
 
     @staticmethod
     def is_diphthong(vowels):
-        return vowels in "ea ia oa ua ae ee ie oe ue ai oi ui eo io oo au ou ay oy"
+        return vowels in "ea ia oa ua ae ee ie oe ue ai ei oi ui eo io oo au ou ay ey oy"
 
     @staticmethod
     def is_triphthong(vowels):
-        return vowels in "eau iou"
+        return vowels in "eau iou eye oye"
 
     def english_syllables_count(self, word):
         """Return count of thw word syllables"""
