@@ -250,5 +250,7 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("missed") == 1
     assert sm.english_syllables_count("marked") == 1
     assert sm.english_syllables_count("punishment") == 3
+    assert sm.english_syllables_count("committed") == 3
+    assert sm.english_syllables_count("pushed") == 1
     assert sm.english_syllables_count("turned") == 1
     assert sm.english_syllables_count("committed") == 3
