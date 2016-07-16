@@ -40,7 +40,7 @@ class SyllableModule(object):
             leng -= 2
         elif word.endswith("ful") or word.endswith("est"):
             leng -= 3
-        elif word.endswith("less") or word.endswith("ment"):
+        elif word.endswith("less") or word.endswith("ment") or word.endswith("ness"):
             leng -= 4
 
         if (word.endswith("ed") or word.endswith("es") or word.endswith("er") or word.endswith("est")) and \
@@ -61,10 +61,10 @@ class SyllableModule(object):
 
         if word.endswith("ed"):
             if (word[-4:-2] not in "bb ll mm nn pp ss" and
-                not self.has_silent_ending(word[-4:-2]) and
-                not (word[-3] not in "dt" and self.is_english_consonant(word[-3])
-                     and self.is_english_vowel(word[-4])) and
-                not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) or \
+                    not self.has_silent_ending(word[-4:-2]) and
+                    not (word[-3] not in "dt" and self.is_english_consonant(word[-3]) and
+                             self.is_english_vowel(word[-4])) and
+                    not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) or \
                             self.is_english_vowel(word[-4]) and word[-3] in "dt":
                 cnt += 1
         elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
@@ -77,8 +77,8 @@ class SyllableModule(object):
             if word[-4] == "v" and word == "every" or word[-4] == "w":
                 cnt -= 1
 
-        if word.endswith("ful") or word.endswith("less") or word.endswith("ment") or word.endswith("ly") \
-                or word.endswith("er") or word.endswith("est"):
+        if word.endswith("ful") or word.endswith("less") or word.endswith("ment") or \
+                word.endswith("ness") or word.endswith("ly") or word.endswith("er") or word.endswith("est"):
             cnt += 1
 
         return cnt
@@ -245,6 +245,7 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("air") == 1
     assert sm.english_syllables_count("handmade") == 2
     assert sm.english_syllables_count("payed") == 1
+    assert sm.english_syllables_count("sadness") == 2
     assert sm.english_syllables_count("played") == 1
     assert sm.english_syllables_count("player") == 2
     assert sm.english_syllables_count("later") == 2
