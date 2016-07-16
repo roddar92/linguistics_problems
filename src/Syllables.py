@@ -18,7 +18,7 @@ class SyllableModule(object):
 
     @staticmethod
     def has_silent_ending(consonants):
-        return consonants in "ch sh dg ng gh ck rk gn rn"
+        return consonants in "ch sh dg ng gh th ck rk gn rn"
 
     @staticmethod
     def is_diphthong(vowels):
@@ -177,6 +177,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables("фильм") == ["фильм"]
     assert sm.russian_syllables("стажировка") == ["ста", "жи", "ро", "вка"]
 
+    assert sm.english_syllables_count("eye") == 1
     assert sm.english_syllables_count("bed") == 1
     assert sm.english_syllables_count("skinned") == 1
     assert sm.english_syllables_count("apple") == 2
@@ -186,6 +187,8 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("tasted") == 2
     assert sm.english_syllables_count("close") == 1
     assert sm.english_syllables_count("closed") == 1
+    assert sm.english_syllables_count("they") == 1
+    assert sm.english_syllables_count("their") == 1
     assert sm.english_syllables_count("sway") == 1
     assert sm.english_syllables_count("waits") == 1
     assert sm.english_syllables_count("bought") == 1
@@ -248,6 +251,7 @@ if __name__ == "__main__":
     assert sm.english_syllables_count("latest") == 2
     assert sm.english_syllables_count("statement") == 2
     assert sm.english_syllables_count("missed") == 1
+    assert sm.english_syllables_count("designed") == 2
     assert sm.english_syllables_count("marked") == 1
     assert sm.english_syllables_count("punishment") == 3
     assert sm.english_syllables_count("committed") == 3
