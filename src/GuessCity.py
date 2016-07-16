@@ -24,7 +24,7 @@ class GuessCity(object):
         print(self.city_name[0])
 
     def shift_letter(self, index):
-        if index == len(self.city_name):
+        if (index + 1) == len(self.city_name):
             print("The guessed city was {}. Game is over :(".format(self.city_name))
             self.move()
         else:
