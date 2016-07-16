@@ -7,8 +7,7 @@ class GuessCity(object):
 
         with open("ru_cities.txt", "r", encoding='utf-8') as f:
             for line in f:
-                name = line.strip()
-                self.allowed_cities.add(name)
+                self.allowed_cities.add(line.strip())
 
     @staticmethod
     def get_city_name(city):
@@ -18,6 +17,12 @@ class GuessCity(object):
             return " ".join([w[0].upper() + w[1:] for w in city.split()])
         else:
             return city[0].upper() + city[1:]
+
+    def was_city_guessed(self, city):
+        return city in self.guessed_cities
+
+    def is_city_exists(self, city):
+        return city in self.allowed_cities
 
     def move(self):
         self.city_name = [word for word in self.allowed_cities if word not in self.guessed_cities]
