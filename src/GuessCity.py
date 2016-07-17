@@ -18,6 +18,9 @@ class GuessCity(object):
         else:
             return city[0].upper() + city[1:]
 
+    def make_city_used(self, city):
+        self.guessed_cities.add(city)
+    
     def was_city_guessed(self, city):
         return city in self.guessed_cities
 
