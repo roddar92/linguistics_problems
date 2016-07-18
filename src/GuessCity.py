@@ -93,7 +93,6 @@ if __name__ == "__main__":
                     gc.shift_letter(ind)
                     if ind == len(gc.get_guessed_city()):
                         gc.move()
-
         except Exception as msg:
             print(msg)
             s = input("Try input city again: ")
