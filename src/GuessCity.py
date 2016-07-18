@@ -52,13 +52,13 @@ class GuessCity(object):
 
     def move(self):
         self.city_name = [word for word in self.allowed_cities if word not in self.guessed_cities]
-        print(self.city_name[0])
+        print("My guessed city is " + self.city_name[0] + "...")
 
     def shift_letter(self, index):
         if index == len(self.city_name):
             print("The guessed city was {}. Game is over :(".format(self.city_name))
         else:
-            print(self.city_name[:index])
+            print(self.city_name[:index] + "...")
 
 
 if __name__ == "__main__":
@@ -68,11 +68,9 @@ if __name__ == "__main__":
     attempts = 0
 
     gc.move()
-    while True:
-        ind = 1
-        try:
-            city = input("Your answer: ").lower()
+    city = input("Your answer: ").lower()
 
+    while True:
             if city == "the end":
                 print("Bye-bye! We hope to see you soon :)")
                 break
@@ -86,6 +84,7 @@ if __name__ == "__main__":
                 attempts = 0
                 ind = 1
                 gc.move()
+                city = input("Your answer: ").lower()
             else:
                 whole_moves_count += 1
                 ind += 1
@@ -93,6 +92,7 @@ if __name__ == "__main__":
                     gc.shift_letter(ind)
                     if ind == len(gc.get_guessed_city()):
                         gc.move()
+                        city = input("Your answer: ").lower()
         except Exception as msg:
             print(msg)
             s = input("Try input city again: ")
