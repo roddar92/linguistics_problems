@@ -106,8 +106,7 @@ class SyllableModule(object):
                 syllables.append(cur_syllable)
                 cur_syllable = ""
             if syllables:
-                # todo move 'вь' to the next syllable if letters ant not the word's end
-                if letter == "ь" or self.is_russian_vowel(syllables[len(syllables) - 1][-1]) and letter == "й":
+                if letter == "ь" or self.is_russian_vowel(syllables[-1][-1]) and letter == "й":
                     last = syllables.pop(len(syllables) - 1)
                     syllables.append(last + cur_syllable)
                     cur_syllable = ""
@@ -121,7 +120,7 @@ class SyllableModule(object):
             last = syllables.pop(len(syllables) - 1)
             syllables.append(last + cur_syllable)
 
-        if syllables[-1] == "ся" and syllables[-2].endswith("ть"):
+        if (syllables[-1] == "ся" or syllables[-1] == "тесь") and syllables[-2].endswith("ь"):
             last = syllables.pop(len(syllables) - 1)
             prev = syllables.pop(len(syllables) - 1)
             syllables += [prev[:-2], prev[-2:] + last]
@@ -177,7 +176,9 @@ if __name__ == "__main__":
     assert sm.russian_syllables("фальшь") == ["фальшь"]
     assert sm.russian_syllables("фильм") == ["фильм"]
     assert sm.russian_syllables("стажировка") == ["ста", "жи", "ро", "вка"]
-    assert sm.russian_syllables("подготовьтесь") == ["по", "дго", "товь", "тесь"]
+    assert sm.russian_syllables("подготовьтесь") == ["по", "дго", "то", "вьтесь"]
+    assert sm.russian_syllables("славься") == ["сла", "вься"]
+    assert sm.russian_syllables("майся") == ["май", "ся"]
 
     assert sm.english_syllables_count("eye") == 1
     assert sm.english_syllables_count("bed") == 1
