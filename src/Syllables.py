@@ -106,7 +106,7 @@ class SyllableModule(object):
                 syllables.append(cur_syllable)
                 cur_syllable = ""
             if syllables:
-                # todo move 'вь' to the next syllable if letters ant not the word end
+                # todo move 'вь' to the next syllable if letters ant not the word's end
                 if letter == "ь" or self.is_russian_vowel(syllables[len(syllables) - 1][-1]) and letter == "й":
                     last = syllables.pop(len(syllables) - 1)
                     syllables.append(last + cur_syllable)
