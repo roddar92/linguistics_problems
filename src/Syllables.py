@@ -176,6 +176,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables("фальшь") == ["фальшь"]
     assert sm.russian_syllables("фильм") == ["фильм"]
     assert sm.russian_syllables("стажировка") == ["ста", "жи", "ро", "вка"]
+    assert sm.russian_syllables("подготовьтесь") == ["по", "дго", "товь", "тесь"]
 
     assert sm.english_syllables_count("eye") == 1
     assert sm.english_syllables_count("bed") == 1
