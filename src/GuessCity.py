@@ -52,11 +52,11 @@ class GuessCity(object):
 
     def move(self):
         self.city_name = [word for word in self.allowed_cities if word not in self.guessed_cities]
-        print("My guessed city is " + self.city_name[0] + "...")
+        print("My guessed city is {}...".format(self.get_city_name(self.city_name[0])))
 
     def shift_letter(self, index):
         if index == len(self.city_name):
-            print("The guessed city was {}. Game is over :(".format(self.city_name))
+            print("The guessed city was {}. Game is over :(".format(self.get_city_name(self.city_name)))
         else:
             print(self.city_name[:index] + "...")
 
@@ -72,12 +72,12 @@ if __name__ == "__main__":
 
     while True:
             if city == "the end":
-                print("Bye-bye! We hope to see you soon :)")
+                print("Bye-bye! I hope to see you soon :)")
                 break
 
             gc.check_city(city)
             if city == gc.get_guessed_city():
-                print("Yes! The guessed city was {}!".format(gc.get_guessed_city()))
+                print("Yes! The guessed city was {}!".format(gc.get_city_name(gc.get_guessed_city())))
                 gc.print_final_text(whole_moves_count)
                 gc.make_city_used()
                 whole_moves_count = 0
