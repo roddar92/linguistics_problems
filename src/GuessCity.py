@@ -13,6 +13,11 @@ class GuessCity(object):
                 self.allowed_cities.add(line.strip())
 
     @staticmethod
+    def choose_city():
+        gc.move()
+        return input("Your answer: ").lower()
+
+    @staticmethod
     def get_city_name(city_name):
         if '-' in city_name:
             return "-".join([w[0].upper() + w[1:] for w in city_name.split("-")])
@@ -84,8 +89,7 @@ if __name__ == "__main__":
     attempts = 0
     ind = 1
 
-    gc.move()
-    city = input("Your answer: ").lower()
+    city = gc.choose_city()
 
     while True:
         if city == "the end":
