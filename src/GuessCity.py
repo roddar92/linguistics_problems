@@ -13,11 +13,6 @@ class GuessCity(object):
                 self.allowed_cities.add(line.strip())
 
     @staticmethod
-    def choose_city():
-        gc.move()
-        return input("Your answer: ").lower()
-
-    @staticmethod
     def get_city_name(city_name):
         if '-' in city_name:
             return "-".join([w[0].upper() + w[1:] for w in city_name.split("-")])
@@ -25,18 +20,6 @@ class GuessCity(object):
             return " ".join([w[0].upper() + w[1:] for w in city_name.split()])
         else:
             return city_name[0].upper() + city_name[1:]
-
-    @staticmethod
-    def get_hint():
-        global attempts, city, ind
-        attempts = 0
-        ind += 1
-        print("Well, I shall prompt you another letter!")
-        gc.shift_letter(ind)
-        city = input("And your answer: ").lower()
-        if ind == len(gc.get_guessed_city()):
-            gc.move()
-            city = input("Your answer: ").lower()
 
     @staticmethod
     def print_final_text(moves_count):
@@ -50,6 +33,22 @@ class GuessCity(object):
             print("Not bad...")
         else:
             print("How long you have to solve puzzles... But not upset! :) Get ready for the next time!")
+
+    def choose_city(self):
+        self.move()
+        return input("Your answer: ").lower()
+
+    def get_hint(self):
+        global attempts, city, ind
+        ind += 1
+        attempts = 0
+        print("Well, I shall prompt you another letter!")
+        gc.shift_letter(ind)
+        if ind == len(self.city_name):
+            ind = 1
+            gc.choose_city()
+        else:
+            city = input("And your answer: ").lower()
 
     def get_guessed_city(self):
         return self.city_name
@@ -77,7 +76,7 @@ class GuessCity(object):
 
     def shift_letter(self, index):
         if index == len(self.city_name):
-            print("The guessed city was {}. Game is over :(".format(self.get_city_name(self.city_name)))
+            print("The guessed city was {}. This game was over :(".format(self.get_city_name(self.city_name)))
         else:
             print(self.get_city_name(self.city_name)[:index] + "...")
 
@@ -104,8 +103,7 @@ if __name__ == "__main__":
                 whole_moves_count = 0
                 attempts = 0
                 ind = 1
-                gc.move()
-                city = input("Your answer: ").lower()
+                city = gc.choose_city()
             else:
                 if attempts == 2:
                     gc.get_hint()
