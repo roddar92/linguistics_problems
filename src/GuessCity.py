@@ -66,15 +66,16 @@ if __name__ == "__main__":
     print("By welcome! Let's quess cities!")
     whole_moves_count = 0
     attempts = 0
+    ind = 1
 
     gc.move()
     city = input("Your answer: ").lower()
 
     while True:
-            if city == "the end":
-                print("Bye-bye! I hope to see you soon :)")
-                break
-
+        if city == "the end":
+            print("Bye-bye! I hope to see you soon :)")
+            break
+        try:
             gc.check_city(city)
             if city == gc.get_guessed_city():
                 print("Yes! The guessed city was {}!".format(gc.get_city_name(gc.get_guessed_city())))
