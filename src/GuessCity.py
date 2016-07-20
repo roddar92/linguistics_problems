@@ -63,7 +63,7 @@ class GuessCity(object):
 
 if __name__ == "__main__":
     gc = GuessCity()
-    print("By welcome! Let's quess cities!")
+    print("By welcome! Let's guess cities!")
     whole_moves_count = 0
     attempts = 0
     ind = 1
