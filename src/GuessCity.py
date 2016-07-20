@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from random import randint
+
+
 class GuessCity(object):
     def __init__(self):
         self.allowed_cities = set()
@@ -17,6 +20,18 @@ class GuessCity(object):
             return " ".join([w[0].upper() + w[1:] for w in city_name.split()])
         else:
             return city_name[0].upper() + city_name[1:]
+
+    @staticmethod
+    def get_hint():
+        global attempts, city, ind
+        attempts = 0
+        ind += 1
+        print("Well, I shall prompt you another letter!")
+        gc.shift_letter(ind)
+        city = input("And your answer: ").lower()
+        if ind == len(gc.get_guessed_city()):
+            gc.move()
+            city = input("Your answer: ").lower()
 
     @staticmethod
     def print_final_text(moves_count):
@@ -51,14 +66,15 @@ class GuessCity(object):
             raise Exception("This city was not exists")
 
     def move(self):
-        self.city_name = [word for word in self.allowed_cities if word not in self.guessed_cities]
-        print("My guessed city is {}...".format(self.get_city_name(self.city_name[0])))
+        city_names = [word for word in self.allowed_cities if word not in self.guessed_cities]
+        self.city_name = city_names[randint(0, len(city_names) - 1)]
+        print("My guessed city is {}...".format(self.get_city_name(self.city_name)[0]))
 
     def shift_letter(self, index):
         if index == len(self.city_name):
             print("The guessed city was {}. Game is over :(".format(self.get_city_name(self.city_name)))
         else:
-            print(self.city_name[:index] + "...")
+            print(self.get_city_name(self.city_name)[:index] + "...")
 
 
 if __name__ == "__main__":
@@ -87,13 +103,18 @@ if __name__ == "__main__":
                 gc.move()
                 city = input("Your answer: ").lower()
             else:
-                whole_moves_count += 1
-                ind += 1
-                if attempts == 3:
-                    gc.shift_letter(ind)
-                    if ind == len(gc.get_guessed_city()):
-                        gc.move()
-                        city = input("Your answer: ").lower()
+                if attempts == 2:
+                    gc.get_hint()
+                else:
+                    whole_moves_count += 1
+                    attempts += 1
+                    city = input("No... It isn't {} :( Try to guess my city again: "
+                                 .format(gc.get_city_name(city))).lower()
         except Exception as msg:
             print(msg)
-            s = input("Try input city again: ")
+            if attempts == 2:
+                gc.get_hint()
+            else:
+                whole_moves_count += 1
+                attempts += 1
+                city = input("Try to guess my city again: ").lower()
