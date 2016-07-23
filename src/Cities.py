@@ -60,6 +60,16 @@ class Game(object):
         else:
             return True
 
+    def check_city(self, city):
+        if city not in self.allowed_cities:
+            raise Exception("Такого города не существует!")
+        elif not self.check_rules(city):
+            raise Exception("Этот город не начинается с буквы \'{}\'!"
+                            .format(self.current_cities[-1][self.find_index_of_right_letter(self.current_cities[-1])]
+                                    .upper()))
+        elif city in self.current_cities:
+            raise Exception("Этот город уже был!")
+
     def make_city_used(self, city):
         self.current_cities.append(city)
         self.register_first_letter_in_use_dict(city)
@@ -82,17 +92,11 @@ if __name__ == "__main__":
             print("Спасибо за игру!\nДо новых встреч!")
             break
 
-        if s in game.allowed_cities:
-            if game.check_rules(s):
-                if s not in game.current_cities:
-                    game.make_city_used(s)
-                    game.move()
-                    s = input("Введите город:\n").lower()
-                else:
-                    s = input("Этот город уже был! Предложите другой город:\n").lower()
-            else:
-                s = input("Этот город не начинается с буквы \'{}\'! Предложите другой город:\n"
-                          .format(game.current_cities[-1][game.find_index_of_right_letter(game.current_cities[-1])]
-                                  .upper()))
-        else:
-            s = input("Такого города не существует! Предложите другой город:\n").lower()
+        try:
+            game.check_city(s)
+            game.make_city_used(s)
+            game.move()
+            s = input().lower()
+        except Exception as msg:
+            print(msg)
+            s = input("Предложите другой город:\n").lower()
