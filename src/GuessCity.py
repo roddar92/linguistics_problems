@@ -6,6 +6,7 @@ class GuessCity(object):
     def __init__(self):
         self.allowed_cities = set()
         self.guessed_cities = set()
+        self.asked_cities = set()
         self.city_name = "Unknown"
 
         with open("ru_cities.txt", "r", encoding='utf-8') as f:
@@ -56,7 +57,16 @@ class GuessCity(object):
     def make_city_used(self):
         self.guessed_cities.add(self.city_name)
         self.city_name = ""
+
+    def make_city_asked(self, city_name):
+        self.asked_cities.add(ciy_name)
     
+    def clean_asked_cities(self):
+        self.asked_cities = set()
+
+    def was_city_asked(self, city_name):
+        return city_name in self.asked_cities
+
     def was_city_guessed(self, city_name):
         return city_name in self.guessed_cities
 
@@ -68,6 +78,8 @@ class GuessCity(object):
             raise Exception("This city has already guessed!")
         elif not self.is_city_exists(city_name):
             raise Exception("This city was not exists")
+        elif self.was_city_asked(city_name):
+            raise Exception("You have already asked this city")
 
     def move(self):
         city_names = [word for word in self.allowed_cities if word not in self.guessed_cities]
@@ -100,6 +112,7 @@ if __name__ == "__main__":
                 print("Yes! The guessed city was {}!".format(gc.get_city_name(gc.get_guessed_city())))
                 gc.print_final_text(whole_moves_count)
                 gc.make_city_used()
+                gc.clean_asked_cities()
                 whole_moves_count = 0
                 attempts = 0
                 ind = 1
@@ -109,7 +122,8 @@ if __name__ == "__main__":
                     gc.get_hint()
                 else:
                     whole_moves_count += 1
-                    attempts += 1
+                    attempts +=
+                    gc.make_city_asked(city)
                     city = input("No... It isn't {} :( Try to guess my city again: "
                                  .format(gc.get_city_name(city))).lower()
         except Exception as msg:
