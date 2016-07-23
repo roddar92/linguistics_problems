@@ -43,12 +43,12 @@ class GuessCity(object):
         global attempts, city, ind
         ind += 1
         attempts = 0
-        print("Well, I shall prompt you another letter!")
-        gc.shift_letter(ind)
         if ind == len(self.city_name):
             ind = 1
             gc.choose_city()
         else:
+            print("Well, I shall prompt you another letter!")
+            gc.shift_letter(ind)
             city = input("And your answer: ").lower()
 
     def get_guessed_city(self):
@@ -59,10 +59,10 @@ class GuessCity(object):
         self.city_name = ""
 
     def make_city_asked(self, city_name):
-        self.asked_cities.add(ciy_name)
+        self.asked_cities.add(city_name)
     
-    def clean_asked_cities(self):
-        self.asked_cities = set()
+    def clear_asked_cities(self):
+        self.asked_cities.clear()
 
     def was_city_asked(self, city_name):
         return city_name in self.asked_cities
@@ -74,12 +74,12 @@ class GuessCity(object):
         return city_name in self.allowed_cities
 
     def check_city(self, city_name):
-        if self.was_city_guessed(city_name):
+        if self.was_city_asked(city_name):
+            raise Exception("You have already asked this city!")
+        elif self.was_city_guessed(city_name):
             raise Exception("This city has already guessed!")
         elif not self.is_city_exists(city_name):
-            raise Exception("This city was not exists")
-        elif self.was_city_asked(city_name):
-            raise Exception("You have already asked this city")
+            raise Exception("This city was not exists!")
 
     def move(self):
         city_names = [word for word in self.allowed_cities if word not in self.guessed_cities]
@@ -112,7 +112,7 @@ if __name__ == "__main__":
                 print("Yes! The guessed city was {}!".format(gc.get_city_name(gc.get_guessed_city())))
                 gc.print_final_text(whole_moves_count)
                 gc.make_city_used()
-                gc.clean_asked_cities()
+                gc.clear_asked_cities()
                 whole_moves_count = 0
                 attempts = 0
                 ind = 1
@@ -122,7 +122,7 @@ if __name__ == "__main__":
                     gc.get_hint()
                 else:
                     whole_moves_count += 1
-                    attempts +=
+                    attempts += 1
                     gc.make_city_asked(city)
                     city = input("No... It isn't {} :( Try to guess my city again: "
                                  .format(gc.get_city_name(city))).lower()
