@@ -37,7 +37,8 @@ class FinnishPredicativeQuestioner(object):
     def get_lemma(self, word, person, negative=False):
         if negative:
             if word.endswith("EET") or word.endswith("UT"):
-                word = "OLI" + self.aux_verb[person][1:] if person == "HE" else "OLI" + self.aux_verb[person][3:]
+                ind = 1 if person == "HE" else 3
+                word = "OLI" + self.aux_verb[person][ind:]
             else:
                 word = self.aux_verb[person]
         return word + "KO"
@@ -56,7 +57,15 @@ class FinnishPredicativeQuestioner(object):
                 if self.is_aux_verb(word):
                     request.insert(0, (word + "ko").upper())
                 else:
-                    normalized = self.get_lemma(word, request[0], negative) if negative else self.get_lemma(word, request[0])
+                    if not self.is_single_person(request[0]) and not self.is_plural_person(request[0]):
+                        person = "HÄN"
+                    else:
+                        person = request[0]
+
+                    if negative:
+                        normalized = self.get_lemma(word, person, negative)
+                    else:
+                        normalized = self.get_lemma(word, person)
                     request.insert(0, normalized)
             else:
                 request.append(word)
@@ -73,4 +82,7 @@ if __name__ == "__main__":
     assert q.predicative_question("HÄN EI OLE* TÄÄLLÄ") == "ONKO HÄN TÄÄLLÄ?"
     assert q.predicative_question("ME EMME OLEET* TÄÄLLÄ") == "OLIMMEKO ME TÄÄLLÄ?"
     assert q.predicative_question("HE EIVÄT OLEET* TÄÄLLÄ") == "OLIVATKO HE TÄÄLLÄ?"
-    assert q.predicative_question("HÄN EI OLUUT* TÄÄLLÄ") == "OLIKO HÄN TÄÄLLÄ?"
+    assert q.predicative_question("OLUT ON* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
+    assert q.predicative_question("OLUT EI OLE* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
+    assert q.predicative_question("OLUT EI OLUT* TSEKKILÄISTÄ") == "OLIKO OLUT TSEKKILÄISTÄ?"
+    assert q.predicative_question("HÄN EI OLUT* TÄÄLLÄ") == "OLIKO HÄN TÄÄLLÄ?"
