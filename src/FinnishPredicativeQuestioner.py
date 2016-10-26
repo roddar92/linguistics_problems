@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 class FinnishPredicativeQuestioner(object):
     def __init__(self):
         self.negative = {"MINÄ": "EN", "ME": "EMME",
@@ -34,8 +35,22 @@ class FinnishPredicativeQuestioner(object):
     def is_negative_verb(verb):
         return verb in "EN EMME ET ETTE EI EIVÄT".split()
 
-    def get_lemma(self, word, person, negative=False):
+    def find_person(self, negative):
+        for person, neg in self.negative.items():
+            if neg == negative:
+                return person
+
+
+    def get_lemma(self, word, person, negative=None):
         if negative:
+            if not self.is_single_person(person) and not self.is_plural_person(person):
+                if word.endswith("UT"):
+                    person = "HÄN"
+                elif word.endswith("UT"):
+                    person = "HE"
+                else:
+                    person = self.find_person(negative)
+
             if word.endswith("EET") or word.endswith("UT"):
                 ind = 1 if person == "HE" else 3
                 word = "OLI" + self.aux_verb[person][ind:]
@@ -51,21 +66,16 @@ class FinnishPredicativeQuestioner(object):
         request = []
         for word in sentence.split():
             if self.is_negative_verb(word):
-                negative = True
+                negative = word
             elif word.endswith("*"):
                 word = word[:-1]
                 if self.is_aux_verb(word):
                     request.insert(0, (word + "ko").upper())
                 else:
-                    if not self.is_single_person(request[0]) and not self.is_plural_person(request[0]):
-                        person = "HÄN"
-                    else:
-                        person = request[0]
-
                     if negative:
-                        normalized = self.get_lemma(word, person, negative)
+                        normalized = self.get_lemma(word, request[0], negative)
                     else:
-                        normalized = self.get_lemma(word, person)
+                        normalized = self.get_lemma(word, request[0])
                     request.insert(0, normalized)
             else:
                 request.append(word)
