@@ -78,9 +78,9 @@ class FinnishPredicativeQuestioner(object):
             if self.is_single_person(person) or self.is_plural_person(person):
                 result.append(self.negative[person])
                 if self.is_single_person(person):
-                    result.append("OLUT")
+                    result.append("OLLUT")
                 else:
-                    result.append("OLEET")
+                    result.append("OLLEET")
             else:
                 if word[3:] in "VAT MME TTE":
                     result.append("ETTE")
@@ -183,14 +183,14 @@ if __name__ == "__main__":
     assert q.get_predicative_question("HE OVAT* TÄÄLLÄ") == "OVATKO HE TÄÄLLÄ?"
     assert q.get_predicative_question("HÄN EI OLE* TÄÄLLÄ") == "ONKO HÄN TÄÄLLÄ?"
     assert q.get_predicative_question("ME EMME OLEET* TÄÄLLÄ") == "OLIMMEKO ME TÄÄLLÄ?"
-    assert q.get_predicative_question("HE EIVÄT OLEET* TÄÄLLÄ") == "OLIVATKO HE TÄÄLLÄ?"
+    assert q.get_predicative_question("HE EIVÄT OLLEET* TÄÄLLÄ") == "OLIVATKO HE TÄÄLLÄ?"
     assert q.get_predicative_question("OLUT ON* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
     assert q.get_predicative_question("OLUT EI OLE* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
-    assert q.get_predicative_question("OLUT EI OLUT* TSEKKILÄISTÄ") == "OLIKO OLUT TSEKKILÄISTÄ?"
-    assert q.get_predicative_question("HÄN EI OLUT* TÄÄLLÄ") == "OLIKO HÄN TÄÄLLÄ?"
+    assert q.get_predicative_question("OLUT EI OLLUT* TSEKKILÄISTÄ") == "OLIKO OLUT TSEKKILÄISTÄ?"
+    assert q.get_predicative_question("HÄN EI OLLUT* TÄÄLLÄ") == "OLIKO HÄN TÄÄLLÄ?"
 
-    assert q.get_negative_predicative_sentence("OLIKO* HÄN TÄÄLLÄ?") == "HÄN EI OLUT TÄÄLLÄ"
-    assert q.get_negative_predicative_sentence("HE OLIVAT* TÄÄLLÄ") == "HE EIVÄT OLEET TÄÄLLÄ"
+    assert q.get_negative_predicative_sentence("OLIKO* HÄN TÄÄLLÄ?") == "HÄN EI OLLUT TÄÄLLÄ"
+    assert q.get_negative_predicative_sentence("HE OLIVAT* TÄÄLLÄ") == "HE EIVÄT OLLEET TÄÄLLÄ"
     assert q.get_negative_predicative_sentence("ONKO* HÄN TÄÄLLÄ?") == "HÄN EI OLE TÄÄLLÄ"
     assert q.get_negative_predicative_sentence("HÄN ON* TÄÄLLÄ?") == "HÄN EI OLE TÄÄLLÄ"
 
