@@ -11,6 +11,10 @@ class FinnishPredicativeQuestioner(object):
                          "SINÄ": "OLET", "TE": "OLETTE",
                          "HÄN": "ON", "HE": "OVAT"}
 
+        self.negative_with_aux_verb = {"EN": "OLEN", "EMME": "OLEMME",
+                                       "ET": "OLET", "ETTE": "OLETTE",
+                                       "EI": "ON", "EIVÄT": "OVAT"}
+
     @staticmethod
     def is_finnish_vowel(symbol):
         return symbol in "AÄEIOÖUY"
@@ -40,7 +44,6 @@ class FinnishPredicativeQuestioner(object):
             if neg == negative:
                 return person
 
-
     def get_lemma(self, word, person, negative=None):
         if negative:
             if not self.is_single_person(person) and not self.is_plural_person(person):
@@ -58,10 +61,36 @@ class FinnishPredicativeQuestioner(object):
                 word = self.aux_verb[person]
         return word + "KO"
 
+    def get_neg_lemma(self, word, person):
+        result = []
+        if word.startswith("OLI"):
+            if self.is_single_person(person) or self.is_plural_person(person):
+                result.append(self.negative[person])
+                if self.is_single_person(person):
+                    result.append("OLUT")
+                else:
+                    result.append("OLEET")
+            else:
+                if word[3:] in "VAT MME TTE":
+                    result.append("ETTE")
+                    result.append("OLEET")
+                else:
+                    result.append("EI")
+                    result.append("OLUT")
+        else:
+            if self.is_single_person(person) or self.is_plural_person(person):
+                result.append(self.negative[person])
+            else:
+                if word[3:] in "VAT MME TTE":
+                    result.append("ETTE")
+                else:
+                    result.append("EI")
+                result.append("OLE")
+        return result
 
     def predicative_question(self, sentence):
         sentence = sentence.upper()
-        negative = False
+        negative = None
 
         request = []
         for word in sentence.split():
@@ -73,14 +102,69 @@ class FinnishPredicativeQuestioner(object):
                     request.insert(0, (word + "ko").upper())
                 else:
                     if negative:
-                        normalized = self.get_lemma(word, request[0], negative)
+                        normalized = self.get_lemma(word, request[-1], negative)
                     else:
-                        normalized = self.get_lemma(word, request[0])
+                        normalized = self.get_lemma(word, request[-1])
                     request.insert(0, normalized)
             else:
                 request.append(word)
 
         return " ".join(request) + "?"
+
+    """def get_positive_predicative_sentence(self, sentence):
+        sentence = sentence.upper()
+        negative = None
+
+        request = []
+        for word in sentence.split():
+            if self.is_negative_verb(word):
+                negative = word
+            elif word.endswith("*"):
+                word = word[:-1]
+                if word.endswith("KO"):
+                    word = word[:-2]
+
+                if word.startswith("OLI"):
+                    if self.is_aux_verb(word):
+                        lemmas = self.get_neg_lemma(word, request[-1])
+                        request.append(lemmas)
+                else:
+                    lemmas = self.negative_with_aux_verb[word]
+            elif word.endswith("?"):
+                request.append(word[:-1])
+            else:
+                request.append(word)
+
+        return " ".join(request)"""
+
+    def get_negative_predicative_sentence(self, sentence):
+        sentence = sentence.upper()
+
+        words = sentence.split()
+
+        request = []
+        for word in words:
+            if word.endswith("*"):
+                word = word[:-1]
+                if word.endswith("KO"):
+                    person = words[1]
+                    word = word[:-2]
+                else:
+                    person = request[0]
+
+                if self.is_aux_verb(word) or word.startswith("OLI"):
+                    lemmas = self.get_neg_lemma(word, person)
+                    request.append(" ".join(lemmas))
+            elif word.endswith("?"):
+                request.append(word[:-1])
+            else:
+                request.append(word)
+
+        if self.is_negative_verb(request[0].split()[0]):
+            request.insert(2, request[0])
+            request.remove(request[0])
+
+        return " ".join(request)
 
 
 if __name__ == "__main__":
@@ -96,3 +180,6 @@ if __name__ == "__main__":
     assert q.predicative_question("OLUT EI OLE* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
     assert q.predicative_question("OLUT EI OLUT* TSEKKILÄISTÄ") == "OLIKO OLUT TSEKKILÄISTÄ?"
     assert q.predicative_question("HÄN EI OLUT* TÄÄLLÄ") == "OLIKO HÄN TÄÄLLÄ?"
+
+    assert q.get_negative_predicative_sentence("OLIKO* HÄN TÄÄLLÄ?") == "HÄN EI OLUT TÄÄLLÄ"
+    assert q.get_negative_predicative_sentence("HE OLIVAT* TÄÄLLÄ?") == "HE EIVÄT OLEET TÄÄLLÄ"
