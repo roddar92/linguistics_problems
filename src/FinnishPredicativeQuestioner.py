@@ -61,6 +61,17 @@ class FinnishPredicativeQuestioner(object):
                 word = self.aux_verb[person]
         return word + "KO"
 
+    def get_pos_lemma(self, word, negative):
+        if word.endswith("EET") or word.endswith("UT"):
+            ind = 1 if negative == "EIVÄT" else 3
+            aux = self.negative_with_aux_verb[negative]
+            return "OLI" + aux[ind:]
+        elif word.endswith("OLE"):
+            return self.negative_with_aux_verb[negative]
+        else:
+            return word
+
+
     def get_neg_lemma(self, word, person):
         result = []
         if word.startswith("OLI"):
@@ -85,10 +96,10 @@ class FinnishPredicativeQuestioner(object):
                     result.append("ETTE")
                 else:
                     result.append("EI")
-                result.append("OLE")
+            result.append("OLE")
         return result
 
-    def predicative_question(self, sentence):
+    def get_predicative_question(self, sentence):
         sentence = sentence.upper()
         negative = None
 
@@ -111,35 +122,35 @@ class FinnishPredicativeQuestioner(object):
 
         return " ".join(request) + "?"
 
-    """def get_positive_predicative_sentence(self, sentence):
+    def get_positive_predicative_sentence(self, sentence):
         sentence = sentence.upper()
+        words = sentence.split()
         negative = None
 
         request = []
-        for word in sentence.split():
+        for word in words:
             if self.is_negative_verb(word):
                 negative = word
             elif word.endswith("*"):
                 word = word[:-1]
                 if word.endswith("KO"):
                     word = word[:-2]
-
-                if word.startswith("OLI"):
-                    if self.is_aux_verb(word):
-                        lemmas = self.get_neg_lemma(word, request[-1])
-                        request.append(lemmas)
-                else:
-                    lemmas = self.negative_with_aux_verb[word]
+                request.append(self.get_pos_lemma(word, negative))
             elif word.endswith("?"):
                 request.append(word[:-1])
             else:
                 request.append(word)
 
-        return " ".join(request)"""
+        aux_verb = request[0].split()[0]
+
+        if self.is_aux_verb(aux_verb) or aux_verb.startswith("OLI"):
+            request.insert(2, request[0])
+            request.remove(request[0])
+
+        return " ".join(request)
 
     def get_negative_predicative_sentence(self, sentence):
         sentence = sentence.upper()
-
         words = sentence.split()
 
         request = []
@@ -151,10 +162,7 @@ class FinnishPredicativeQuestioner(object):
                     word = word[:-2]
                 else:
                     person = request[0]
-
-                if self.is_aux_verb(word) or word.startswith("OLI"):
-                    lemmas = self.get_neg_lemma(word, person)
-                    request.append(" ".join(lemmas))
+                request.append(" ".join(self.get_neg_lemma(word, person)))
             elif word.endswith("?"):
                 request.append(word[:-1])
             else:
@@ -169,17 +177,25 @@ class FinnishPredicativeQuestioner(object):
 
 if __name__ == "__main__":
     q = FinnishPredicativeQuestioner()
-    assert q.predicative_question("KISSA ON* KOTONA") == "ONKO KISSA KOTONA?"
-    assert q.predicative_question("OLEN* SUOMALAINEN") == "OLENKO SUOMALAINEN?"
-    assert q.predicative_question("HÄN OLI* KOTONA") == "OLIKO HÄN KOTONA?"
-    assert q.predicative_question("HE OVAT* TÄÄLLÄ") == "OVATKO HE TÄÄLLÄ?"
-    assert q.predicative_question("HÄN EI OLE* TÄÄLLÄ") == "ONKO HÄN TÄÄLLÄ?"
-    assert q.predicative_question("ME EMME OLEET* TÄÄLLÄ") == "OLIMMEKO ME TÄÄLLÄ?"
-    assert q.predicative_question("HE EIVÄT OLEET* TÄÄLLÄ") == "OLIVATKO HE TÄÄLLÄ?"
-    assert q.predicative_question("OLUT ON* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
-    assert q.predicative_question("OLUT EI OLE* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
-    assert q.predicative_question("OLUT EI OLUT* TSEKKILÄISTÄ") == "OLIKO OLUT TSEKKILÄISTÄ?"
-    assert q.predicative_question("HÄN EI OLUT* TÄÄLLÄ") == "OLIKO HÄN TÄÄLLÄ?"
+    assert q.get_predicative_question("KISSA ON* KOTONA") == "ONKO KISSA KOTONA?"
+    assert q.get_predicative_question("OLEN* SUOMALAINEN") == "OLENKO SUOMALAINEN?"
+    assert q.get_predicative_question("HÄN OLI* KOTONA") == "OLIKO HÄN KOTONA?"
+    assert q.get_predicative_question("HE OVAT* TÄÄLLÄ") == "OVATKO HE TÄÄLLÄ?"
+    assert q.get_predicative_question("HÄN EI OLE* TÄÄLLÄ") == "ONKO HÄN TÄÄLLÄ?"
+    assert q.get_predicative_question("ME EMME OLEET* TÄÄLLÄ") == "OLIMMEKO ME TÄÄLLÄ?"
+    assert q.get_predicative_question("HE EIVÄT OLEET* TÄÄLLÄ") == "OLIVATKO HE TÄÄLLÄ?"
+    assert q.get_predicative_question("OLUT ON* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
+    assert q.get_predicative_question("OLUT EI OLE* TSEKKILÄISTÄ") == "ONKO OLUT TSEKKILÄISTÄ?"
+    assert q.get_predicative_question("OLUT EI OLUT* TSEKKILÄISTÄ") == "OLIKO OLUT TSEKKILÄISTÄ?"
+    assert q.get_predicative_question("HÄN EI OLUT* TÄÄLLÄ") == "OLIKO HÄN TÄÄLLÄ?"
 
     assert q.get_negative_predicative_sentence("OLIKO* HÄN TÄÄLLÄ?") == "HÄN EI OLUT TÄÄLLÄ"
-    assert q.get_negative_predicative_sentence("HE OLIVAT* TÄÄLLÄ?") == "HE EIVÄT OLEET TÄÄLLÄ"
+    assert q.get_negative_predicative_sentence("HE OLIVAT* TÄÄLLÄ") == "HE EIVÄT OLEET TÄÄLLÄ"
+    assert q.get_negative_predicative_sentence("ONKO* HÄN TÄÄLLÄ?") == "HÄN EI OLE TÄÄLLÄ"
+    assert q.get_negative_predicative_sentence("HÄN ON* TÄÄLLÄ?") == "HÄN EI OLE TÄÄLLÄ"
+
+    assert q.get_positive_predicative_sentence("OLIKO* HÄN KOTONA?") == "HÄN OLI KOTONA"
+    assert q.get_positive_predicative_sentence("HÄN EI OLUT* TÄÄLLÄ") == "HÄN OLI TÄÄLLÄ"
+    assert q.get_positive_predicative_sentence("OVATKO* HE TÄÄLLÄ?") == "HE OVAT TÄÄLLÄ"
+    assert q.get_positive_predicative_sentence("HE EIVÄT OLE* TÄÄLLÄ") == "HE OVAT TÄÄLLÄ"
+    assert q.get_positive_predicative_sentence("HE EIVÄT OLEET* TÄÄLLÄ") == "HE OLIVAT TÄÄLLÄ"
