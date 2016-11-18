@@ -38,6 +38,8 @@ class Questioner(object):
     def get_question_word(self, word):
         if self.is_irregular_verb(word) or word.endswith("ED"):
             return "DID"
+        elif self.is_negative_verb(word):
+            return word
         elif word != self.get_verb_lemma(word):
             return 'DOES'
         else:
@@ -78,6 +80,10 @@ class Questioner(object):
     @staticmethod
     def has_not_pronounced_e_ending(word):
         return word[-3] in 'BDGKLTZ'
+
+    @staticmethod
+    def is_negative_verb(word):
+        return word.endswith("N'T") or word.endswith("NOT")
 
     def get_verb_lemma(self, word):
         word = word.upper()
@@ -127,8 +133,11 @@ class Questioner(object):
                 if self.is_aux_verb(word) or self.is_modal_verb(word) or self.is_future_verb(word):
                     request.insert(0, word)
                 else:
-                    request.insert(0, self.get_question_word(word))
-                    request.append(self.get_verb_lemma(word))
+                    if self.is_negative_verb(word):
+                        request.insert(0, self.get_question_word(word))
+                    else:
+                        request.insert(0, self.get_question_word(word))
+                        request.append(self.get_verb_lemma(word))
             else:
                 request.append(word)
         return ' '.join(request) + '?'
@@ -141,6 +150,7 @@ if __name__ == "__main__":
     assert q.request("ALEX IS* TALL") == "IS ALEX TALL?"
     assert q.request("WINTER USUALLY COMES* LATE") == "DOES WINTER USUALLY COME LATE?"
     assert q.request("STUDENTS OFTEN COME* LATE") == "DO STUDENTS OFTEN COME LATE?"
+    assert q.request("TOM CAN* SWIM") == "CAN TOM SWIM?"
     assert q.request("I HAVE* A CAR") == "DO I HAVE A CAR?"
     assert q.request("I WORRY* ABOUT THE TEST") == "DO I WORRY ABOUT THE TEST?"
     assert q.request("SHE WORRIES* ABOUT THE TEST") == "DOES SHE WORRY ABOUT THE TEST?"
@@ -189,3 +199,5 @@ if __name__ == "__main__":
     assert q.request("HELEN BAKED* CAKES YESTERDAY") == "DID HELEN BAKE CAKES YESTERDAY?"
     assert q.request("HELEN MET* HER FATHER IN THE AIRPORT YESTERDAY") == "DID HELEN MEET HER FATHER IN THE AIRPORT YESTERDAY?"
     assert q.request("I FILLED* UP THE BOTTLE WITH WATER") == "DID I FILL UP THE BOTTLE WITH WATER?"
+    assert q.request("SAM DOSEN'T* LIKE BIKE") == "DOSEN'T SAM LIKE BIKE?"
+    assert q.request("I WOULDN'T* LIKE A CUP OF COFFEE") == "WOULDN'T I LIKE A CUP OF COFFEE?"
