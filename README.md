@@ -8,4 +8,5 @@ Problems:
  - Syllable Module (count word syllables (russian/english) and get the word syllables list (russian))
  - Adjective Comparisoner
  - Guess City (game)
+ - Guess Number (game)
  - Finnish Predicative Sentences
