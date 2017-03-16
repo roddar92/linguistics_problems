@@ -69,6 +69,10 @@ def is_agree():
     return s in "Да да Давай давай Yes yes".split()
 
 
+def is_disagree():
+    return s.startswith("не") or s.startswith("нет")
+
+
 def is_end_of_game():
     return s in "конец стоп хватит Конец Стоп Хватит".split()
 
