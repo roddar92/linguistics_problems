@@ -51,7 +51,7 @@ class Questioner(object):
 
     @staticmethod
     def has_ie_ending(word):
-        return word in "DIE LIE PIE TIE UNDERLIE UNTIE".split()
+        return word in "UNDERLIE UNTIE".split()
 
     @staticmethod
     def has_i_ending(word):
@@ -89,13 +89,18 @@ class Questioner(object):
         word = word.upper()
         if self.is_irregular_verb(word):
             return self.irregular_verbs[word]
+        elif word[:-1].endswith("IE"):
+            if self.has_i_ending(word[:-2]):
+                return word[:-2]
+            elif len(word[:-3]) <= 1 or self.has_ie_ending(word[:-1]):
+                return word[:-1]
+            else:
+                return word[:-3] + "Y"
         elif word.endswith('ED'):
             if self.is_verb_with_ll(word[:-2]):
                 return word[:-2]
             elif self.has_double_consonants(word) or self.has_c_ending(word[:-3]):
                 return word[:-3]
-            elif word[-3] == 'I':
-                return word[:-3] + "Y"
             elif word[:-2].endswith("Y"):
                 return word[:-2]
             elif self.has_it_et_endings(word):
@@ -109,14 +114,7 @@ class Questioner(object):
             else:
                 return word[:-2]
         elif word.endswith('ES') and self.has_es_ending(word):
-            if word[:-1].endswith("IE"):
-                if self.has_i_ending(word[:-2]):
-                    return word[:-2]
-                elif self.has_ie_ending(word[:-1]):
-                    return word[:-1]
-                else:
-                    return word[:-3] + "Y"
-            elif word[:-1].endswith("YE"):
+            if word[:-1].endswith("YE"):
                 return word[:-1]
             else:
                 return word[:-2]
@@ -171,6 +169,7 @@ if __name__ == "__main__":
     assert q.request("ANDREW'S SISTER KISSES* HIM TO THE CHEEKS") == "DOES ANDREW'S SISTER KISS HIM TO THE CHEEKS?"
     assert q.request("ANDREW'S SISTER KISSED* HIM TO THE CHEEKS") == "DID ANDREW'S SISTER KISS HIM TO THE CHEEKS?"
     assert q.request("YOU DIE* IN THE WAR") == "DO YOU DIE IN THE WAR?"
+    assert q.request("HE ALWAYS LIES* TO HIS PARENTS") == "DOES HE ALWAYS LIE TO HIS PARENTS?"
     assert q.request("HE DIES* IN THE WAR") == "DOES HE DIE IN THE WAR?"
     assert q.request("THE LITTLE BEE BUZZES* OVER MY HEAD") == "DOES THE LITTLE BEE BUZZ OVER MY HEAD?"
     assert q.request("MICHAEL PLAYS* FOOTBALL") == "DOES MICHAEL PLAY FOOTBALL?"
