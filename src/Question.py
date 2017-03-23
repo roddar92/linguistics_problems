@@ -66,6 +66,10 @@ class Questioner(object):
         return word[-4:-2] in "BB GG LL PP TT RR".split()
 
     @staticmethod
+    def has_double_consonants_endings(word):
+        return word[-4:-2] in "SS ZZ CH SH".split()
+
+    @staticmethod
     def has_it_et_endings(word):
         return word[-4:-2] in "IT ET".split()
 
@@ -75,7 +79,7 @@ class Questioner(object):
 
     @staticmethod
     def has_ee_oe_ye_endings(word):
-        return word[-3] in 'EOY'
+        return word[-3:-1] in 'EE OE YE'.split()
 
     @staticmethod
     def has_not_pronounced_e_ending(word):
@@ -96,30 +100,30 @@ class Questioner(object):
                 return word[:-1]
             else:
                 return word[:-3] + "Y"
-        elif word.endswith('ED'):
-            if self.is_verb_with_ll(word[:-2]):
+        elif self.has_ee_oe_ye_endings(word):
+            if word[:-2].endswith("OY"):
                 return word[:-2]
-            elif self.has_double_consonants(word) or self.has_c_ending(word[:-3]):
-                return word[:-3]
-            elif word[:-2].endswith("Y"):
+            elif word[:len(word)-2] in 'GO DO'.split():
                 return word[:-2]
-            elif self.has_it_et_endings(word):
+            else:
+                return word[:-1]
+        elif self.is_verb_with_ll(word[:-2]):
+            return word[:-2]
+        elif self.has_double_consonants(word) or self.has_c_ending(word[:-3]):
+            return word[:-3]
+        elif self.has_double_consonants_endings(word):
+            return word[:-2]
+        elif word.endswith('S') and not word.endswith('SS'):
+            return word[:-1]
+        elif word.endswith('ED') or word.endswith('ES'):
+            if self.has_it_et_endings(word):
                 return word[:-2]
             elif self.has_two_vowels(word):
                 return word[:-2]
-            elif self.has_ee_oe_ye_endings(word):
-                return word[:-1]
             elif self.has_not_pronounced_e_ending(word):
                 return word[:-1]
             else:
                 return word[:-2]
-        elif word.endswith('ES') and self.has_es_ending(word):
-            if word[:-1].endswith("YE"):
-                return word[:-1]
-            else:
-                return word[:-2]
-        elif word.endswith('S') and not word.endswith('SS'):
-            return word[:-1]
         else:
             return word
 
