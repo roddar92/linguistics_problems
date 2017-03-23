@@ -71,7 +71,6 @@ class FinnishPredicativeQuestioner(object):
         else:
             return word
 
-
     def get_neg_lemma(self, word, person):
         result = []
         if word.startswith("OLI"):
