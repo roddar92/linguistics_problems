@@ -1,39 +1,42 @@
 # -*- coding: utf-8 -*-
 from random import randint
-import collections
 import enchant
 
 
-class QuizzLetter(object):
+class SecretLetter(object):
 
     def __init__(self):
+        self.d2w = {1: "Одна", 2: "Две", 3: "Три", 4: "Четыре", 5: "Пять",
+                    6: "Шесть", 7: "Семь", 8: "Восемь", 9: "Девять", 10: "Десять"}
         self.status = "undefined"
-        self.current_letter = "А"
+        self.secret_letter = "А"
         self.alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
         self.ru_dict = enchant.Dict("ru_RU")
 
     def move(self):
         self.status = "start"
-        self.current_letter = self.alphabet[randint(0, len(self.alphabet) - 1)]
+        self.secret_letter = self.alphabet[randint(0, len(self.alphabet) - 1)]
         print("Я загадал свою букву!")
 
     def count_letter(self, word):
-        letters_dict = collections.Counter(word)
-        count_of_letter = letters_dict[self.current_letter]
-        return str(count_of_letter) + "!" if count_of_letter > 0 else "В этом слове нет моей буквы"
+        count_of_letter = len([letter for letter in word if letter == self.secret_letter])
+        if count_of_letter > 0:
+            return self.d2w[count_of_letter] + "!"
+        else:
+            raise SecretLetterException("В этом слове нет моей буквы.")
 
     def check_answer(self, word):
         word = word.upper()
         if word in self.alphabet:
-            if word == self.current_letter:
+            if word == self.secret_letter:
                 self.status = "over"
                 print("Молодец, угадал!")
             else:
-                raise Exception("Пока не угадал.")
+                raise SecretLetterException("Пока не угадал.")
         elif self.ru_dict.check(word):
             print(self.count_letter(word))
         else:
-            raise Exception("Что-то я не понял твоего слова...")
+            raise SecretLetterException("Что-то я не понял твоего слова...")
 
 
 def is_agree():
@@ -46,10 +49,16 @@ def is_disagree():
 
 
 def is_end_of_game():
-    return s in "конец стоп хватит Конец Стоп Хватит".split()
+    return s in "конец стоп хватит end".lower().split()
+
+
+class SecretLetterException(Exception):
+    def __init__(self, message):
+        self.message = message
+
 
 if __name__ == "__main__":
-    game = QuizzLetter()
+    game = SecretLetter()
     while True:
         s = input("Поиграешь со мной ещё раз?" if game.status == "over"
                   else "Привет!\nПоиграешь со мной в игру \"Тайная буква\"? Введи \"Да\" или \"Нет\"\n")
@@ -72,7 +81,7 @@ if __name__ == "__main__":
                         break
                     else:
                         s = input()
-                except Exception as msg:
-                    s = input(str(msg) + " " + "Попробуешь ещё разок?\n")
+                except SecretLetterException as sle_msg:
+                    s = input(str(sle_msg) + " " + "Попробуешь ещё разок?\n")
         else:
             break

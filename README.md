@@ -9,4 +9,5 @@ Problems:
  - Adjective Comparisoner
  - Guess City (game)
  - Guess Number (game)
+ - Guess Letter (game)
  - Finnish Predicative Sentences
