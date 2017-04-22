@@ -49,7 +49,7 @@ def is_disagree():
 
 
 def is_end_of_game():
-    return s in "конец стоп хватит end".lower().split()
+    return s in "конец стоп хватит end".lower().split() or "закончим" in s or "устал" in s
 
 
 class SecretLetterException(Exception):

@@ -10,4 +10,5 @@ Problems:
  - Guess City (game)
  - Guess Number (game)
  - Guess Letter (game)
+ - Opposites (game
  - Finnish Predicative Sentences
