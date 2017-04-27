@@ -74,7 +74,8 @@ def is_disagree(string):
 
 
 def is_end_of_game(string):
-    return string in "конец стоп хватит end".lower().split() or "закончим" in string or "устал" in string
+    return string in "конец стоп хватит end".lower().split() or \
+           "закончим" in string or string == "устал" or string == "устала"
 
 
 if __name__ == "__main__":
