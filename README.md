@@ -4,11 +4,12 @@ Problems:
  - Russian patronymic generator
  - Russian diminutive names generator
  - Family tree
+ - Abstract ontology for company
  - Common English question generator
  - Syllable Module (count word syllables (russian/english) and get the word syllables list (russian))
  - Adjective Comparisoner
  - Guess City (game)
  - Guess Number (game)
  - Guess Letter (game)
- - Opposites (game
+ - Opposites (game)
  - Finnish Predicative Sentences
