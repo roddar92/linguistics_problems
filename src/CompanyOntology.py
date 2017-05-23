@@ -2,8 +2,8 @@ import re
 
 
 class Person(object):
-    AGE_UNKNOWN = 000
-    POS_UNKNOWN = 000
+    AGE_UNKNOWN = 9999
+    POS_UNKNOWN = "unknown"
 
     def __init__(self, name):
         self.name = name
@@ -15,6 +15,9 @@ class Person(object):
 
     def __hash__(self):
         return self.name.__hash__()
+
+    def get_name(self):
+        return self.name
 
     def add_age(self, age):
         self.age = age
@@ -109,7 +112,7 @@ class CompanyOntologyHelper(object):
                     if person not in college.get_colleges():
                         college.add_college(person)
                     if person.get_position() != Person.POS_UNKNOWN and college.get_position() == Person.POS_UNKNOWN:
-                        college.add_position(person.get_position)
+                        college.add_position(person.get_position())
 
     def add_fact(self, statement):
         statement = statement[:-1]
@@ -158,8 +161,8 @@ class CompanyOntologyHelper(object):
         if whose_name not in self.people:
             return self.__class__.DEFAULT_ANSWER
 
-        who = self.people[who_name].get_position()
-        whose = self.people[whose_name].get_position()
+        who = self.people[who_name]
+        whose = self.people[whose_name]
 
         if asked_rel_type == 'boss':
             answer = whose in who.get_employees() or whose.boss == who
@@ -180,7 +183,7 @@ class CompanyOntologyHelper(object):
         if age == Person.AGE_UNKNOWN:
             return self.__class__.DEFAULT_ANSWER
 
-        return age
+        return str(age)
 
     def position_request(self, name):
         if name not in self.people:
@@ -199,11 +202,11 @@ class CompanyOntologyHelper(object):
         whose = self.people[whose_name]
 
         if rel_type == 'boss':
-            answer = whose.boss
+            return whose.boss.get_name()
         elif rel_type in ['employee', 'employees']:
-            answer = whose.get_employees()
-        elif rel_type == ['college', 'colleges']:
-            answer = whose.get_colleges()
+            answer = [person.get_name() for person in whose.get_employees()]
+        elif rel_type in ['college', 'colleges']:
+            answer = [person.get_name() for person in whose.get_colleges()]
         else:
             return self.__class__.DEFAULT_ANSWER
 
@@ -221,7 +224,7 @@ class CompanyOntologyHelper(object):
             else:
                 raise Exception("Unknown request type")
         elif tuple(req_parts[0:3]) == ('How', 'old', 'is'):
-            return self.age_request(req_parts[2][:-1])
+            return self.age_request(req_parts[3][:-1])
         elif tuple(req_parts[0:3]) == ('What', 'position', 'has'):
             return self.position_request(req_parts[3])
         elif tuple(req_parts[0:2]) == ('Who', 'is'):
@@ -250,10 +253,12 @@ if __name__ == "__main__":
     coh.add_fact("Susan is 27.")
     coh.add_fact("Frank is Andy's boss.")
     coh.add_fact("Andy is programmer.")
-    assert coh.request("Is Susan a programmer?") == "Don't know"
+    assert coh.request("Is Susan a programmer?") == "No"
     assert coh.request("Is Susan a Frank's college?") == "Yes"
     assert coh.request("Is Peter a Frank's college?") == "No"
     assert coh.request("Who is Alice's boss?") == "Bob"
-    assert coh.request("Who is Alice's colleges?") == "Peter"
+    assert coh.request("Who is Alice's colleges?") == "Paul, Peter"
+    assert coh.request("Who is Willy's colleges?") == "Don't know"
     assert coh.request("How old is Alice?") == "24"
+    assert coh.request("How old is Frank?") == "Don't know"
     assert coh.request("What position has Laura got?") == "Linguist"
