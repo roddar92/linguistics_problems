@@ -9,7 +9,7 @@ class Game(object):
         self.allowed_letters = dict()
         self.used_letters = dict()
 
-        with open("ru_cities.txt", "r", encoding='utf-8') as f:
+        with open("../resources/ru_cities.txt", "r", encoding='utf-8') as f:
             for line in f:
                 name = line.strip()
                 self.allowed_cities.append(name)

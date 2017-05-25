@@ -11,7 +11,7 @@ class OppositesGame(object):
         self.current_vals = list()
         self.attempts = 1
 
-        with open("ru_opposites.txt", "r", encoding='utf-8') as f:
+        with open("../resources/ru_opposites.txt", "r", encoding='utf-8') as f:
             for line in f:
                 (word, opposites) = line.split()
                 opposites = opposites.split(",")

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from Syllables import SyllableModule
+from russian.Syllables import SyllableModule
 
 
 class AdjectiveComparisoner(object):
@@ -9,7 +9,7 @@ class AdjectiveComparisoner(object):
                                      "much": ["more", "most"]}
 
         self.irreg_comp_adj = {}
-        with open("irregular_adjectives.txt", "r") as f:
+        with open("resources/irregular_adjectives.txt", "r") as f:
             for line in f:
                 comparative, adjective = line.strip().split()
                 self.irreg_comp_adj[comparative] = adjective

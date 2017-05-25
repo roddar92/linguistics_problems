@@ -7,7 +7,7 @@
 class Questioner(object):
     def __init__(self):
         self.irregular_verbs = {}
-        with open("irregular_verbs.txt", "r") as f:
+        with open("resources/irregular_verbs.txt", "r") as f:
             for line in f:
                 infinit, irreg_verb, _ = line.strip().split()
                 self.irregular_verbs[irreg_verb.upper()] = infinit.upper()

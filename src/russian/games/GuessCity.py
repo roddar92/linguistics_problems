@@ -9,7 +9,7 @@ class GuessCity(object):
         self.asked_cities = set()
         self.city_name = "Unknown"
 
-        with open("ru_cities.txt", "r", encoding='utf-8') as f:
+        with open("../resources/ru_cities.txt", "r", encoding='utf-8') as f:
             for line in f:
                 self.allowed_cities.add(line.strip())
 
