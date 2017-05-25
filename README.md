@@ -3,6 +3,7 @@ Problems:
  - Russian Cities (game)
  - Russian patronymic generator
  - Russian diminutive names generator
+ - Russian cases generator (dative)
  - Family tree
  - Abstract ontology for company
  - Common English question generator
