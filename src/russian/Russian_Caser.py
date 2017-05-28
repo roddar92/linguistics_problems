@@ -56,22 +56,15 @@ class RussianCaser(object):
             !!! Method architecture has refactored due to incorrectly working with plural form !!!
         """
     def dative_plural(self, word):
-        if word in ['мать', 'дочь']:
-            return word[:-1] + 'ерям'
-        elif word in ['брат', 'стул']:
-            return word + 'ьям'
-        elif word == 'сын':
-            return word + 'овьям'
-        elif word == 'друг':
-            return word + 'зьям'
-        elif word == 'дерево':
-            return word[:-1] + 'ьям'
-        elif word[-1] in 'йь':
-            return word[:-1] + 'ям'
-        elif not self.is_vowel(word[-1]):
-            return word + 'ам'
-        else:
+        if word[-1] == 'ы':
+            return word[:-1] + 'ам'
+        elif word[-1] in 'ая':
             return word + 'м'
+        else:
+            if word[-2] in 'вилнрть':
+                return word[:-1] + 'ям'
+            else:
+                return word[:-1] + 'ам'
 
 
 if __name__ == "__main__":
@@ -81,17 +74,15 @@ if __name__ == "__main__":
     assert caser.dative_single('дрожь', 'f') == "дрожи"
     assert caser.dative_single("ванна", 'f') == "ванне"
     assert caser.dative_single("мать", 'f') == "матери"
-    assert caser.dative_plural("мать") == "матерям"
     assert caser.dative_single("дочь", 'f') == "дочери"
     assert caser.dative_single("рать", 'f') == "рати"
     assert caser.dative_single("верёвка", 'f') == "верёвке"
     assert caser.dative_single("капля", 'f') == "капле"
-    assert caser.dative_plural("ванна") == "ваннам"
     assert caser.dative_single("капель", 'f') == "капели"
-    assert caser.dative_plural("дверь") == "дверям"
     assert caser.dative_single("апрель", 'm') == "апрелю"
     assert caser.dative_single("молодец", 'm') == "молодцу"
     assert caser.dative_single("замочек", 'm') == "замочку"
+    assert caser.dative_single("ребёнок", 'm') == "ребёнку"
     assert caser.dative_single("чек", 'm') == "чеку"
     assert caser.dative_single("ключик", 'm') == "ключику"
     assert caser.dative_single("горшок", 'm') == "горшку"
@@ -105,11 +96,17 @@ if __name__ == "__main__":
     assert caser.dative_single("харёк", 'm') == "харьку"
     assert caser.dative_single("порок", 'm') == "пороку"
     assert caser.dative_single("санаторий", 'm') == "санаторию"
-    assert caser.dative_plural("санаторий") == "санаториям"
     assert caser.dative_single("ковчег", 'm') == "ковчегу"
     assert caser.dative_single("такт", 'm') == "такту"
     assert caser.dative_single("село") == "селу"
-    assert caser.dative_plural("ковчег") == "ковчегам"
-    assert caser.dative_plural("брат") == "братьям"
-    assert caser.dative_plural("дерево") == "деревьям"
     assert caser.dative_single("пальто") == "пальто"
+    assert caser.dative_plural("ковчеги") == "ковчегам"
+    assert caser.dative_plural("братья") == "братьям"
+    assert caser.dative_plural("деревья") == "деревьям"
+    assert caser.dative_plural("матери") == "матерям"
+    assert caser.dative_plural("санатории") == "санаториям"
+    assert caser.dative_plural("двери") == "дверям"
+    assert caser.dative_plural("ванны") == "ваннам"
+    assert caser.dative_plural("цветы") == "цветам"
+    assert caser.dative_plural("старики") == "старикам"
+    assert caser.dative_plural("ветви") == "ветвям"
