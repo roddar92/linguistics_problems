@@ -30,11 +30,9 @@ class RussianCaser(object):
             if gen == 'f':
                 if word in ['мать', 'дочь']:
                     return word[:-1] + 'ери'
-                elif word.endswith('ожь'):
-                    if word == 'дрожь':
-                        return word[:-1] + 'и'
-                    else:
-                        return word[:-3] + 'жи'
+                elif word in 'ложь рожь'.split():
+                    last_vowel_index = self.find_last_vowel_index(word)
+                    return word[:last_vowel_index] + word[-2] + 'и'
                 elif word[-1] == 'ь':
                     return word[:-1] + 'и'
                 elif word[-1] in 'ая':
@@ -46,8 +44,8 @@ class RussianCaser(object):
                         return word[:last_vowel_index] + word[-2] + 'ю'
                     else:
                         return word[:last_vowel_index] + word[-1] + 'у'
-                elif word in 'улей лёд'.split():
-                    return word[:-2] + 'ью' if word[-1] == 'ь' else word[:-2] + 'ь' + word[-1] + 'у'
+                elif word in 'улей лёд лён'.split():
+                    return word[:-2] + 'ью' if word[-1] == 'йь' else word[:-2] + 'ь' + word[-1] + 'у'
                 elif word[-1] in 'йь':
                     if word[-2] == 'о':
                         return word[:-1] + 'му'
