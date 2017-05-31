@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+
 class RussianCaser(object):
     @staticmethod
     def is_vowel(symbol):
@@ -17,6 +19,10 @@ class RussianCaser(object):
         :param gen is gender of word, if gen is None then first word of non-defined gender, otherwise male of female
         :return word in Russian dative case
     """
+
+    def find_last_vowel_index(self, word):
+        return [i for i in range(len(word)) if self.is_vowel(word[i])][-1]
+
     def dative_single(self, word, gen=None):
         if self.is_without_ending(word):
             return word
@@ -34,19 +40,33 @@ class RussianCaser(object):
                 elif word[-1] in 'ая':
                     return word[:-1] + 'е'
             elif gen == 'm':
-                if word[-1] in 'йь':
+                if word in 'мох рот ров узел ветер огонь корень пень ноготь'.split():
+                    last_vowel_index = self.find_last_vowel_index(word)
+                    if word[-1] == 'ь':
+                        return word[:last_vowel_index] + word[-2] + 'ю'
+                    else:
+                        return word[:last_vowel_index] + word[-1] + 'у'
+                elif word in 'улей лёд'.split():
+                    return word[:-2] + 'ью' if word[-1] == 'ь' else word[:-2] + 'ь' + word[-1] + 'у'
+                elif word[-1] in 'йь':
+                    if word == 'вонь':
+                        return word + 'ю'
+                    if word[-2] == 'о':
+                        return word[:-1] + 'му'
                     return word[:-1] + 'ю'
-                elif word.endswith('чек') and word != 'чек':
+                elif word.endswith('ек') and word[-3] in 'жчш' and word != 'чек':
                     return word[:-2] + 'ку'
                 elif word.endswith('ёк'):
                     return word[:-2] + 'ьку'
-                elif word.endswith('ок') and word[-3] in 'нтчш' and len(word) > 4:
+                elif word.endswith('ок') and word[-3] in 'жнтчш' and len(word) > 4:
                     return word[:-2] + 'ку'
                 elif word.endswith('ец'):
                     return word[:-2] + 'цу'
                 else:
                     return word + 'у'
             else:
+                if word[-1] == 'е' and word[-2] in 'иь':
+                    return word[:-1] + 'ю'
                 return word[:-1] + 'у'
 
     """ Return word in Russian dative case
@@ -56,15 +76,18 @@ class RussianCaser(object):
             !!! Method architecture has refactored due to incorrectly working with plural form !!!
         """
     def dative_plural(self, word):
-        if word[-1] == 'ы':
-            return word[:-1] + 'ам'
-        elif word[-1] in 'ая':
-            return word + 'м'
+        if self.is_without_ending(word):
+            return word
         else:
-            if word[-2] in 'вилнрть':
-                return word[:-1] + 'ям'
-            else:
+            if word[-1] == 'ы':
                 return word[:-1] + 'ам'
+            elif word[-1] in 'ая':
+                return word + 'м'
+            else:
+                if word[-2] in 'вилнрть':
+                    return word[:-1] + 'ям'
+                else:
+                    return word[:-1] + 'ам'
 
 
 if __name__ == "__main__":
@@ -90,8 +113,16 @@ if __name__ == "__main__":
     assert caser.dative_single("станок", 'm') == "станку"
     assert caser.dative_single("завиток", 'm') == "завитку"
     assert caser.dative_single("старичок", 'm') == "старичку"
+    assert caser.dative_single("конёк", 'm') == "коньку"
+    assert caser.dative_single("варенье") == "варенью"
+    assert caser.dative_single("общение") == "общению"
+    assert caser.dative_single("конь", 'm') == "коню"
+    assert caser.dative_single("мотылёк", 'm') == "мотыльку"
+    assert caser.dative_single("огонь", 'm') == "огню"
+    assert caser.dative_single("вонь", 'm') == "вонью"
     assert caser.dative_single("лоток", 'm') == "лотку"
     assert caser.dative_single("ток", 'm') == "току"
+    assert caser.dative_single("ров", 'm') == "рву"
     assert caser.dative_single("ларёк", 'm') == "ларьку"
     assert caser.dative_single("харёк", 'm') == "харьку"
     assert caser.dative_single("порок", 'm') == "пороку"
@@ -110,3 +141,4 @@ if __name__ == "__main__":
     assert caser.dative_plural("цветы") == "цветам"
     assert caser.dative_plural("старики") == "старикам"
     assert caser.dative_plural("ветви") == "ветвям"
+    assert caser.dative_plural("метро") == "метро"
