@@ -56,7 +56,8 @@ class RussianCaser(object):
                     return word[:-2] + 'ку'
                 elif word.endswith('ёк'):
                     return word[:-2] + 'ьку'
-                elif word.endswith('ок') and word[-3] in 'жнтчш' and len(word) > 4:
+                elif word.endswith('ок') and word[-3] in 'вжнтчш' \
+                        and len(word) > 4 and word not in 'приток исток отток'.split():
                     return word[:-2] + 'ку'
                 elif word.endswith('ец'):
                     return word[:-2] + 'цу'
@@ -119,7 +120,8 @@ if __name__ == "__main__":
     assert caser.dative_single("мотылёк", 'm') == "мотыльку"
     assert caser.dative_single("огонь", 'm') == "огню"
     assert caser.dative_single("лоток", 'm') == "лотку"
-    # assert caser.dative_single("отток", 'm') == "оттоку"
+    assert caser.dative_single("совок", 'm') == "совку"
+    assert caser.dative_single("отток", 'm') == "оттоку"
     assert caser.dative_single("ток", 'm') == "току"
     assert caser.dative_single("ров", 'm') == "рву"
     assert caser.dative_single("ларёк", 'm') == "ларьку"
