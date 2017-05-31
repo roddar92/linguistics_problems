@@ -49,8 +49,6 @@ class RussianCaser(object):
                 elif word in 'улей лёд'.split():
                     return word[:-2] + 'ью' if word[-1] == 'ь' else word[:-2] + 'ь' + word[-1] + 'у'
                 elif word[-1] in 'йь':
-                    if word == 'вонь':
-                        return word + 'ю'
                     if word[-2] == 'о':
                         return word[:-1] + 'му'
                     return word[:-1] + 'ю'
@@ -102,6 +100,7 @@ if __name__ == "__main__":
     assert caser.dative_single("верёвка", 'f') == "верёвке"
     assert caser.dative_single("капля", 'f') == "капле"
     assert caser.dative_single("капель", 'f') == "капели"
+    assert caser.dative_single("вонь", 'f') == "вони"
     assert caser.dative_single("апрель", 'm') == "апрелю"
     assert caser.dative_single("молодец", 'm') == "молодцу"
     assert caser.dative_single("замочек", 'm') == "замочку"
@@ -119,8 +118,8 @@ if __name__ == "__main__":
     assert caser.dative_single("конь", 'm') == "коню"
     assert caser.dative_single("мотылёк", 'm') == "мотыльку"
     assert caser.dative_single("огонь", 'm') == "огню"
-    assert caser.dative_single("вонь", 'm') == "вонью"
     assert caser.dative_single("лоток", 'm') == "лотку"
+    # assert caser.dative_single("отток", 'm') == "оттоку"
     assert caser.dative_single("ток", 'm') == "току"
     assert caser.dative_single("ров", 'm') == "рву"
     assert caser.dative_single("ларёк", 'm') == "ларьку"
