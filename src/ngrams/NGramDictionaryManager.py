@@ -21,7 +21,7 @@ class NGramDictionaryManager(object):
 
                 # TODO tokenization with NLTK RegexpTokenizer(r'[\s\.\,:;\!\?\-\+=/\"&\*\(\)^\[\]\{\}]')
                 line = line.strip()
-                line = re.sub(r'[\\.\,:;!\?\-\+=/\"&\*\(\)^\[\]\{\}<>\d%$]', '', line)
+                line = re.sub(r'[\.,:;!\?\-\+=/\"&\*\(\)^\[\]\{\}<>\d%$]', '', line)
                 tokens = line.split()
 
                 for token in tokens:
@@ -37,16 +37,16 @@ class NGramDictionaryManager(object):
 
     def save_dictionary_to_file(self, output_path):
         with open(output_path, "w", encoding='utf-8') as f:
-            for n_gram in sorted(self.ngram_dictionary, key=lambda x: -x[1]):
-                f.write(n_gram + "-" + str(self.ngram_dictionary[n_gram]))
+            for (k, v) in sorted(self.ngram_dictionary.items(), key=lambda x: -x[1]):
+                f.write(k + "-" + str(v))
             f.flush()
             f.close()
 
     def print_dictionary(self, limit=10):
         i = 0
-        for n_gram in sorted(self.ngram_dictionary, key=lambda x: -x[1]):
+        for (k, v) in sorted(self.ngram_dictionary.items(), key=lambda x: -x[1]):
             if i < limit:
-                print(n_gram, "-", self.ngram_dictionary[n_gram])
+                print(k, "-", v)
                 i += 1
             else:
                 break
