@@ -19,9 +19,9 @@ class NGramDictionaryManager(object):
         with open(input_path, 'r', encoding='utf-8') as f:
             for line in f:
 
-                # TODO tokenization with NLTK RegexpTokenizer(r'[\s\.\,:;\!\?\-\+=/\"&\*\(\)^\[\]\{\}]')
+                # TODO tokenization with NLTK RegexpTokenizer(r'[\.,:;!\?_\-\+=/\"&\*\(\)\^\[\]\{\}\<\>\|\d%$@#№]')
                 line = line.strip()
-                line = re.sub(r'[\.,:;!\?\-\+=/\"&\*\(\)^\[\]\{\}<>\d%$]', '', line)
+                line = re.sub(r'[\.,:;!\?_\-\+=/\"&\*\(\)\^\[\]\{\}\<\>\|\d%$@#№]', '', line)
                 tokens = line.split()
 
                 for token in tokens:
@@ -38,7 +38,7 @@ class NGramDictionaryManager(object):
     def save_dictionary_to_file(self, output_path):
         with open(output_path, "w", encoding='utf-8') as f:
             for (k, v) in sorted(self.ngram_dictionary.items(), key=lambda x: -x[1]):
-                f.write(k + "-" + str(v))
+                f.write("{} - {}".format(k, v))
             f.flush()
             f.close()
 
@@ -46,7 +46,7 @@ class NGramDictionaryManager(object):
         i = 0
         for (k, v) in sorted(self.ngram_dictionary.items(), key=lambda x: -x[1]):
             if i < limit:
-                print(k, "-", v)
+                print("{} - {}".format(k, v))
                 i += 1
             else:
                 break
