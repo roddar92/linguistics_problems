@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from collections import defaultdict
 import os
+import re
 
 
 class NGramDictionaryManager(object):
@@ -19,29 +20,9 @@ class NGramDictionaryManager(object):
             for line in f:
 
                 # TODO tokenization with NLTK RegexpTokenizer(r'[\s\.\,:;\!\?\-\+=/\"&\*\(\)^\[\]\{\}]')
-                line = line.replace(',', "")
-                line = line.replace('.', "")
-                line = line.replace(':', "")
-                line = line.replace(';', "")
-                line = line.replace('!', "")
-                line = line.replace('?', "")
-
-                line = line.replace('+', "")
-                line = line.replace('-', "")
-                line = line.replace('*', "")
-                line = line.replace('/', "")
-                line = line.replace('=', "")
-                line = line.replace('&', "")
-                line = line.replace('^', "")
-
-                line = line.replace('(', "")
-                line = line.replace(')', "")
-                line = line.replace('[', "")
-                line = line.replace(']', "")
-                line = line.replace('<', "")
-                line = line.replace('>', "")
-
-                tokens = line.strip().split()
+                line = line.strip()
+                line = re.sub(r'[\\.\,:;!\?\-\+=/\"&\*\(\)^\[\]\{\}<>\d%$]', '', line)
+                tokens = line.split()
 
                 for token in tokens:
                     if '\'' in token:
@@ -56,14 +37,14 @@ class NGramDictionaryManager(object):
 
     def save_dictionary_to_file(self, output_path):
         with open(output_path, "w", encoding='utf-8') as f:
-            for n_gram in sorted(self.ngram_dictionary, key=lambda x: x[1]):
+            for n_gram in sorted(self.ngram_dictionary, key=lambda x: -x[1]):
                 f.write(n_gram + "-" + str(self.ngram_dictionary[n_gram]))
             f.flush()
             f.close()
 
     def print_dictionary(self, limit=10):
         i = 0
-        for n_gram in sorted(self.ngram_dictionary, key=lambda x: x[1]):
+        for n_gram in sorted(self.ngram_dictionary, key=lambda x: -x[1]):
             if i < limit:
                 print(n_gram, "-", self.ngram_dictionary[n_gram])
                 i += 1
