@@ -10,7 +10,7 @@ class RussianCaser(object):
     def is_without_ending(word):
         # see words list: http://morphemeonline.ru/words-without-ending.html
         return word in "адажио ассорти барокко бигуди биде денди депо дефиле дзюдо жалюзи " \
-                       "кабаре каратэ кафе кино колибри кофе крем-брюле купе лечо лото " \
+                       "кабаре каратэ кафе кино колибри кофе кредо крем-брюле купе лечо лото " \
                        "метро кенгуру пальто панно паспарту пенсне пианино рококо " \
                        "табло табу такси тире фламинго фортепиано фото хачапури шимпанзе шоссе эскимо эссе".split()
 
@@ -38,13 +38,13 @@ class RussianCaser(object):
                 elif word[-1] in 'ая':
                     return word[:-1] + 'е'
             elif gen == 'm':
-                if word in 'мох рот ров узел ветер огонь корень пень ноготь'.split():
+                if word in 'мох рот ров сон узел ветер огонь корень пень ноготь'.split():
                     last_vowel_index = self.find_last_vowel_index(word)
                     if word[-1] == 'ь':
                         return word[:last_vowel_index] + word[-2] + 'ю'
                     else:
                         return word[:last_vowel_index] + word[-1] + 'у'
-                elif word in 'улей лёд лён'.split():
+                elif word in 'улей лев лёд лён'.split():
                     return word[:-2] + 'ью' if word[-1] == 'йь' else word[:-2] + 'ь' + word[-1] + 'у'
                 elif word[-1] in 'йь':
                     if word[-2] == 'о':
