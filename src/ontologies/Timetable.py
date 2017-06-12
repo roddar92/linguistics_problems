@@ -90,25 +90,26 @@ class RailwayTimetable(object):
                 i += 1
                 location = parts[i]
                 i += 1
-                while parts[i] != "departs":
+                while parts[i] != "departs" and parts[i] != "departure":
                     location.append(parts[i])
                     i += 1
                 train_info.add_direction(dir, " ".join(location))
-            elif parts[i] == "at":
-                i += 1
+            elif parts[i] in ["at", "on"]:
+                if parts[i - 1] in ["departs", "departure"]:
+                    i += 1
 
-                time_parts = (parts[i][:-1]).split(".:-")
-                hours = int(time_parts[0])
-                mins = time_parts[1].lower()
-                if mins.endswith("am") or mins.endswith("pm"):
-                    minutes = int(mins[:-2].strip())
-                    if mins.endswith("pm"):
-                        hours += 12
-                else:
-                    minutes = int(mins)
+                    time_parts = (parts[i][:-1]).split(".:-")
+                    hours = int(time_parts[0])
+                    mins = time_parts[1].lower()
+                    if mins.endswith("am") or mins.endswith("pm"):
+                        minutes = int(mins[:-2].strip())
+                        if mins.endswith("pm"):
+                            hours += 12
+                    else:
+                        minutes = int(mins)
 
-                dep_time = datetime.time(hours, minutes)
-                train_info.set_departure_time(dep_time)
+                    dep_time = datetime.time(hours, minutes)
+                    train_info.set_departure_time(dep_time)
 
                 i += 1
             elif parts[i] == "track":
@@ -121,7 +122,7 @@ class RailwayTimetable(object):
                     track += "R"
                 train_info.set_track(track)
             else:
-                raise Exception("Cannot parse this argument: " + parts[i])
+                i += 1
 
         self.timetable[train_info.get_no()] = train_info
 
@@ -138,8 +139,9 @@ if __name__ == "__main__":
                         "departs at 15.45, track 4, right side.")
     pt.add_announcement("Ladies and gentlemen! The train B759 Sapsan from St.Petersburg to Moscow "
                         "departs at 15.30, track 3, left side.")
-    pt.add_announcement("Ladies and gentlemen! The train A3 Red Arrow from St.Petersburg to Moscow "
-                        "departs at 11-55 PM, track 2, left side.")
+    pt.add_announcement("Ladies and gentlemen! Welcome to board of the train "
+                        "A3 Red Arrow from St.Petersburg to Moscow "
+                        "with departure on 11-55 PM, track 2, left side.")
     pt.add_announcement("Ladies and gentlemen! The train S331 Baltics from St.Petersburg to Tallinn "
                         "departs at 6:30AM, track 5, right side.")
     pt.add_announcement("Dear passengers! The train S331 Allegro from St.Petersburg to Helsinki "
