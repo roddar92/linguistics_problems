@@ -66,6 +66,18 @@ class RailwayTimetable(object):
     def __init__(self):
         self.timetable = {}
 
+    def get_train_times(self, train_desc, terminus):
+        pass
+
+    def get_train_numbers(self, location, train_desc = None):
+        pass
+
+    def get_terminus(self, train_desc):
+        pass
+
+    def get_tracks(self, train_desc):
+        pass
+
     def add_announcement(self, announcement):
         _, info = announcement.split("!")
         parts = info.strip().split()
@@ -132,7 +144,7 @@ class RailwayTimetable(object):
         if question_word == 'when':
             tmp = parts[2:] if parts[1] in ['does', 'train'] else parts[1:]
             tmp = tmp[1:] if tmp[0] == 'train' else tmp
-            train_desc, terminus = tmp.split('to')
+            train_desc, terminus = self.split_by_token(tmp, 'to')
             train_desc = ' '.join(train_desc.strip().split()[:-1])
             return self.get_train_times(train_desc, terminus)
         elif question_word == 'what':
@@ -144,26 +156,43 @@ class RailwayTimetable(object):
                 first_asked_word, second_asked_word, rested_request = parts.split()
                 asked = first_asked_word + ' ' + second_asked_word \
                     if second_asked_word not in ['does', 'of'] else first_asked_word
+
             if 'number' in asked:
-                train_desc, to_location = parts.split('number')
+                train_desc, to_location = self.split_by_token(parts, 'number')
                 _, _, location = to_location.split()
                 return self.get_train_numbers(location, train_desc) \
                     if train_desc != 'train' else self.get_train_numbers(location)
             elif 'terminus' in asked:
+                prop = rested_request.split()[0]
                 train_desc = rested_request \
-                    if rested_request.split()[0] not in ['the', 'a', 'an'] else ' '.join(rested_request.split()[1:])
+                    if prop not in ['the', 'a', 'an'] else ' '.join(rested_request.split()[1:])
                 train_desc = train_desc \
                     if train_desc.split()[0] == 'train' else ' '.join(train_desc.split()[1:])
                 return self.get_terminus(train_desc)
             elif asked in ['platform', 'track']:
+                prop = rested_request.split()[0]
                 train_desc = rested_request[1:-2] \
-                    if rested_request.split()[0] in ['does', 'train'] else rested_request[:-2]
+                    if prop in ['does', 'train'] else rested_request[:-2]
                 return self.get_tracks(train_desc)
             else:
                 raise Exception("Unknown request type")
 
 
         return RailwayTimetable.__class__.DEFAULT_ANSWER
+
+    def split_by_token(self, input_string, delimiter_token):
+        if delimiter_token not in input_string:
+            return [input_string]
+
+        tokens = []
+        tmp = input_string
+        while delimiter_token in tmp:
+            ind = tmp.find(delimiter_token)
+            tokens.append(tmp[:ind].strip())
+            tmp = tmp[ind + len(delimiter_token)].strip()
+
+        return tokens
+
 
 ''' Our railway timetable has few request types:
  1. what [the|is|are] (<train_name>|train) number[s] depart[s] to <location>?
