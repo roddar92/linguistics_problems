@@ -152,30 +152,30 @@ class RailwayTimetable(object):
             if 'number' in parts or 'numbers' in parts:
                 asked = 'number'
                 parts = (' '.join(parts)).replace('numbers', 'number')
+
+                train_desc, to_location = self.split_by_token(parts, 'number')
+                _, _, location = to_location.split()
+                return self.get_train_numbers(location, train_desc) \
+                    if train_desc != 'train' else self.get_train_numbers(location)
             else:
                 first_asked_word, second_asked_word, rested_request = parts.split()
                 asked = first_asked_word + ' ' + second_asked_word \
                     if second_asked_word not in ['does', 'of'] else first_asked_word
 
-            if 'number' in asked:
-                train_desc, to_location = self.split_by_token(parts, 'number')
-                _, _, location = to_location.split()
-                return self.get_train_numbers(location, train_desc) \
-                    if train_desc != 'train' else self.get_train_numbers(location)
-            elif 'terminus' in asked:
-                prop = rested_request.split()[0]
-                train_desc = rested_request \
-                    if prop not in ['the', 'a', 'an'] else ' '.join(rested_request.split()[1:])
-                train_desc = train_desc \
-                    if train_desc.split()[0] == 'train' else ' '.join(train_desc.split()[1:])
-                return self.get_terminus(train_desc)
-            elif asked in ['platform', 'track']:
-                prop = rested_request.split()[0]
-                train_desc = rested_request[1:-2] \
-                    if prop in ['does', 'train'] else rested_request[:-2]
-                return self.get_tracks(train_desc)
-            else:
-                raise Exception("Unknown request type")
+                if 'terminus' in asked:
+                    prop = rested_request.split()[0]
+                    train_desc = rested_request \
+                        if prop not in ['the', 'a', 'an'] else ' '.join(rested_request.split()[1:])
+                    train_desc = train_desc \
+                        if train_desc.split()[0] == 'train' else ' '.join(train_desc.split()[1:])
+                    return self.get_terminus(train_desc)
+                elif asked in ['platform', 'track']:
+                    prop = rested_request.split()[0]
+                    train_desc = rested_request[1:-2] \
+                        if prop in ['does', 'train'] else rested_request[:-2]
+                    return self.get_tracks(train_desc)
+                else:
+                    raise Exception("Unknown request type")
 
 
         return RailwayTimetable.__class__.DEFAULT_ANSWER
