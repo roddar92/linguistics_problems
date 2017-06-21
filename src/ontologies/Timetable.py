@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import datetime
+import re
 
 
 class Train(object):
@@ -90,43 +91,56 @@ class RailwayTimetable(object):
                 i += 1
                 train_info.set_no(parts[i])
                 i += 1
-                if parts[i] != "from":
+                if parts[i] not in ['from', 'with']:
                     train_name = [parts[i]]
                     i += 1
-                    while parts[i] != "from":
+                    while parts[i] not in ['from', 'with']:
                         train_name.append(parts[i])
                         i += 1
                     train_info.set_name(" ".join(train_name))
-            elif parts[i] in ["from", "to"]:
-                dir = parts[i]
-                i += 1
-                location = parts[i]
-                i += 1
-                while parts[i] != "departs" and parts[i] != "departure":
-                    location.append(parts[i])
+            elif parts[i] in ['from', 'to', 'route']:
+                if parts[i + 1] not in ['board', 'the']:
+                    dir = parts[i] if parts[i] != 'route' else 'from'
                     i += 1
-                train_info.add_direction(dir, " ".join(location))
-            elif parts[i] in ["at", "on"]:
+                    location = [parts[i]]
+                    i += 1
+                    while parts[i] not in ['departs', 'departure', 'from', 'to', '-', 'with']:
+                        location.append(parts[i])
+                        i += 1
+                    train_info.add_direction(dir, " ".join(location))
+
+                    if parts[i] == '-':
+                        dir = 'to'
+                        i += 1
+                        location = [parts[i]]
+                        i += 1
+                        while parts[i] not in ['departs', 'departure', 'from', 'to', '-', 'with']:
+                            location.append(parts[i])
+                            i += 1
+                        train_info.add_direction(dir, " ".join(location))
+                else:
+                    i += 1
+            elif parts[i] in ['at', 'on']:
                 if parts[i - 1] in ["departs", "departure"]:
                     i += 1
 
-                    time_parts = (parts[i][:-1]).split(".:-")
-                    hours = int(time_parts[0])
-                    mins = time_parts[1].lower()
-                    if mins.endswith("am") or mins.endswith("pm"):
-                        minutes = int(mins[:-2].strip())
-                        if mins.endswith("pm"):
+                    time_parts = [m.groupdict() for m in
+                        re.finditer('(?P<hours>\d\d?)[\.:-](?P<minutes>\d\d?)(?P<period>[AaPp][Mm])?', parts[i][:-1])][0]
+
+                    hours = int(time_parts['hours'])
+                    mins = int(time_parts['minutes'])
+                    if 'period' in time_parts and time_parts['period']:
+                        period = time_parts['period'].lower()
+                        if period == 'pm':
                             hours += 12
-                    else:
-                        minutes = int(mins)
 
-                    dep_time = datetime.time(hours, minutes)
+                    dep_time = datetime.time(hours, mins)
                     train_info.set_departure_time(dep_time)
-
-                i += 1
+                else:
+                    i += 1
             elif parts[i] == "track":
                 i += 1
-                track = parts[i]
+                track = parts[i][:-1]
                 i += 1
                 if parts[i] == "left":
                     track += "L"
@@ -147,6 +161,12 @@ class RailwayTimetable(object):
             train_desc, terminus = self.split_by_token(tmp, 'to')
             train_desc = ' '.join(train_desc.strip().split()[:-1])
             return self.get_train_times(train_desc, terminus)
+        elif question_word == 'when':
+            tmp = parts[2:] if parts[1] in ['does', 'train'] else parts[1:]
+            tmp = tmp[1:] if tmp[0] == 'train' else tmp
+            train_desc, terminus = self.split_by_token(tmp, 'to')
+            train_desc = ' '.join(train_desc.strip().split()[:-1])
+            return len(self.get_train_times(train_desc, terminus))
         elif question_word == 'what':
             parts = parts[2:] if parts[1] in ['the', 'is', 'are', 'a', 'an'] else parts
             if 'number' in parts or 'numbers' in parts:
@@ -211,11 +231,15 @@ if __name__ == "__main__":
                         "departs at 15.30, track 3, left side.")
     pt.add_announcement("Ladies and gentlemen! Welcome to board of the train "
                         "A3 Red Arrow from St.Petersburg to Moscow "
-                        "with departure on 11-55 PM, track 2, left side.")
+                        "with departure on 11-55PM, track 2, left side.")
     pt.add_announcement("Ladies and gentlemen! The train S331 Baltics from St.Petersburg to Tallinn "
                         "departs at 6:30AM, track 5, right side.")
-    pt.add_announcement("Dear passengers! The train S331 Allegro from St.Petersburg to Helsinki "
+    pt.add_announcement("Dear passengers! The train V331 Allegro from St.Petersburg to Helsinki "
                         "departs at 10:30AM, track 5, right side.")
+    pt.add_announcement("Dear passengers! The train V333 Allegro with route St.Petersburg - Helsinki "
+                        "departs at 4:40PM, track 6, right side.")
+
+    # TODO CHECK TESTS
     assert pt.request("How many trains goes to Moscow?") == 4
     assert pt.request("What train numbers depart to Moscow?") == {"A3, Red Arrow", "B757, Sapsan",
                                                               "B759, Sapsan", "B761, Sapsan"}
