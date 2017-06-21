@@ -67,6 +67,9 @@ class RailwayTimetable(object):
     def __init__(self):
         self.timetable = {}
 
+    def is_terminus(self, train_desc, terminus):
+        pass
+
     def get_train_times(self, train_desc, terminus):
         pass
 
@@ -155,18 +158,19 @@ class RailwayTimetable(object):
     def request(self, request):
         parts = request.strip().split()
         question_word = parts[0].lower()
-        if question_word == 'when':
+        if question_word in ['when', 'how']:
             tmp = parts[2:] if parts[1] in ['does', 'train'] else parts[1:]
             tmp = tmp[1:] if tmp[0] == 'train' else tmp
             train_desc, terminus = self.split_by_token(tmp, 'to')
             train_desc = ' '.join(train_desc.strip().split()[:-1])
-            return self.get_train_times(train_desc, terminus)
-        elif question_word == 'when':
-            tmp = parts[2:] if parts[1] in ['does', 'train'] else parts[1:]
+            result = self.get_train_times(train_desc, terminus)
+            return ' '.join(result) if question_word == 'when' else len(result)
+        elif question_word == 'does':
+            tmp = parts[2:] if parts[1] in ['the', 'train'] else parts[1:]
             tmp = tmp[1:] if tmp[0] == 'train' else tmp
             train_desc, terminus = self.split_by_token(tmp, 'to')
-            train_desc = ' '.join(train_desc.strip().split()[:-1])
-            return len(self.get_train_times(train_desc, terminus))
+            train_desc = train_desc.replace('depart', '').split()
+            return self.is_terminus(train_desc, terminus)
         elif question_word == 'what':
             parts = parts[2:] if parts[1] in ['the', 'is', 'are', 'a', 'an'] else parts
             if 'number' in parts or 'numbers' in parts:
@@ -218,7 +222,8 @@ class RailwayTimetable(object):
  1. what [the|is|are] (<train_name>|train) number[s] depart[s] to <location>?
  2. what [the|is|a|an] terminus of [the|a|an] [train] (<train_number>|<train_name>)?
  3. what [the|is|a|an] (platform|track) [does] [train] (<train_name>|<train_number>) depart[s] from?
- 4. when [does] [train] (<train_name>|<train_number>) departs to <location>? '''
+ 4. when [does] [train] (<train_name>|<train_number>) departs to <location>? 
+ 5. does [the] [train] <train_number> derart to <location>? '''
 
 # TODO CHECK TESTS
 if __name__ == "__main__":
@@ -256,3 +261,6 @@ if __name__ == "__main__":
     assert pt.request("When does train Sapsan depart to Moscow?") == {"3:10 PM", "3:30 PM", "3:45 PM"}
     assert pt.request("When does Sapsan depart to Moscow?") == {"3:10 PM", "3:30 PM", "3:45 PM"}
     assert pt.request("When train B757 departs to Moscow?") == "3:10 PM"
+    assert pt.request("Does train B757 depart to Moscow?") == "Yes"
+    assert pt.request("Does train B757 depart to Riga?") == "No"
+    assert pt.request("Does train B777 depart to Riga?") == "Don't know"
