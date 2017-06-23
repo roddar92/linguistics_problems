@@ -326,7 +326,7 @@ if __name__ == "__main__":
                         "K34 with route St.Petersburg - Veliky Novgorod "
                         "departs at 7:19 AM, track 3, left side.")
 
-    # TODO CHECK TESTS
+    # TODO TESTED
     assert pt.request("Does train B757 depart to Moscow?") == "Yes"
     assert pt.request("Does train B757 depart to Riga?") == "No"
     assert pt.request("Does the train B777 depart to Riga?") == "Don't know"
@@ -340,6 +340,7 @@ if __name__ == "__main__":
     assert pt.request("What train number departs to Kazan?") == "Don't know"
     assert pt.request("What number of train departs to Tallinn?") == {"S331, Baltics"}
 
+    # TODO CHECK TESTS
     assert pt.request("What platform does Baltics depart from?") == "5R"
     assert pt.request("What platform does train S331 depart from?") == "5R"
     assert pt.request("What track train Sapsan departs from?") == {"4L", "4R", "3L"}
