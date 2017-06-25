@@ -68,6 +68,24 @@ class RailwayTimetable(object):
     def __init__(self):
         self.timetable = {}
 
+    def get_trains_list(self, terminus, train_desc, time_flag=False):
+        if train_desc:
+            if re.match(r'[A-Z]\d+', train_desc):
+                trains = sorted(
+                    [train for train in self.timetable.values() if train.get_no() == train_desc and
+                     train.get_arrival_location() == terminus],
+                    key=lambda x: (x.get_departure_time() if time_flag else x.get_no()))
+            else:
+                trains = sorted(
+                    [train for train in self.timetable.values() if train.get_name() == train_desc and
+                     train.get_arrival_location() == terminus],
+                    key=lambda x: (x.get_departure_time() if time_flag else x.get_no()))
+        else:
+            trains = sorted(
+                [train for train in self.timetable.values() if train.get_arrival_location() == terminus],
+                key=lambda x: (x.get_departure_time() if time_flag else x.get_no()))
+        return trains
+
     def is_terminus(self, train_desc, terminus):
         if re.match(r'[A-Z]\d+', train_desc):
             if train_desc not in self.timetable:
@@ -93,44 +111,31 @@ class RailwayTimetable(object):
         else:
             return 'No'
 
-    def get_train_times(self, train_desc, terminus, order=None):
-        if train_desc:
-            if 'the' in train_desc or 'is' in train_desc or 'are' in train_desc:
-                train_desc = train_desc[3:].strip() if train_desc[:3] in ['the', 'are'] else train_desc[2:].strip()
-
-        trains = sorted([train for train in self.timetable.values() if train.get_name() == train_desc and
-                         train.get_arrival_location() == terminus], key=lambda x: x.get_no())
+    def get_train_times(self, terminus, order=None, train_desc=None):
+        trains = self.get_trains_list(terminus, train_desc, True)
 
         if order:
-            train = trains[1] if order == 'f' else trains[-1]
+            train = trains[0] if order == 'f' else trains[-1]
             time = train.get_departure_time().strftime('%I:%M %p')
             return time
         else:
-            answer = sorted(set(
-                train.get_departure_time().strftime('%I:%M %p') for train in trains
-            ))
-            return answer
-
+            answer = set(train.get_departure_time().strftime('%I:%M %p') for train in trains)
+            return answer if len(answer) > 1 else answer.pop()
 
     def get_train_numbers(self, location, train_desc=None):
         if train_desc:
             if 'the' in train_desc or 'is' in train_desc or 'are' in train_desc:
                 train_desc = train_desc[3:].strip() if train_desc[:3] in ['the', 'are'] else train_desc[2:].strip()
 
+        trains = self.get_trains_list(location, train_desc)
         if train_desc:
-            trains = sorted([self.timetable[train_no]
-                      for train_no in self.timetable if self.timetable[train_no].get_name() == train_desc and
-                      self.timetable[train_no].get_arrival_location() == location], key=lambda x: x.get_no())
             answer = set(train.get_no() for train in trains)
         else:
-            trains = sorted([self.timetable[train_no]
-                      for train_no in self.timetable if self.timetable[train_no].get_arrival_location() == location],
-                            key=lambda x: x.get_no())
             answer = set('%s, %s' % (train.get_no(), train.get_name()) for train in trains)
 
             if not answer:
                 return self.__class__.DEFAULT_ANSWER
-        return answer
+        return answer if len(answer) > 1 else answer.pop()
 
     def get_terminus(self, train_desc):
         if re.match(r'[A-Z]\d+', train_desc):
@@ -239,17 +244,23 @@ class RailwayTimetable(object):
         parts = request.strip().split()
         question_word = parts[0].lower()
         if question_word in ['when']:
-            tmp = parts[2:] if parts[1] in ['does', 'train', 'the'] else parts[1:]
+            parts = parts[2:]
+            tmp = parts[1:] if parts[0] in ['train', 'the'] else parts
             order_flag = None
-            if parts[1] == 'first':
+            if tmp[0] == 'first':
                 order_flag = 'f'
-            elif parts[1] == 'last':
+                tmp = tmp[1:]
+            elif tmp[0] == 'last':
                 order_flag = 'l'
+                tmp = tmp[1:]
             tmp = tmp[1:] if tmp[0] == 'train' else tmp
-            train_desc, terminus = self.split_by_token(tmp, 'to')
-            train_desc = ' '.join(train_desc.strip().split()[:-1])
-            result = self.get_train_times(train_desc, terminus, order_flag)
-            return ' '.join(result)
+            terminus = self.extract_terminus(tmp)
+            ind = tmp.index('depart')
+            train_desc = ' '.join(tmp[:ind]).strip()
+            result = self.get_train_times(terminus, order_flag, train_desc) \
+                if train_desc != '' else self.get_train_times(terminus, order_flag)
+
+            return result
         elif question_word == 'does':
             tmp = parts[2:] if parts[1] in ['the', 'train'] else parts[1:]
             train_desc = self.extract_train_desc(tmp)
@@ -323,7 +334,7 @@ class RailwayTimetable(object):
  1. what [the|is|are] (<train_name>|train) number[s] depart[s] to <location>?
  2. what [the|is|a|an] terminus of [the|a|an] [train] (<train_number>|<train_name>)?
  3. what [the|is|a|an] (platform|track) [does] [train] (<train_name>|<train_number>) depart[s] from?
- 4. when [does] [the] [[first|last] train] (<train_name>|<train_number>) departs to <location>? 
+ 4. when does [the] [[first|last] train] (<train_name>|<train_number>) depart[s] to <location>? 
  5. does [the] [train] <train_number|train_name> depart to <location>? '''
 
 if __name__ == "__main__":
@@ -361,17 +372,17 @@ if __name__ == "__main__":
                                                                   "B759, Sapsan", "B761, Sapsan"}
     assert pt.request("What Sapsan numbers depart to Moscow?") == {"B757", "B759", "B761"}
     assert pt.request("What train number departs to Kazan?") == "Don't know"
-    assert pt.request("What number of train departs to Tallinn?") == {"S331, Baltics"}
+    assert pt.request("What number of train departs to Tallinn?") == "S331, Baltics"
+
+    assert pt.request("When does train depart to Tallinn?") == "06:30 AM"
+    assert pt.request("When does train depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM", "11:55 PM"}
+    assert pt.request("When does the last train depart to Moscow?") == "11:55 PM"
+    assert pt.request("When does train Sapsan depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM"}
+    assert pt.request("When does Sapsan depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM"}
+    assert pt.request("When does first Sapsan depart to Moscow?") == "03:10 PM"
+    assert pt.request("When does train B757 depart to Moscow?") == "03:10 PM"
 
     # TODO CHECK TESTS
-    assert pt.request("When does train depart to Tallinn?") == "6:30 AM"
-    assert pt.request("When does train depart to Moscow?") == {"3:10 PM", "3:30 PM", "3:45 PM", "11:55 PM"}
-    assert pt.request("When does the last train depart to Moscow?") == "11:55 PM"
-    assert pt.request("When does train Sapsan depart to Moscow?") == {"3:10 PM", "3:30 PM", "3:45 PM"}
-    assert pt.request("When does Sapsan depart to Moscow?") == {"3:10 PM", "3:30 PM", "3:45 PM"}
-    assert pt.request("When does first Sapsan depart to Moscow?") == "3:10 PM"
-    assert pt.request("When train B757 departs to Moscow?") == "3:10 PM"
-
     assert pt.request("What platform does Baltics depart from?") == "5R"
     assert pt.request("What platform does train S331 depart from?") == "5R"
     assert pt.request("What track train Sapsan departs from?") == {"4L", "4R", "3L"}
