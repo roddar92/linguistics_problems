@@ -68,6 +68,18 @@ class RailwayTimetable(object):
     def __init__(self):
         self.timetable = {}
 
+    def get_trains_list_by_train_desc(self, train_desc):
+        if re.search(r'[A-Z]\d+', train_desc):
+            train_desc = train_desc.split()[0]
+            trains = sorted(
+                [train for train in self.timetable.values() if train.get_no() == train_desc],
+                key=lambda x: x.get_no())
+        else:
+            trains = sorted(
+                [train for train in self.timetable.values() if train.get_name() == train_desc],
+                key=lambda x: x.get_no())
+        return trains
+
     def get_trains_list(self, terminus, train_desc, time_flag=False):
         if train_desc:
             if re.match(r'[A-Z]\d+', train_desc):
@@ -123,10 +135,6 @@ class RailwayTimetable(object):
             return answer if len(answer) > 1 else answer.pop()
 
     def get_train_numbers(self, location, train_desc=None):
-        if train_desc:
-            if 'the' in train_desc or 'is' in train_desc or 'are' in train_desc:
-                train_desc = train_desc[3:].strip() if train_desc[:3] in ['the', 'are'] else train_desc[2:].strip()
-
         trains = self.get_trains_list(location, train_desc)
         if train_desc:
             answer = set(train.get_no() for train in trains)
@@ -158,7 +166,9 @@ class RailwayTimetable(object):
             return answer
 
     def get_tracks(self, train_desc):
-        pass
+        trains = self.get_trains_list_by_train_desc(train_desc)
+        answer = set([train.get_track() for train in trains])
+        return answer if len(answer) > 1 else answer.pop()
 
     def add_announcement(self, announcement):
         _, info = announcement.split("!")
@@ -240,6 +250,26 @@ class RailwayTimetable(object):
 
         self.timetable[train_info.get_no()] = train_info
 
+    ''' 
+     General pattern for request:
+     
+     1. $Request -> ($WhatRequest|$WhenRequest|$IsRequest)
+     2. $WhatRequest -> what ($TrainNumberRequest|$TerminusRequest|$PlatformRequest)
+     3. $WhenRequest -> when (does|will) [$FirstLast] ($TrainWord|[$TrainWord] $Train) depart to $CityName
+     4. $IsRequest -> does $Train depart to $CityName
+     5. $TrainNumberRequest -> $TrainNumber depart to $CityName
+     6. $TerminusRequest -> $Terminus of [$TrainWord] $Train
+     7. $PlatformRequest -> $Platform (does|will) [$TrainWord] $Train depart from
+     8. $TrainNumber -> [the|a|an] ((train|$TrainName) number|number of [$TrainWord] ($TrainName|$TrainWord))
+     9. $Train -> ($TrainName|$TrainNom|$TrainNom $TrainName)
+     11. $TrainName -> (Sapsan, Red Arrow,...) NameWithBigFirstLetter+
+     12. $TrainNom -> $regexp<[A-Z]\d+>
+     13. $Terminus -> [the|a|an] (terminus|final (city|location|point of route))
+     14. $Platform -> (track|platform|number of [the|a|an] (track|platform))
+     15. $CityName -> (St.Petersburg, Moscow, Helsinki,...) NameWithBigFirstLetter+
+     16. $TrainWord -> [the|a|an] train
+     17. $FirstLast -> (first|last)
+     '''
     def request(self, request):
         parts = request.strip().split()
         question_word = parts[0].lower()
@@ -255,8 +285,7 @@ class RailwayTimetable(object):
                 tmp = tmp[1:]
             tmp = tmp[1:] if tmp[0] == 'train' else tmp
             terminus = self.extract_terminus(tmp)
-            ind = tmp.index('depart')
-            train_desc = ' '.join(tmp[:ind]).strip()
+            train_desc = self.extract_train_desc(tmp)
             result = self.get_train_times(terminus, order_flag, train_desc) \
                 if train_desc != '' else self.get_train_times(terminus, order_flag)
 
@@ -282,15 +311,13 @@ class RailwayTimetable(object):
             else:
                 first_asked_word, second_asked_word, rested_request = parts[0], parts[1], parts[2:]
                 asked = first_asked_word + ' ' + second_asked_word \
-                    if second_asked_word not in ['does', 'of'] else first_asked_word
+                    if second_asked_word not in ['do', 'does', 'did', 'of', 'will'] else first_asked_word
 
                 if 'terminus' in asked:
                     train_desc = self.extract_train_desc(rested_request)
                     return self.get_terminus(train_desc)
                 elif asked in ['platform', 'track']:
-                    prop = rested_request.split()[0]
-                    train_desc = rested_request[1:-2] \
-                        if prop in ['does', 'train'] else rested_request[:-2]
+                    train_desc = self.extract_train_desc(rested_request)
                     return self.get_tracks(train_desc)
                 else:
                     raise Exception('Unknown request type')
@@ -305,7 +332,7 @@ class RailwayTimetable(object):
             if train_desc[:5] == 'train' else train_desc
 
         if 'depart' in train_desc:
-            train_desc = train_desc[:train_desc.find('depart') - 1].strip()
+            train_desc = train_desc[:train_desc.find('depart')].strip()
         return train_desc
 
     def extract_terminus(self, request):
@@ -333,8 +360,8 @@ class RailwayTimetable(object):
 ''' Our railway timetable has few request types:
  1. what [the|is|are] (<train_name>|train) number[s] depart[s] to <location>?
  2. what [the|is|a|an] terminus of [the|a|an] [train] (<train_number>|<train_name>)?
- 3. what [the|is|a|an] (platform|track) [does] [train] (<train_name>|<train_number>) depart[s] from?
- 4. when does [the] [[first|last] train] (<train_name>|<train_number>) depart[s] to <location>? 
+ 3. what [the|is|a|an] (platform|track) (does|will) [train] (<train_name>|<train_number>) depart from?
+ 4. when (does|will) [the] [[first|last] train] (<train_name>|<train_number>) depart to <location>? 
  5. does [the] [train] <train_number|train_name> depart to <location>? '''
 
 if __name__ == "__main__":
@@ -360,11 +387,12 @@ if __name__ == "__main__":
                         "K34 with route St.Petersburg - Veliky Novgorod "
                         "departs at 7:19 AM, track 3, left side.")
 
-    # TODO TESTED
+    # TEST CASES
     assert pt.request("Does train B757 depart to Moscow?") == "Yes"
     assert pt.request("Does train B757 depart to Riga?") == "No"
     assert pt.request("Does the train B777 depart to Riga?") == "Don't know"
     assert pt.request("Does the Sapsan depart to Veliky Novgorod?") == "No"
+
     assert pt.request("What the terminus of the train S331?") == "Tallinn"
     assert pt.request("What is terminus of Baltics?") == "Tallinn"
     assert pt.request("What is terminus of Red Arrow?") == "Moscow"
@@ -374,15 +402,15 @@ if __name__ == "__main__":
     assert pt.request("What train number departs to Kazan?") == "Don't know"
     assert pt.request("What number of train departs to Tallinn?") == "S331, Baltics"
 
-    assert pt.request("When does train depart to Tallinn?") == "06:30 AM"
-    assert pt.request("When does train depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM", "11:55 PM"}
-    assert pt.request("When does the last train depart to Moscow?") == "11:55 PM"
-    assert pt.request("When does train Sapsan depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM"}
-    assert pt.request("When does Sapsan depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM"}
-    assert pt.request("When does first Sapsan depart to Moscow?") == "03:10 PM"
-    assert pt.request("When does train B757 depart to Moscow?") == "03:10 PM"
+    assert pt.request("When will train depart to Tallinn?") == "06:30 AM"
+    assert pt.request("When will train depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM", "11:55 PM"}
+    assert pt.request("When will the last train depart to Moscow?") == "11:55 PM"
+    assert pt.request("When will train Sapsan depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM"}
+    assert pt.request("When will Sapsan depart to Moscow?") == {"03:10 PM", "03:30 PM", "03:45 PM"}
+    assert pt.request("When will first Sapsan depart to Moscow?") == "03:10 PM"
+    assert pt.request("When will train B757 depart to Moscow?") == "03:10 PM"
 
-    # TODO CHECK TESTS
     assert pt.request("What platform does Baltics depart from?") == "5R"
     assert pt.request("What platform does train S331 depart from?") == "5R"
-    assert pt.request("What track train Sapsan departs from?") == {"4L", "4R", "3L"}
+    assert pt.request("What track does train Sapsan depart from?") == {"4L", "4R", "3L"}
+    assert pt.request("What track will train B757 Sapsan depart from?") == "4L"
