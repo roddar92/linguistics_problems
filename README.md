@@ -6,6 +6,7 @@ Problems:
  - Russian cases generator (dative)
  - Family tree
  - Abstract ontology for company
+ - Simple timetable QA-system
  - Common English question generator
  - Syllable Module (count word syllables (russian/english) and get the word syllables list (russian))
  - Adjective Comparisoner
