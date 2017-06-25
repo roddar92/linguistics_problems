@@ -157,13 +157,13 @@ class RailwayTimetable(object):
             else:
                 return asked_terminus
         else:
-            answer = self.__class__.DEFAULT_ANSWER
-            for train_no in self.timetable:
-                train = self.timetable[train_no]
-                if train.get_name() == train_desc:
-                    answer = train.get_arrival_location()
-                    break
-            return answer
+            answer = set(
+                train.get_arrival_location() for train in self.timetable.values() if train.get_name() == train_desc)
+
+            if len(answer) > 0:
+                return (answer if len(answer) > 1 else answer.pop())
+            else:
+                return self.__class__.DEFAULT_ANSWER
 
     def get_tracks(self, train_desc):
         trains = self.get_trains_list_by_train_desc(train_desc)
