@@ -7,7 +7,7 @@ My name is Daria, I am software engineer with skills in natural language process
 Project has three sections:
 * [morphology](#morphology)
 * [ontologies and information extraction](#ontologies_and_information_extraction)
-* [ngrams applications](#n_grams_applications)
+* [n-grams applications](#n_grams_applications)
 * [games](#games)
 
 Now my code supports three languages: English, Russian and Finnish. I hope that very soon next publishing problems will implement NLP-algorithms for more languages.
