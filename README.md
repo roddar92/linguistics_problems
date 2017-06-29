@@ -6,7 +6,7 @@ My name is Daria, I am software engineer with skills in natural language process
 
 Project has three sections:
 * [morphology](#morphology)
-* [ontologies and information extraction](#ontologies_and_information_extraction)
+* [ontologies and information extraction](#ontologies_and_ie)
 * [n-grams applications](#n-grams_applications)
 * [games](#games)
 
@@ -23,7 +23,7 @@ Source code:
 - [Common English question generator](src/english/Question.py)
 - [Finnish Predicative Sentences](src/suomi/FinnishPredicativeQuestioner.py)
 
-#### Ontologies and information extraction
+#### Ontologies and IE
 - [Family tree](src/ontologies/Pedigree.py)
 - [Abstract ontology for company](src/ontologies/CompanyOntology.py)
 - [Simple timetable QA-system](src/ontologies/Timetable.py)
