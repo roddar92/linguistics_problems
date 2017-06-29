@@ -4,13 +4,13 @@ Welcome to the main page of my project! This repository stores simple examples o
 
 My name is Daria, I am software engineer with skills in natural language processing. My general scientific interests are knowledge bases and facts extraction. There are very important analysis tools that provides semantic analysis and text mining.
 
-Project has three sections:
-* [morphology](#morphology)
-* [ontologies and information extraction](#ontologies_and_ie)
-* [n-grams applications](#n-grams_applications)
-* [games](#games)
+Project has next sections:
+* [Morphology](#morphology)
+* [Ontologies and information extraction](#ontologies_and_information_extraction)
+* [N-grams applications](#n_grams_applications)
+* [Games](#games)
 
-Now my code supports three languages: English, Russian and Finnish. I hope that very soon next publishing problems will implement NLP-algorithms for more languages.
+In the source code three languages is supported now: English, Russian and Finnish. I hope that very soon next publishing problems will implement NLP-algorithms for more languages.
 
 Source code:
 
@@ -23,7 +23,7 @@ Source code:
 - [Common English question generator](src/english/Question.py)
 - [Finnish Predicative Sentences](src/suomi/FinnishPredicativeQuestioner.py)
 
-#### Ontologies and IE
+#### Ontologies and information extraction
 - [Family tree](src/ontologies/Pedigree.py)
 - [Abstract ontology for company](src/ontologies/CompanyOntology.py)
 - [Simple timetable QA-system](src/ontologies/Timetable.py)
