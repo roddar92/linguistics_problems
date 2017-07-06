@@ -6,11 +6,24 @@ import re
 
 class NGramDictionaryManager(object):
     def __init__(self):
+        self.stop_words = {u'a', u'across', u'am', u'an', u'and', u'as', u'by',
+                           u'but', u'in', u'it', u'no', u'not', u'yes',
+                           u'this', u'that', u'the', u'to', u'what', u'under',
+                            u'а', u'в', u'и', u'но', u'к', u'с', u'по', u'да', u'нет', u'о', u'у', u'во', u'для', u'со',
+                           u'не', u'ни', u'это', u'что', u'то', u'как', u'об', u'обо', u'этом', u'из', u'от', u'чтобы',
+                           u'кроме', u'того', u'за', u'по', u'про', u'под', u'над', u'на', u'несмотря', u'может'}
         self.ngram_dictionary = defaultdict(int)
 
-    # TODO override this method for information retrieval with spell-checker
-    def create_dictionary_for_spelling(self, input_path, n_gram_length = 2):
+    def text_preprocessing(self, line, remove_stop_words):
+        line = line.strip()
+        line = re.sub(ur'[\r\t\n\.,:;!\'\"\?_\-\+=/&\*\(\)\^\[\]\{\}\<\>\|]', u'', line)
+        tokens = [token.lower() for token in line.split()]
+        if remove_stop_words:
+            tokens = [token for token in tokens if token not in self.stop_words]
+        return tokens
 
+    # TODO override this method for information retrieval with spell-checker
+    def create_dictionary_for_spelling(self, input_path, n_gram_length=2, remove_stop_words=False):
         def get_ngrams(word, ngram_len):
             n_grams = list()
             for i in range(len(word) - ngram_len + 1):
@@ -19,13 +32,7 @@ class NGramDictionaryManager(object):
 
         with io.open(input_path, 'r', encoding='utf-8') as f:
             for line in f:
-
-                # TODO tokenization with NLTK RegexpTokenizer(r'[\.,:;!\?_\-\+=/\"&\*\(\)\^\[\]\{\}\<\>\|\d%$@#№]')
-                line = line.strip()
-                line = re.sub(r'[\.,:;!\?_\-\+=/\"&\*\(\)\^\[\]\{\}\<\>\|\d%$@#№]', '', line)
-                line = re.sub(r'\b(a|across|am|an|and|as|by|but|in|it|no|not|yes|this|that|the|to|what|under|'
-                              r'а|в|к|и|но|да|нет|не|ни|это|что|то|за|по|про|под|над)\b', '', line)
-                tokens = line.split()
+                tokens = self.text_preprocessing(line, remove_stop_words)
 
                 for token in tokens:
                     if '\'' in token:
@@ -36,17 +43,10 @@ class NGramDictionaryManager(object):
                         for ngram in ngrams:
                             self.ngram_dictionary[ngram] += 1
 
-    # TODO check method correctness
-    def create_dictionary_for_translation(self, input_path, n_gram_length = 2):
-
+    def create_dictionary_for_translation(self, input_path, n_gram_length=2, remove_stop_words=False):
         with io.open(input_path, 'r', encoding='utf-8') as f:
+            tokens = self.text_preprocessing(f.read(), remove_stop_words)
 
-            # TODO tokenization with NLTK RegexpTokenizer(r'[\.,:;!\?_\-\+=/\"&\*\(\)\^\[\]\{\}\<\>\|\d%$@#№]')
-            line = f.read().strip()
-            line = re.sub(r'[\.,:;!\?_\-\+=/\"&\*\(\)\^\[\]\{\}\<\>\|]', u'', line)
-            line = re.sub(r'\b(a|across|am|an|and|as|by|but|in|it|no|not|yes|this|that|the|to|what|under|'
-                          r'а|в|к|и|но|да|нет|не|ни|это|что|то|за|по|про|под|над)\b', u'', line)
-            tokens = line.split()
             n_gram = deque()
             i = 0
             for k in range(n_gram_length - 1):
@@ -82,14 +82,15 @@ if __name__ == "__main__":
 
     ngram_dict_manager = NGramDictionaryManager()
 
-    print('Spelling N-grams\n')
+    print('Spelling N-grams')
     for descriptor in os.listdir(path):
-        ngram_dict_manager.create_dictionary_for_spelling(os.path.join(path, descriptor), 2)
+        ngram_dict_manager.create_dictionary_for_spelling(os.path.join(path, descriptor), 2, remove_stop_words=True)
     ngram_dict_manager.print_dictionary()
 
+    print('\n')
     ngram_dict_manager = NGramDictionaryManager()
 
-    print('Translation N-grams\n')
+    print('Translation N-grams')
     for descriptor in os.listdir(path):
-        ngram_dict_manager.create_dictionary_for_translation(os.path.join(path, descriptor), 2)
+        ngram_dict_manager.create_dictionary_for_translation(os.path.join(path, descriptor), 2, remove_stop_words=True)
     ngram_dict_manager.print_dictionary()
