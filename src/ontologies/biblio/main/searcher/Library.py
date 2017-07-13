@@ -39,7 +39,7 @@ class LibrarySearcher(object):
     def search_word_in_library(self, word):
         results = set()
         with io.open(self.lib_path, 'r', encoding='utf-8') as json_file:
-            jdata = json.loads(json_file)
+            jdata = json.loads(json_file.read())
             for d in jdata:
                 for k in d:
                     if word in d[k]:
@@ -66,7 +66,7 @@ class LibrarySearcher(object):
 
         results = set()
         with io.open(self.lib_path, 'r', encoding='utf-8') as json_file:
-            jdata = json.loads(json_file)
+            jdata = json.loads(json_file.read())
             for d in jdata:
                 if topic in d['literature_category'] or ('herous' in d and herou in d['herous']):
                     self.extract_book_information(results, d)
