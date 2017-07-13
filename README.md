@@ -27,6 +27,7 @@ Source code:
 - [Family tree](src/ontologies/Pedigree.py)
 - [Abstract ontology for company](src/ontologies/CompanyOntology.py)
 - [Simple timetable QA-system](src/ontologies/Timetable.py)
+- [Bookshelf](src/ontologies/biblio)
 
 #### N-grams applications
 - [N-gram dictionary (for spelling)](src/ngrams/NGramDictionaryManager.py)
