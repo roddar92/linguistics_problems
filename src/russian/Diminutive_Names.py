@@ -15,6 +15,8 @@ class Diminutiver(object):
     def get_diminutive(self, name):
         suffix = ""
         if not self.is_vowel(name[-1]):
+            if name[-1] == "ь":
+                return name[:-1] + "ёк"
             return name + "ик"
         elif name[-1] == "а":
             if name[-2] == "к":
@@ -27,7 +29,9 @@ class Diminutiver(object):
                 else:
                     suffix = "еньк"
         elif name[-1] == "я":
-            if name[-2] == "н":
+            if name[-2] == "ь":
+                suffix = "юшк" if name[-3] not in "лмн" else "юш"
+            elif name[-2] == "н":
                 suffix = "ечк"
             else:
                 suffix = "еньк"
@@ -62,3 +66,6 @@ if __name__ == "__main__":
     assert diminutiver.get_diminutive("Лампа") == "Лампочка"
     assert diminutiver.get_diminutive("Лавка") == "Cannot parse names with suffix '{}'!".format("К")
     assert diminutiver.get_diminutive("Дамба") == "Дамбочка"
+    assert diminutiver.get_diminutive("Дарья") == "Дарьюшка"
+    assert diminutiver.get_diminutive("Илья") == "Ильюша"
+    assert diminutiver.get_diminutive("Игорь") == "Игорёк"
