@@ -57,6 +57,7 @@ if __name__ == "__main__":
     assert diminutiver.get_diminutive("Таня") == "Танечка"
     assert diminutiver.get_diminutive("Клава") == "Клавочка"
     assert diminutiver.get_diminutive("Клара") == "Кларочка"
+    assert diminutiver.get_diminutive("Алла") == "Аллочка"
     assert diminutiver.get_diminutive("Лапа") == "Лапочка"
     assert diminutiver.get_diminutive("Рита") == "Риточка"
     assert diminutiver.get_diminutive("Влад") == "Владик"
