@@ -1,8 +1,8 @@
 ## Computational linguistics
 
-Welcome to the main page of my project! This repository stores simple examples of linguistics problems.
+Welcome to the main page of my project! This repository stores examples of linguistics problems.
 
-My name is Daria, I'm software engineer with skills in natural language processing. My general scientific interests are knowledge bases and facts extraction. There are very important analysis tools that provides semantic analysis and text mining.
+My name is Daria, I'm a software engineer with skills in natural language processing. My general scientific interests are knowledge bases and facts extraction. There are very important analysis tools that provides semantic analysis and text mining.
 
 Project has next sections:
 * [Morphology](#morphology)
