@@ -28,7 +28,7 @@ class Diminutiver(object):
             return name + "ик"
         elif name[-1] == "а":
             if self.is_endings_with_a(name[-2]):
-                suffix = "очк"
+                suffix = "ушк" if name[-3] == "ё" else "очк"
             else:
                 suffix = "еньк"
         elif name[-1] == "я":
@@ -58,6 +58,7 @@ if __name__ == "__main__":
     assert diminutiver.get_diminutive("Клава") == "Клавочка"
     assert diminutiver.get_diminutive("Клара") == "Кларочка"
     assert diminutiver.get_diminutive("Алла") == "Аллочка"
+    assert diminutiver.get_diminutive("Алёна") == "Алёнушка"
     assert diminutiver.get_diminutive("Лапа") == "Лапочка"
     assert diminutiver.get_diminutive("Рита") == "Риточка"
     assert diminutiver.get_diminutive("Влад") == "Владик"
