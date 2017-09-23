@@ -20,6 +20,8 @@ class Diminutiver(object):
                 return name[:-1] + "уся"
         elif name[-2:] == "ия":
             name = name[:-2] + "я"
+        elif name[-2:] == "ль":
+            name = name[:-1] + "я"
 
         suffix = ""
         if not self.is_vowel(name[-1]):
