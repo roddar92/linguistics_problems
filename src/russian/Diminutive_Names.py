@@ -25,7 +25,16 @@ class Diminutiver(object):
         if not self.is_vowel(name[-1]):
             if name[-1] == "ь":
                 return name[:-1] + "ёк"
-            return name + "ик"
+            elif name.endswith("ам") or name.endswith("ан"):
+                return name + "чик"
+            elif name.endswith("им") or name.endswith("ил"):
+                return name + "ка"
+            elif name.endswith("илл"):
+                return name[:-3] + "юша"
+            elif not name.endswith("ик") and not name.endswith("чик"):
+                return name + "ик"
+            else:
+                return name
         elif name[-1] == "а":
             if self.is_endings_with_a(name[-2]):
                 suffix = "ушк" if name[-3] == "ё" else "очк"
@@ -82,3 +91,4 @@ if __name__ == "__main__":
     assert diminutiver.get_diminutive("Юлия") == "Юленька"
     assert diminutiver.get_diminutive("Илья") == "Ильюша"
     assert diminutiver.get_diminutive("Игорь") == "Игорёк"
+    assert diminutiver.get_diminutive("Рустам") == "Рустамчик"
