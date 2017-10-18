@@ -1,5 +1,10 @@
 # -*- coding: utf-8 -*-
 import io, json
+import nltk
+
+from nltk.corpus import stopwords
+
+nltk.download('stopwords')
 
 from RulesParser import RulesParser
 
@@ -17,9 +22,7 @@ class LibrarySearcher(object):
     def __init__(self):
         self.context_parser = RulesParser()
         self.lib_path = 'resources/library.json'
-        self.stop_words = {u'a', u'across', u'am', u'an', u'and', u'as', u'by',
-                           u'but', u'in', u'it', u'no', u'not', u'yes', u'on', u'these', u'those',
-                           u'this', u'that', u'the', u'to', u'what', u'under', u'for', u'if', u'then'}
+        self.stop_words = stopwords.words('english')
     '''
     for word in query:
         search word in CSV headers, else search word in topics keywords, then intersect results
