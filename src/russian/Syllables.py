@@ -100,7 +100,8 @@ class SyllableModule(object):
         syllables = []
         cur_syllable = ""
 
-        for letter in word:
+        for i in range(len(word)):
+            letter = word[i]
             cur_syllable += letter
             if self.is_russian_vowel(letter):
                 syllables.append(cur_syllable)
@@ -110,8 +111,9 @@ class SyllableModule(object):
                     last = syllables.pop(len(syllables) - 1)
                     syllables.append(last + cur_syllable)
                     cur_syllable = ""
-                elif len(cur_syllable) >= 2 and cur_syllable[-2] in "лмнр" and cur_syllable not in "лл мм нн рр" \
-                        and self.is_russian_consonant(letter):
+                elif len(cur_syllable) >= 2 \
+                        and cur_syllable[-2] in "клмнпрс" and cur_syllable not in "кк лл мм нн пп рр cc" \
+                        and cur_syllable not in "ск ст тк чк чн шк шн" and self.is_russian_consonant(letter):
                     last = syllables.pop(len(syllables) - 1)
                     syllables.append(last + cur_syllable[0])
                     cur_syllable = cur_syllable[1:]
@@ -179,6 +181,8 @@ if __name__ == "__main__":
     assert sm.russian_syllables("подготовьтесь") == ["по", "дго", "то", "вьтесь"]
     assert sm.russian_syllables("славься") == ["сла", "вься"]
     assert sm.russian_syllables("майся") == ["май", "ся"]
+    assert sm.russian_syllables("одесса") == ["о", "дес", "са"]
+    assert sm.russian_syllables("ткань") == ["ткань"]
 
     assert sm.english_syllables_count("eye") == 1
     assert sm.english_syllables_count("bed") == 1
