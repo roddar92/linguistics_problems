@@ -18,6 +18,7 @@ Source code:
 - [Russian patronymic generator](src/russian/Patronymic-ya.py)
 - [Russian diminutive names generator](src/russian/Diminutive_Names.py)
 - [Russian cases generator (dative)](src/russian/Russian_Caser.py)
+- [Russian cognate words checker (dative)](src/russian/Cognate_Words.py)
 - [Syllable Module (word syllables count (russian/english) and word syllables list (russian))](src/russian/Syllables.py)
 - [English Adjective Comparisoner](src/english/Comparative_or_Superlative.py)
 - [Common English question generator](src/english/Question.py)
