@@ -78,7 +78,8 @@ class CognateWordChecker(object):
             for j in range(l2 - 2):
                 if a[i] == b[j] and a[i + 2] == b[j + 2] and \
                         a[i + 1] != b[j + 1] and self._is_changed_vowels(a[i + 1], b[j + 1]):
-                    w1[i + 1] = b[j + 1]
+                    w1[i + 1] = '*'
+                    w2[j + 1] = '*'
         return ''.join(w1), ''.join(w2)
 
     def _improve_substring(self, substring, word1, word2):
