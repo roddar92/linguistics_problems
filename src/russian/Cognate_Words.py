@@ -12,8 +12,8 @@ class CognateWordChecker(object):
     def __init__(self, word2vec_path, lang="russian"):
         self.morphological_analyser = pymorphy2.MorphAnalyzer()
         self.stemmer = SnowballStemmer(language=lang)
-        self.prefixes = re.compile(r"^(по|под|пр[еио]|пере|на|чрез|ис|из|вне|бе[зс]|за|от|воз|еже)")
-        self.suffixes = re.compile(r"([иоы]й|ая|ец|н[иь]е|ция|ть|с[ья]|ище|ни(к|ца)|тель)$")
+        self.prefixes = re.compile(r"^(пере|чрез|еже)")
+        self.suffixes = re.compile(r"([иоы]й|ая|ец|н[иь]е|ция|(ос)?ть|с[ья]|ище|ист|ни(к|ца)|тель)$")
 
         self.w2v = self._load_word2vec(word2vec_path)
 
@@ -34,6 +34,7 @@ class CognateWordChecker(object):
             {'о', 'а'},
             {'о', 'ы'},
             {'и', 'ы'},
+            {'е', 'и', 'й'},
             {'е', 'и'}
         ]
 
@@ -57,7 +58,7 @@ class CognateWordChecker(object):
 
     @staticmethod
     def _is_vowel(symbol):
-        return symbol in 'аеиоуыэя'
+        return symbol in 'аеиоуыэюя'
 
     def _is_changed_consonants(self, symbol1, symbol2):
         for changed_consinants_set in self.changed_consonants:
@@ -70,6 +71,20 @@ class CognateWordChecker(object):
             if symbol1 in changed_vowels_set and symbol2 in changed_vowels_set:
                 return True
         return False
+
+    def _find_hidden_vowels(self, a, b):
+        w1, w2 = list(a), list(b)
+        l1, l2 = len(a), len(b)
+        for i in range(l1 - 2):
+            for j in range(l2 - 2):
+                if a[i] == b[j]:
+                    if a[i + 2] == b[j + 1] and a[i + 1] in self.hidden_vowels:
+                        w1[i + 1] = '*'
+                        w2.insert(j + 1, '*')
+                    elif a[i + 1] == b[j + 2] and b[j + 1] in self.hidden_vowels:
+                        w1.insert(i + 1, '*')
+                        w2[j + 1] = '*'
+        return ''.join(w1), ''.join(w2)
 
     def _find_changed_vowels(self, a, b):
         w1, w2 = list(a), list(b)
@@ -101,15 +116,15 @@ class CognateWordChecker(object):
         return self.morphological_analyser.normal_forms(word)[0]
 
     def _get_word_canonical_form(self, word):
-        stemmed_word = self.stemmer.stem(word)
+        stemmed_word = word
 
-        """
         while self.prefixes.search(stemmed_word) and not len(stemmed_word) <= 5:
             stemmed_word = self.prefixes.sub("", stemmed_word)
-        """
-
         while self.suffixes.search(stemmed_word) and not len(stemmed_word) <= 5:
             stemmed_word = self.suffixes.sub("", stemmed_word)
+
+        if len(stemmed_word) > 5:
+            stemmed_word = self.stemmer.stem(stemmed_word)
 
         hard_sign_index = stemmed_word.find('ъ')
         stemmed_word = stemmed_word[(hard_sign_index + 1):]
@@ -150,6 +165,7 @@ class CognateWordChecker(object):
 
         normalized_words = [self._get_word_canonical_form(w) for w in lemmas]
         corrected_normalized = self._find_changed_vowels(normalized_words[0], normalized_words[-1])
+        corrected_normalized = self._find_hidden_vowels(corrected_normalized[0], corrected_normalized[-1])
 
         lcs = reduce(self._find_lcs, corrected_normalized)
 
@@ -183,10 +199,19 @@ if __name__ == "__main__":
                                                         "не могут является однокоренными..."
     assert rch.has_words_same_root("сбор", "собирать") == "Ура! Все слова происходят от одного корня!"
     assert rch.has_words_same_root("сохнуть", "сухой") == "Ура! Все слова происходят от одного корня!"
+    assert rch.has_words_same_root("война", "военный") == "Ура! Все слова происходят от одного корня!"
+    assert rch.has_words_same_root("день", "ежедневный") == "Ура! Все слова происходят от одного корня!"
+    assert rch.has_words_same_root("день", "дневник") == "Ура! Все слова происходят от одного корня!"
+    assert rch.has_words_same_root("дерево", "древесина") == "Ура! Все слова происходят от одного корня!"
+    assert rch.has_words_same_root("хор", "хоровой") == "Ура! Все слова происходят от одного корня!"
+    assert rch.has_words_same_root("юность", "юный") == "Ура! Все слова происходят от одного корня!"
+    assert rch.has_words_same_root("послезавтра", "завтрашний") == "Ура! Все слова происходят от одного корня!"
 
     # IT DOESN'T WORK DUE TO WORD2VEC SIMILARITY FUNCTION!
     # assert rch.has_words_same_root("сохнуть", "сухо") == "Ура! Все слова происходят от одного корня!"
 
     # todo improve algorithm for these tests
-    # assert rch.has_words_same_root("дерево", "древесина") == "Ура! Все слова происходят от одного корня!"
-    # assert rch.has_words_same_root("день", "ежедневный") == "Ура! Все слова происходят от одного корня!"
+    # assert rch.has_words_same_root("жать", "отжимать") == "Ура! Все слова происходят от одного корня!"
+    # assert rch.has_words_same_root("жать", "сжимать") == "Ура! Все слова происходят от одного корня!"
+    # assert rch.has_words_same_root("жать", "сожму") == "Ура! Все слова происходят от одного корня!"
+    # assert rch.has_words_same_root("кованый", "кую") == "Ура! Все слова происходят от одного корня!"
