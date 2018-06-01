@@ -1,6 +1,14 @@
 # -*- coding: utf-8 -*-
-from random import randint
 import enchant
+import random
+
+
+ATTEMPT_PHRASES = [
+    "Попробуешь ещё разок?",
+    "Терпение и труд - всё перетрут!",
+    "Не сдавайся!",
+    "Не сдавайся, развязка всё ближе и ближе!"
+]
 
 
 class SecretLetter(object):
@@ -10,16 +18,16 @@ class SecretLetter(object):
                     6: "Шесть", 7: "Семь", 8: "Восемь", 9: "Девять", 10: "Десять"}
         self.status = "undefined"
         self.secret_letter = "А"
-        self.alphabet = "АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"
+        self.alphabet = list("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
         self.ru_dict = enchant.Dict("ru_RU")
 
     def move(self):
         self.status = "start"
-        self.secret_letter = self.alphabet[randint(0, len(self.alphabet) - 1)]
+        self.secret_letter = random.choice(self.alphabet)
         print("Я загадал свою букву!")
 
     def count_letter(self, word):
-        count_of_letter = len([letter for letter in word if letter == self.secret_letter])
+        count_of_letter = list(word).count(self.secret_letter)
         if count_of_letter > 0:
             return self.d2w[count_of_letter] + "!"
         else:
@@ -40,7 +48,7 @@ class SecretLetter(object):
 
 
 def is_agree():
-    return s in "да давай конечно разумеется yes ага".lower().split()
+    return s in "да давай конечно разумеется yes ага угу".lower().split()
 
 
 def is_disagree():
@@ -82,6 +90,6 @@ if __name__ == "__main__":
                     else:
                         s = input()
                 except SecretLetterException as sle_msg:
-                    s = input(str(sle_msg) + " " + "Попробуешь ещё разок?\n")
+                    s = input(str(sle_msg) + " " + "{}\n".format(random.choice(ATTEMPT_PHRASES)))
         else:
             break
