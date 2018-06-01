@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from random import randint
+import random
 
 
 class GuessCity(object):
@@ -16,11 +16,11 @@ class GuessCity(object):
     @staticmethod
     def get_city_name(city_name):
         if '-' in city_name:
-            return "-".join([w[0].upper() + w[1:] for w in city_name.split("-")])
+            return "-".join([w.title() for w in city_name.split("-")])
         elif ' ' in city_name:
-            return " ".join([w[0].upper() + w[1:] for w in city_name.split()])
+            return " ".join([w.title() for w in city_name.split()])
         else:
-            return city_name[0].upper() + city_name[1:]
+            return city_name.title()
 
     @staticmethod
     def print_final_text(moves_count):
@@ -54,36 +54,40 @@ class GuessCity(object):
     def get_guessed_city(self):
         return self.city_name
 
-    def make_city_used(self):
+    def _make_city_used(self):
         self.guessed_cities.add(self.city_name)
         self.city_name = ""
 
     def make_city_asked(self, city_name):
         self.asked_cities.add(city_name)
+
+    def reset_current_params(self):
+        self._make_city_used()
+        self._clear_asked_cities()
     
-    def clear_asked_cities(self):
+    def _clear_asked_cities(self):
         self.asked_cities.clear()
 
-    def was_city_asked(self, city_name):
+    def _was_city_asked(self, city_name):
         return city_name in self.asked_cities
 
-    def was_city_guessed(self, city_name):
+    def _was_city_guessed(self, city_name):
         return city_name in self.guessed_cities
 
-    def is_city_exists(self, city_name):
+    def _is_city_exists(self, city_name):
         return city_name in self.allowed_cities
 
     def check_city(self, city_name):
-        if self.was_city_asked(city_name):
+        if self._was_city_asked(city_name):
             raise Exception("You have already asked this city!")
-        elif self.was_city_guessed(city_name):
+        elif self._was_city_guessed(city_name):
             raise Exception("This city has already guessed!")
-        elif not self.is_city_exists(city_name):
+        elif not self._is_city_exists(city_name):
             raise Exception("This city was not exists!")
 
     def move(self):
         city_names = [word for word in self.allowed_cities if word not in self.guessed_cities]
-        self.city_name = city_names[randint(0, len(city_names) - 1)]
+        self.city_name = random.choice(city_names)
         print("My guessed city is {}...".format(self.get_city_name(self.city_name)[0]))
 
     def shift_letter(self, index):
@@ -111,8 +115,7 @@ if __name__ == "__main__":
             if city == gc.get_guessed_city():
                 print("Yes! The guessed city was {}!".format(gc.get_city_name(gc.get_guessed_city())))
                 gc.print_final_text(whole_moves_count)
-                gc.make_city_used()
-                gc.clear_asked_cities()
+                gc.reset_current_params()
                 whole_moves_count = 0
                 attempts = 0
                 ind = 1
