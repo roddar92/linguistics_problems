@@ -182,7 +182,7 @@ class CognateWordChecker(object):
 
 if __name__ == "__main__":
     rch = CognateWordChecker(
-        "/resources/all.norm-sz100-w10-cb0-it1-min100.w2v"
+        "/Users/daria/PycharmProjects/csc_projects/nlp/hw4/all.norm-sz100-w10-cb0-it1-min100.w2v"
     )
 
     assert rch.has_words_same_root("дом", "домик") == "Ура! Все слова происходят от одного корня!"

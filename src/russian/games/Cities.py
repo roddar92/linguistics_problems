@@ -1,13 +1,18 @@
 # -*- coding: utf-8 -*-
 import random
-from collections import defaultdict
+from collections import defaultdict, Counter
+
+
+class CitiesGameException(Exception):
+    def __init__(self, msg):
+        self.msg = msg
 
 
 class Game(object):
     def __init__(self):
         self.allowed_cities = list()
         self.current_cities = list()
-        self.allowed_letters = defaultdict(int)
+
         self.used_letters = defaultdict(int)
         self.UNKNOWN_CITY = [
             "Такого города не существует! Предложи другой:",
@@ -23,7 +28,10 @@ class Game(object):
             for line in f:
                 name = line.strip()
                 self.allowed_cities.append(name)
-                self._register_first_letter(name)
+
+        self.allowed_letters = Counter([
+            city[0] for city in self.allowed_cities
+        ])
 
     @staticmethod
     def get_city_name(city):
@@ -38,19 +46,18 @@ class Game(object):
     def has_except_endings(word):
         return word in 'ъыь'
 
-    def _register_first_letter(self, name):
-        self.allowed_letters[name[0]] += 1
-
-    def _register_first_letter_in_use_dict(self, name):
+    def _register_used_first_letter(self, name):
         self.used_letters[name[0]] += 1
+
+    def _is_cities_exausted(self, letter):
+        return self.used_letters[letter] == self.allowed_letters[letter]
 
     def _find_index_of_right_letter(self, previous_city):
         ind = -1
-        while self.has_except_endings(previous_city[ind]) \
-                or self.used_letters[previous_city[ind]] == self.allowed_letters[previous_city[ind]]:
+        last_letter = previous_city[ind]
+        while self.has_except_endings(last_letter) or self._is_cities_exausted(last_letter):
             ind -= 1
-            if not self.has_except_endings(previous_city[ind]) and previous_city[ind] not in self.used_letters:
-                break
+            last_letter = previous_city[ind]
         return ind
 
     def _check_rules(self, word):
@@ -63,17 +70,19 @@ class Game(object):
 
     def check_city(self, city):
         if city not in self.allowed_cities:
-            raise Exception(random.choice(self.UNKNOWN_CITY))
+            raise CitiesGameException(random.choice(self.UNKNOWN_CITY))
+        elif city in self.current_cities:
+            raise CitiesGameException(random.choice(self.USED_CITY))
         elif not self._check_rules(city):
-            raise Exception("Этот город не начинается с буквы \'{}\'!"
+            raise CitiesGameException("Этот город не начинается с буквы \'{}\'!"
                             .format(self.current_cities[-1][self._find_index_of_right_letter(self.current_cities[-1])]
                                     .upper()))
-        elif city in self.current_cities:
-            raise Exception(random.choice(self.USED_CITY))
+        else:
+            self._make_city_used(s)
 
-    def make_city_used(self, city):
+    def _make_city_used(self, city):
         self.current_cities.append(city)
-        self._register_first_letter_in_use_dict(city)
+        self._register_used_first_letter(city)
 
     def move(self):
         ind = self._find_index_of_right_letter(self.current_cities[-1])
@@ -81,7 +90,7 @@ class Game(object):
         cities_starts_with_letter = [word for word in self.allowed_cities
                                      if word.startswith(letter) and word not in self.current_cities]
         city = random.choice(cities_starts_with_letter)
-        self.make_city_used(city)
+        self._make_city_used(city)
         print(self.get_city_name(city))
 
 
@@ -90,12 +99,11 @@ if __name__ == "__main__":
     s = input("Приветствую!\nНачинай игру первым и введи город:\n").lower()
     while True:
         if len(game.allowed_cities) == len(game.current_cities) or s == "Конец".lower():
-            print("До новых встреч!")
+            print("Пока-пока! До новых встреч!")
             break
 
         try:
             game.check_city(s)
-            game.make_city_used(s)
             game.move()
             s = input().lower()
         except Exception as msg:
