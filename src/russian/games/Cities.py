@@ -34,9 +34,9 @@ class Game(object):
         self.used_letters = defaultdict(int)
 
         with open("../resources/ru_cities.txt", "r", encoding='utf-8') as f:
-            for line in f:
-                name = line.strip()
-                self.allowed_cities.append(name)
+            self.allowed_cities = [
+                line.strip() for line in f
+            ]
 
         self.allowed_letters = Counter([
             city[0] for city in self.allowed_cities
