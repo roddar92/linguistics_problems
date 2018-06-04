@@ -76,6 +76,9 @@ class RailwayTimetable(object):
     DEFAULT_ANSWER = "Don't know"
     TRAIN_NO = re.compile(r'[A-Z]\d+')
     DETS = ['the', 'is', 'are', 'a', 'an']
+    LOCATION_STOPWORDS = ['departs', 'departure', 'from', 'to', '-', 'with']
+    ROUTE_STOPWORDS = ['from', 'with']
+    TIME_STOPWORDS = ['at', 'on']
 
     def __init__(self):
         self.timetable = {}
@@ -198,10 +201,10 @@ class RailwayTimetable(object):
                 if self.TRAIN_NO.match(parts[i]):
                     train_info.set_no(parts[i])
                     i += 1
-                    if parts[i] not in ['from', 'with']:
+                    if parts[i] not in self.ROUTE_STOPWORDS:
                         train_name = [parts[i]]
                         i += 1
-                        while parts[i] not in ['from', 'with']:
+                        while parts[i] not in self.ROUTE_STOPWORDS:
                             train_name.append(parts[i])
                             i += 1
                         train_info.set_name(" ".join(train_name))
@@ -213,7 +216,7 @@ class RailwayTimetable(object):
                     i += 1
                     location = [parts[i]]
                     i += 1
-                    while parts[i] not in ['departs', 'departure', 'from', 'to', '-', 'with']:
+                    while parts[i] not in self.LOCATION_STOPWORDS:
                         location.append(parts[i])
                         i += 1
                     train_info.add_direction(direction, " ".join(location))
@@ -223,13 +226,13 @@ class RailwayTimetable(object):
                         i += 1
                         location = [parts[i]]
                         i += 1
-                        while parts[i] not in ['departs', 'departure', 'from', 'to', '-', 'with']:
+                        while parts[i] not in self.LOCATION_STOPWORDS:
                             location.append(parts[i])
                             i += 1
                         train_info.add_direction(direction, " ".join(location))
                 else:
                     i += 1
-            elif parts[i] in ['at', 'on']:
+            elif parts[i] in self.TIME_STOPWORDS:
                 if parts[i - 1] in ["departs", "departure"]:
                     i += 1
 
