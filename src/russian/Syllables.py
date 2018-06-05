@@ -6,7 +6,18 @@ class SyllableModule(object):
 
     @staticmethod
     def is_russian_consonant(symbol):
-        return symbol in "бвгджзйклмнпрстфчцчшщъь"
+        return symbol in "бвгджзйклмнпрстфхцчшщъь"
+
+    def is_russian_double_consonants(self, seq):
+        return len(seq) == 2 and self.is_russian_consonant(seq[-1]) and seq[0] == seq[-1]
+
+    @staticmethod
+    def is_russian_sonour(symbol):
+        return symbol not in 'лмнр'
+
+    @staticmethod
+    def is_russian_reflexive_suffix(seq):
+        return seq in 'сь ся'.split()
 
     @staticmethod
     def is_english_vowel(symbol):
@@ -17,12 +28,16 @@ class SyllableModule(object):
         return symbol in "bcdfghjklmnpqrstvwxz"
 
     @staticmethod
+    def is_english_double_consonants(seq):
+        return seq in "bb ll mm nn pp ss".split()
+
+    @staticmethod
     def has_silent_ending(consonants):
-        return consonants in "ch sh dg ng gh th ck rk gn rn"
+        return consonants in "ch sh dg ng gh th ck rk gn rn".split()
 
     @staticmethod
     def is_diphthong(vowels):
-        return vowels in "ea ia oa ua ae ee ie oe ue ai ei oi ui eo io oo au ou ay ey oy"
+        return vowels in "ea ia oa ua ae ee ie oe ue ai ei oi ui eo io oo au ou ay ey oy".split()
 
     @staticmethod
     def is_triphthong(vowels):
@@ -30,7 +45,7 @@ class SyllableModule(object):
 
     def english_syllables_count(self, word):
         """Return count of thw word syllables"""
-        if len(word) <= 3 and ("a" in word or "e" in word or "i" in word or "o" in word or "u" in word or "y" in word):
+        if len(word) <= 3 and any(letter in word for letter in "aeiouy"):
             return 1
 
         word = word.lower()
@@ -60,12 +75,11 @@ class SyllableModule(object):
                 cnt -= 1
 
         if word.endswith("ed"):
-            if (word[-4:-2] not in "bb ll mm nn pp ss" and
-                    not self.has_silent_ending(word[-4:-2]) and
-                    not (word[-3] not in "dt" and self.is_english_consonant(word[-3]) and
-                             self.is_english_vowel(word[-4])) and
-                    not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) or \
-                            self.is_english_vowel(word[-4]) and word[-3] in "dt":
+            if (not (self.is_english_double_consonants(word[-4:-2]) or self.has_silent_ending(word[-4:-2])) and
+                not (word[-3] not in "dt" and self.is_english_consonant(word[-3]) and
+                     self.is_english_vowel(word[-4])) and
+                not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) or \
+                    self.is_english_vowel(word[-4]) and word[-3] in "dt":
                 cnt += 1
         elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
             cnt += 1
@@ -100,32 +114,37 @@ class SyllableModule(object):
         syllables = []
         cur_syllable = ""
 
-        for i in range(len(word)):
-            letter = word[i]
+        for i, letter in enumerate(word):
             cur_syllable += letter
             if self.is_russian_vowel(letter):
                 syllables.append(cur_syllable)
                 cur_syllable = ""
             if syllables:
-                if letter == "ь" or self.is_russian_vowel(syllables[-1][-1]) and letter == "й":
-                    last = syllables.pop(len(syllables) - 1)
+                if self.is_russian_reflexive_suffix(syllables[-1]):
+                    last = syllables.pop()
+                    prelast = syllables.pop()
+                    if prelast.endswith('т'):
+                        ind = -1
+                    elif prelast.endswith('ть'):
+                        ind = -2
+                    else:
+                        ind = len(prelast)
+                    syllables.append(prelast[:ind])
+                    syllables.append(prelast[ind:] + last)
+                elif letter in "ьъ" or self.is_russian_vowel(syllables[-1][-1]) and letter == "й":
+                    last = syllables.pop()
                     syllables.append(last + cur_syllable)
                     cur_syllable = ""
-                elif len(cur_syllable) >= 2 \
-                        and cur_syllable[-2] in "клмнпрс" and cur_syllable not in "кк лл мм нн пп рр cc" \
-                        and cur_syllable not in "ск ст тк чк чн шк шн" and self.is_russian_consonant(letter):
-                    last = syllables.pop(len(syllables) - 1)
+                elif len(cur_syllable) == 2 and self.is_russian_consonant(letter) and \
+                        not (self.is_russian_sonour(cur_syllable[0]) or
+                             self.is_russian_double_consonants(cur_syllable)):
+                    last = syllables.pop()
                     syllables.append(last + cur_syllable[0])
                     cur_syllable = cur_syllable[1:]
 
         if cur_syllable:
-            last = syllables.pop(len(syllables) - 1)
+            last = syllables.pop()
             syllables.append(last + cur_syllable)
-
-        if (syllables[-1] == "ся" or syllables[-1] == "тесь") and syllables[-2].endswith("ь"):
-            last = syllables.pop(len(syllables) - 1)
-            prev = syllables.pop(len(syllables) - 1)
-            syllables += [prev[:-2], prev[-2:] + last]
 
         return syllables
 
@@ -135,6 +154,8 @@ if __name__ == "__main__":
     assert sm.russian_syllables_count("Вова") == 2
     assert sm.russian_syllables_count("Вовочка") == 3
     assert sm.russian_syllables("Вовочка") == ["во", "во", "чка"]
+    assert sm.russian_syllables("уезжать") == ["у", "е", "зжать"]
+    assert sm.russian_syllables("инаогурация") == ["и", "на", "о", "гу", "ра", "ци", "я"]
     assert sm.russian_syllables_count("Коронация") == 5
     assert sm.russian_syllables_count("водоПад") == 3
     assert sm.russian_syllables("Анфиса") == ["ан", "фи", "са"]
@@ -159,7 +180,6 @@ if __name__ == "__main__":
     assert sm.russian_syllables("тьма") == ["тьма"]
     assert sm.russian_syllables("наледь") == ["на", "ледь"]
     assert sm.russian_syllables("слякоть") == ["сля", "коть"]
-    assert sm.russian_syllables("лемма") == ["ле", "мма"]
     assert sm.russian_syllables("дождь") == ["дождь"]
     assert sm.russian_syllables("ветерочек") == ["ве", "те", "ро", "чек"]
     assert sm.russian_syllables("развиваться") == ["ра", "зви", "ва", "ться"]
@@ -178,11 +198,23 @@ if __name__ == "__main__":
     assert sm.russian_syllables("фальшь") == ["фальшь"]
     assert sm.russian_syllables("фильм") == ["фильм"]
     assert sm.russian_syllables("стажировка") == ["ста", "жи", "ро", "вка"]
-    assert sm.russian_syllables("подготовьтесь") == ["по", "дго", "то", "вьтесь"]
-    assert sm.russian_syllables("славься") == ["сла", "вься"]
+    assert sm.russian_syllables("славься") == ["славь", "ся"]
     assert sm.russian_syllables("майся") == ["май", "ся"]
-    assert sm.russian_syllables("одесса") == ["о", "дес", "са"]
+    assert sm.russian_syllables("одесса") == ["о", "де", "сса"]
+    assert sm.russian_syllables("лемма") == ["ле", "мма"]
     assert sm.russian_syllables("ткань") == ["ткань"]
+    assert sm.russian_syllables("хвойный") == ["хвой", "ный"]
+    assert sm.russian_syllables("сухой") == ["су", "хой"]
+    assert sm.russian_syllables("старинный") == ["ста", "ри", "нный"]
+    assert sm.russian_syllables("морозный") == ["мо", "ро", "зный"]
+    assert sm.russian_syllables("подъезд") == ["подъ", "езд"]
+    assert sm.russian_syllables("булка") == ["бул", "ка"]
+    assert sm.russian_syllables("мошка") == ["мо", "шка"]
+    assert sm.russian_syllables("равный") == ["ра", "вный"]
+    assert sm.russian_syllables("диктор") == ["ди", "ктор"]
+    assert sm.russian_syllables("ночник") == ["но", "чник"]
+    assert sm.russian_syllables("взбодриться") == ["взбо", "дри", "ться"]
+    assert sm.russian_syllables("подготовьтесь") == ["по", "дго", "товь", "тесь"]
 
     assert sm.english_syllables_count("eye") == 1
     assert sm.english_syllables_count("bed") == 1
