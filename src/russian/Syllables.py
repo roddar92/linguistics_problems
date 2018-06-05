@@ -214,6 +214,7 @@ if __name__ == "__main__":
     assert sm.russian_syllables("диктор") == ["ди", "ктор"]
     assert sm.russian_syllables("ночник") == ["но", "чник"]
     assert sm.russian_syllables("взбодриться") == ["взбо", "дри", "ться"]
+    assert sm.russian_syllables("горская") == ["гор", "ска", "я"]
     assert sm.russian_syllables("подготовьтесь") == ["по", "дго", "товь", "тесь"]
 
     assert sm.english_syllables_count("eye") == 1
