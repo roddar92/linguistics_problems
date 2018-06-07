@@ -69,7 +69,7 @@ class RussianSyllableModule(SyllableModule):
                     last = syllables.pop()
                     syllables.append(last + cur_syllable)
                     cur_syllable = ""
-                elif len(cur_syllable) == 2 and self.is_russian_consonant(letter) and \
+                elif len(cur_syllable) >= 2 and self.is_russian_consonant(letter) and \
                         not (self.is_russian_sonour(cur_syllable[0]) or
                              self.is_russian_double_consonants(cur_syllable)):
                     last = syllables.pop()
@@ -93,6 +93,13 @@ class FinnishSyllableModule(SyllableModule):
     def is_diphthong(vowels):
         return vowels in "ai äi oi öi ui yi ei au ou eu iu äy öy ie uo yö".split()
 
+    @staticmethod
+    def is_double_vowel(vowels):
+        return vowels[-1] == vowels[-2]
+
+    def contains_only_consonants(self, cur_syllable):
+        return all(not self.is_finnish_vowel(letter) for letter in cur_syllable)
+
     def syllables_count(self, word):
         """Return count of the word syllables"""
         word = word.lower()
@@ -115,39 +122,35 @@ class FinnishSyllableModule(SyllableModule):
         cur_syllable = ""
         for _, letter in enumerate(word):
             cur_syllable += letter
-            if self.is_finnish_vowel(letter):
-                syllables.append(cur_syllable)
-                cur_syllable = ""
-            if syllables:
-                if not self.is_finnish_vowel(letter):
-                    if (len(cur_syllable) >= 3 and not (self.is_finnish_vowel(cur_syllable[-2]) or
-                                                       self.is_finnish_vowel(cur_syllable[-3]))) or \
-                            len(cur_syllable) >= 2 and self.is_finnish_vowel(cur_syllable[-2]):
-                        last = syllables.pop()
-                        syllables.append(last + cur_syllable[:-1])
-                        cur_syllable = letter
+            if len(cur_syllable) >= 2:
+                if self.is_finnish_vowel(letter):
+                    if self.is_finnish_vowel(cur_syllable[-2]):
+                        if self.is_diphthong(cur_syllable[-2:]) or self.is_double_vowel(cur_syllable[-2:]):
+                            syllables.append(cur_syllable)
+                            cur_syllable = ""
+                        elif self.is_finnish_vowel(cur_syllable[-2]) and self.is_finnish_vowel(cur_syllable[-1]):
+                            syllables.append(cur_syllable[:-1])
+                            cur_syllable = cur_syllable[-1]
                 else:
-                    if len(cur_syllable) >= 2 and self.is_finnish_vowel(cur_syllable[-2]) and \
-                            not self.is_diphthong(cur_syllable[-2:]):
-                        last = syllables.pop()
-                        syllables.append(last + cur_syllable[:-1])
-                        cur_syllable = letter
+                    if not self.is_finnish_vowel(cur_syllable[-2]):
+                        if syllables:
+                            last = syllables.pop()
+                            syllables.append(last + cur_syllable[:-1])
+                        else:
+                            syllables.append(cur_syllable[:-1])
+                        cur_syllable = cur_syllable[-1]
+                    else:
+                        syllables.append(cur_syllable[:-1])
+                        cur_syllable = cur_syllable[-1]
 
         if cur_syllable:
-            if syllables:
+            if syllables and self.contains_only_consonants(cur_syllable):
                 last = syllables.pop()
                 syllables.append(last + cur_syllable)
             else:
                 syllables.append(cur_syllable)
 
-        if len(syllables[-1]) == 1 and not self.is_finnish_vowel(syllables[-1]):
-            last = syllables.pop()
-            prev = syllables.pop()
-            syllables.append(prev + last)
-
         return syllables
-
-
 
 
 class EnglishSyllableModule(SyllableModule):
@@ -307,9 +310,27 @@ if __name__ == "__main__":
     assert fsm.syllables_count('mies') == 1
     assert fsm.syllables_count('Joensuu') == 3
     assert fsm.syllables_count('Vaalimaa') == 3
-    # assert fsm.syllables('mies') == ['mies']
-    # assert fsm.syllables('Joensuu') == ['jo', 'en', 'suu']
-    # assert fsm.syllables('Vaalimaa') == ['vaa', 'li', 'maa']
+    assert fsm.syllables_count('äiti') == 2
+    assert fsm.syllables_count('Rovaniemi') == 4
+    assert fsm.syllables('mies') == ['mies']
+    assert fsm.syllables('Joensuu') == ['jo', 'en', 'suu']
+    assert fsm.syllables('Vaalimaa') == ['vaa', 'li', 'maa']
+    assert fsm.syllables('aamiainen') == ['aa', 'mi', 'ai', 'nen']
+    assert fsm.syllables('Rovaniemi') == ['ro', 'va', 'nie', 'mi']
+    assert fsm.syllables('kortti') == ['kort', 'ti']
+    assert fsm.syllables('aamu') == ['aa', 'mu']
+    assert fsm.syllables('Kittilä') == ['kit', 'ti', 'lä']
+    assert fsm.syllables('äiti') == ['äi', 'ti']
+    assert fsm.syllables('asua') == ['a', 'su', 'a']
+    assert fsm.syllables('isä') == ['i', 'sä']
+    assert fsm.syllables('roiskuu') == ['rois', 'kuu']
+    assert fsm.syllables('haluaisin') == ['ha', 'lu', 'ai', 'sin']
+    assert fsm.syllables(
+        'e-pä-jär-jes-tel-mäl-lis-tyt-tä-mät-tö-myy-del-län-sä-kään-kö-hän'.replace(
+            '-', '')) == \
+           ['e', 'pä', 'jär', 'jes', 'tel', 'mäl',
+            'lis', 'tyt', 'tä', 'mät', 'tö', 'myy',
+            'del', 'län', 'sä', 'kään', 'kö', 'hän']
 
     assert esm.syllables_count("eye") == 1
     assert esm.syllables_count("bed") == 1
