@@ -187,16 +187,16 @@ class EnglishSyllableModule(SyllableModule):
         word = word.lower()
         leng = len(word)
 
-        if word.endswith("ed") or word[:leng].endswith("er") or word[:leng].endswith("es") or word.endswith("ly"):
+        if word[-2:] in ["ed", "ly"] or word[leng - 2:leng] in ["er", "es"]:
             leng -= 2
-        elif word.endswith("ful") or word.endswith("est"):
+        elif word[-3:] in ["est", "ful"]:
             leng -= 3
-        elif word.endswith("less") or word.endswith("ment") or word.endswith("ness"):
+        elif word[-4:] in ["less", "ment", "ness"]:
             leng -= 4
 
-        if (word.endswith("ed") or word.endswith("es") or word.endswith("er") or word.endswith("est")) and \
+        if (word[-2:] in ["ed", "es", "er"] or word.endswith("est")) and \
                 self.is_english_consonant(word[leng - 1]) and \
-                not word[:leng].endswith("ll") and word[:leng].endswith(word[leng - 1] + word[leng - 1]):
+                not word[:leng] in ["ll", word[leng - 1] + word[leng - 1]]:
             leng -= 1
 
         if word[leng - 1] == "e":
@@ -211,7 +211,8 @@ class EnglishSyllableModule(SyllableModule):
                 cnt -= 1
 
         if word.endswith("ed"):
-            if (not (self.is_english_double_consonants(word[-4:-2]) or self.has_silent_ending(word[-4:-2])) and
+            bef_ed = word[-4:-2]
+            if (not (self.is_english_double_consonants(bef_ed) or self.has_silent_ending(bef_ed)) and
                 not (word[-3] not in "dt" and self.is_english_consonant(word[-3]) and
                      self.is_english_vowel(word[-4])) and
                 not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) or \
@@ -227,15 +228,15 @@ class EnglishSyllableModule(SyllableModule):
             if word[-4] == "v" and word == "every" or word[-4] == "w":
                 cnt -= 1
 
-        if word.endswith("ful") or word.endswith("less") or word.endswith("ment") or \
-                word.endswith("ness") or word.endswith("ly") or word.endswith("er") or word.endswith("est"):
+        if word[-4:] in ["less", "ment", "ness"] or \
+                word.endswith("ness") or word[-2:] in ["er", "ly"] or \
+                word[-3:] in ["est", "ful"]:
             cnt += 1
 
         return cnt
 
 
 if __name__ == "__main__":
-
     esm = EnglishSyllableModule()
     fsm = FinnishSyllableModule()
     rsm = RussianSyllableModule()
@@ -315,10 +316,14 @@ if __name__ == "__main__":
     assert fsm.syllables('mies') == ['mies']
     assert fsm.syllables('Joensuu') == ['jo', 'en', 'suu']
     assert fsm.syllables('Vaalimaa') == ['vaa', 'li', 'maa']
+    assert fsm.syllables('Ranska') == ['rans', 'ka']
     assert fsm.syllables('aamiainen') == ['aa', 'mi', 'ai', 'nen']
+    assert fsm.syllables('Eurooppa') == ['eu', 'roop', 'pa']
     assert fsm.syllables('Rovaniemi') == ['ro', 'va', 'nie', 'mi']
     assert fsm.syllables('kortti') == ['kort', 'ti']
     assert fsm.syllables('aamu') == ['aa', 'mu']
+    assert fsm.syllables('isoäitini') == ['i', 'so', 'äi', 'ti', 'ni']
+    assert fsm.syllables('sairaanhoitaja') == ['sai', 'raan', 'hoi', 'ta', 'ja']
     assert fsm.syllables('Kittilä') == ['kit', 'ti', 'lä']
     assert fsm.syllables('äiti') == ['äi', 'ti']
     assert fsm.syllables('asua') == ['a', 'su', 'a']
@@ -327,10 +332,9 @@ if __name__ == "__main__":
     assert fsm.syllables('haluaisin') == ['ha', 'lu', 'ai', 'sin']
     assert fsm.syllables(
         'e-pä-jär-jes-tel-mäl-lis-tyt-tä-mät-tö-myy-del-län-sä-kään-kö-hän'.replace(
-            '-', '')) == \
-           ['e', 'pä', 'jär', 'jes', 'tel', 'mäl',
-            'lis', 'tyt', 'tä', 'mät', 'tö', 'myy',
-            'del', 'län', 'sä', 'kään', 'kö', 'hän']
+            '-', '')) == ['e', 'pä', 'jär', 'jes', 'tel', 'mäl',
+                          'lis', 'tyt', 'tä', 'mät', 'tö', 'myy',
+                          'del', 'län', 'sä', 'kään', 'kö', 'hän']
 
     assert esm.syllables_count("eye") == 1
     assert esm.syllables_count("bed") == 1
