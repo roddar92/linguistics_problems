@@ -1,24 +1,29 @@
 # -*- coding: utf-8 -*-
 import random
+from collections import defaultdict
 
 
 class OppositesGame(object):
     def __init__(self):
         self.status = "unknown"
-        self.opposites_dictionary = dict()
-        self.answers = list()
+        self.opposites_dictionary = defaultdict(list)
+        self.answers = ''
+        self.quessed_keys = list()
         self.current_key = ''
         self.current_vals = list()
         self.attempts = 1
+
+        self.RIGHT_ANSWER = [
+            "Да, всё правильно! :)",
+            "Здорово! Так держать! :)",
+            "Правильно. Молодец!"
+        ]
 
         with open("../resources/ru_opposites.txt", "r", encoding='utf-8') as f:
             for line in f:
                 (word, opposites) = line.split()
                 opposites = opposites.split(",")
-                if word not in self.opposites_dictionary:
-                    self.opposites_dictionary[word] = list(opposites)
-                else:
-                    self.opposites_dictionary[word].extend(list(opposites))
+                self.opposites_dictionary[word].extend(list(opposites))
                 for opposite in opposites:
                     if opposite not in self.opposites_dictionary:
                         self.opposites_dictionary[opposite] = list()
@@ -36,8 +41,9 @@ class OppositesGame(object):
         return set(synonyms)
 
     def move(self):
-        i = random.randint(0, len(list(self.opposites_dictionary)) - 2)
-        self.current_key = list(self.opposites_dictionary.keys())[i]
+        self.current_key = random.choice(
+            [key for key in self.opposites_dictionary.keys() if key not in self.quessed_keys]
+        )
         self.current_vals = self.opposites_dictionary[self.current_key]
         print(self.current_key)
 
@@ -45,19 +51,20 @@ class OppositesGame(object):
         if is_end_of_game(word):
             self.status = "over"
             print("Тогда давай закончим игру! Мы правильно ответили на " +
-                  str(sum([i for i in self.answers if i == 1])) + " вопросов из " + str(len(self.answers)) + ".")
-            self.answers.clear()
+                  str(self.answers.count('1')) + " вопросов из " + str(len(self.answers)) + ".")
+            self.answers = ''
         elif word in self.current_vals:
             self.attempts = 1
-            self.answers.append(1)
-            print("Да, всё правильно! :)")
+            self.quessed_keys.append(self.current_key)
+            self.answers += '1'
+            print(random.choice(self.RIGHT_ANSWER))
         elif self.attempts == 1 and (word == self.current_key or word in self.synonyms(self.current_vals)):
             self.attempts += 1
             raise Exception("Ты угадал синоним, но не противоположное слово.")
         else:
             if self.attempts == 2:
                 self.attempts = 1
-                self.answers.append(0)
+                self.answers += '0'
                 print("Увы, правильный ответ - " + random.choice(self.current_vals))
             else:
                 self.attempts += 1
