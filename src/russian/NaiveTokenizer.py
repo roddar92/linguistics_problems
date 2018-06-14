@@ -1,4 +1,6 @@
 import re
+import string
+from collections import namedtuple
 
 
 class NaiveTokenizer(object):
@@ -35,13 +37,14 @@ class NaiveTokenizer(object):
 
         self.URL = re.compile(url, re.IGNORECASE)
         self.CURRENCY = '$€£¢¥₽'
-        self.OTHER_PUNCT = '#%'
+        self.OTHER_PUNCT = '#%^~±'
+        self.PUNCT = string.punctuation
         self.DIGIT = re.compile(r'((\d)+([.,](\d)+)?)')
         self.EOS = '.?!'
         self.INS = ',:;'
         self.QUOTES = '\"\'\`«»“”‘’'
-        self.LBRACKETS = '([{'
-        self.RBRACKETS = ')]}'
+        self.LBRACKETS = '<([{'
+        self.RBRACKETS = '>)]}'
 
     def tokenize(self, text):
 
@@ -49,7 +52,6 @@ class NaiveTokenizer(object):
 
             START, CURRENCY, EOS, INS, WORD = range(5)
 
-            toks = []
             cur_tok = ''
             state = START
 
@@ -61,7 +63,7 @@ class NaiveTokenizer(object):
                     elif state in (EOS, INS, CURRENCY, WORD):
                         state = INS
                         if cur_tok:
-                            toks += [cur_tok]
+                            yield cur_tok
                             cur_tok = c
                     else:
                         state = INS
@@ -75,14 +77,14 @@ class NaiveTokenizer(object):
                     elif state in (INS, CURRENCY):
                         state = EOS
                         if cur_tok:
-                            toks += [cur_tok]
+                            yield cur_tok
                             cur_tok = c
                     elif state == WORD:
                         state = EOS
                         if cur_tok and ((cur_tok + c).lower() in self.abbr or len(cur_tok) <= 1):
                             cur_tok += c
                         else:
-                            toks += [cur_tok]
+                            yield cur_tok
                             cur_tok = c
                     else:
                         state = EOS
@@ -96,14 +98,14 @@ class NaiveTokenizer(object):
                     elif state in (EOS, INS, WORD):
                         state = CURRENCY
                         if cur_tok:
-                            toks += [cur_tok]
+                            yield cur_tok
                             cur_tok = c
                     else:
                         state = CURRENCY
                         cur_tok += c
                 elif c.isspace():
                     if cur_tok:
-                        toks += [cur_tok]
+                        yield cur_tok
                 else:
                     if state == START:
                         state = WORD
@@ -111,7 +113,7 @@ class NaiveTokenizer(object):
                     elif state in (EOS, INS, CURRENCY):
                         state = WORD
                         if cur_tok:
-                            toks += [cur_tok]
+                            yield cur_tok
                             cur_tok = c
                     elif state == WORD:
                         cur_tok += c
@@ -120,9 +122,26 @@ class NaiveTokenizer(object):
                         cur_tok += c
 
             if cur_tok:
-                toks += [cur_tok]
+                yield cur_tok
 
-            return toks
+        def put_token(value):
+            token = namedtuple('Token', ('Value', 'Type'))
+            if value in self.LBRACKETS:
+                return token(value, 'LBR')
+            elif value in self.RBRACKETS:
+                return token(value, 'RBR')
+            elif value in self.QUOTES:
+                return token(value, 'QUOTE')
+            elif value in self.EOS + self.INS:
+                return token(value, 'PUNCT')
+            elif value in self.CURRENCY + self.OTHER_PUNCT + self.PUNCT:
+                return token(value, 'SYMB')
+            elif self.URL.match(value):
+                return token(value, 'URL')
+            elif self.DIGIT.search(value):
+                return token(value, 'DIGIT')
+            else:
+                return token(value, 'WORD')
 
         for excpected_token in text.split():
             if self.URL.search(excpected_token) or self.DIGIT.search(excpected_token):
@@ -133,57 +152,58 @@ class NaiveTokenizer(object):
                                  self.DIGIT.search(excpected_token).end()
                 first, middile, last = excpected_token[:start], excpected_token[start:end], excpected_token[end:]
                 if first:
-                    for token in get_sequence(first):
-                        yield token
-                yield middile
+                    for tok in get_sequence(first):
+                        yield put_token(tok)
+                yield put_token(middile)
                 if last:
-                    for token in get_sequence(last):
-                        yield token
+                    for tok in get_sequence(last):
+                        yield put_token(tok)
             else:
-                for token in get_sequence(excpected_token):
-                    yield token
+                for tok in get_sequence(excpected_token):
+                    yield put_token(tok)
 
 
 if __name__ == '__main__':
     tokenizer = NaiveTokenizer()
+    # print(list(tokenizer.tokenize('2 + 2 = 4, а 2*2 == 5!')))
 
-    assert list(tokenizer.tokenize(
-        'Курс доллара на сегодняшний день составляет 62.73, курс евро - 73,73.'
-    )) == ['Курс', 'доллара', 'на', 'сегодняшний', 'день', 'составляет', '62.73', ',',
-           'курс', 'евро', '-', '73,73', '.']
+    assert [token.Value for token in list(tokenizer.tokenize(
+        'Курс доллара на сегодняшний день составляет 62.73₽, курс евро - 73,73 ₽.'
+    ))] == ['Курс', 'доллара', 'на', 'сегодняшний', 'день', 'составляет', '62.73', '₽', ',',
+            'курс', 'евро', '-', '73,73', '₽', '.']
 
-    assert list(tokenizer.tokenize(
+    assert [token.Value for token in list(tokenizer.tokenize(
         'В г. Санкт-Петербург ожидаются дожди с грозами, температура составит около 2-х градусов тепла.'
-    )) == ['В', 'г.', 'Санкт-Петербург', 'ожидаются', 'дожди', 'с', 'грозами', ',',
-           'температура', 'составит', 'около', '2', '-х', 'градусов', 'тепла', '.']
+    ))] == ['В', 'г.', 'Санкт-Петербург', 'ожидаются', 'дожди', 'с', 'грозами', ',',
+            'температура', 'составит', 'около', '2', '-х', 'градусов', 'тепла', '.']
 
-    assert list(tokenizer.tokenize(
+    assert [token.Value for token in list(tokenizer.tokenize(
         'В огороде бузина, а в Киеве - дядька.'
-    )) == ['В', 'огороде', 'бузина', ',', 'а', 'в', 'Киеве', '-', 'дядька', '.']
+    ))] == ['В', 'огороде', 'бузина', ',', 'а', 'в', 'Киеве', '-', 'дядька', '.']
 
-    assert list(tokenizer.tokenize(
+    assert [token.Value for token in list(tokenizer.tokenize(
         'Нефть стоит $50,67. А в деревне Гадюкино - снова дожди!'
-    )) == ['Нефть', 'стоит', '$', '50,67', '.', 'А', 'в', 'деревне', 'Гадюкино', '-', 'снова', 'дожди', '!']
+    ))] == ['Нефть', 'стоит', '$', '50,67', '.', 'А', 'в', 'деревне', 'Гадюкино', '-', 'снова', 'дожди', '!']
 
-    assert list(tokenizer.tokenize(
+    assert [token.Value for token in list(tokenizer.tokenize(
         'Нефть стоит $50,67 . А в Кишенёве (моём родном городе) гостит моя тётка ...'
-    )) == ['Нефть', 'стоит', '$', '50,67', '.', 'А', 'в', 'Кишенёве', '(', 'моём', 'родном',
-           'городе', ')', 'гостит', 'моя', 'тётка', '...']
+    ))] == ['Нефть', 'стоит', '$', '50,67', '.', 'А', 'в', 'Кишенёве', '(', 'моём', 'родном',
+            'городе', ')', 'гостит', 'моя', 'тётка', '...']
 
-    assert list(tokenizer.tokenize(
+    assert [token.Value for token in list(tokenizer.tokenize(
         'Следите за всеми новостями тут : facebook.com/zebrochka.'
-    )) == ['Следите', 'за', 'всеми', 'новостями', 'тут', ':', 'facebook.com/zebrochka', '.']
+    ))] == ['Следите', 'за', 'всеми', 'новостями', 'тут', ':', 'facebook.com/zebrochka', '.']
 
-    assert list(tokenizer.tokenize(
+    assert [token.Value for token in list(tokenizer.tokenize(
         'Пишите все письма на мой электронный ящик : dobro@gmail.com.'
-    )) == ['Пишите', 'все', 'письма', 'на', 'мой', 'электронный', 'ящик', ':', 'dobro@gmail.com', '.']
+    ))] == ['Пишите', 'все', 'письма', 'на', 'мой', 'электронный', 'ящик', ':', 'dobro@gmail.com', '.']
 
-    assert list(tokenizer.tokenize(
+    assert [token.Value for token in list(tokenizer.tokenize(
         'Следите за моей  страницей здесь : www.vk.com/id777. Подписывайтесь !!!'
-    )) == ['Следите', 'за', 'моей', 'страницей', 'здесь', ':', 'www.vk.com/id777', '.',
-           'Подписывайтесь', '!!!']
+    ))] == ['Следите', 'за', 'моей', 'страницей', 'здесь', ':', 'www.vk.com/id777', '.',
+            'Подписывайтесь', '!!!']
 
-    assert list(tokenizer.tokenize(
+    assert [token.Value for token in list(tokenizer.tokenize(
         'Следите за новостями здесь : facebook.com/zebrochka.Подписывайтесь на наш "канал" и оставляйте лайки !!!'
-    )) == ['Следите', 'за', 'новостями', 'здесь', ':', 'facebook.com/zebrochka.Подписывайтесь',
-           'на', 'наш', '"', 'канал', '"', 'и', 'оставляйте', 'лайки', '!!!']
+    ))] == ['Следите', 'за', 'новостями', 'здесь', ':', 'facebook.com/zebrochka.Подписывайтесь',
+            'на', 'наш', '"', 'канал', '"', 'и', 'оставляйте', 'лайки', '!!!']
