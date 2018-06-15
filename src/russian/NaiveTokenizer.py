@@ -40,6 +40,7 @@ class NaiveTokenizer(object):
         self.OTHER_PUNCT = '#%^~±'
         self.PUNCT = string.punctuation
         self.DIGIT = re.compile(r'((\d)+([.,](\d)+)?)')
+        self.NUMALPHA = re.compile(r'([.\w-]+)')
         self.EOS = '.?!'
         self.INS = ',:;'
         self.QUOTES = '\"\'\`«»“”‘’'
@@ -47,6 +48,9 @@ class NaiveTokenizer(object):
         self.RBRACKETS = '>)]}'
 
     def tokenize(self, text):
+
+        def isnumalpha(s):
+            return re.search('[A-ZА-Я]', s, re.IGNORECASE) and re.search('(\d)+', s)
 
         def get_sequence(cur_token):
 
@@ -136,8 +140,10 @@ class NaiveTokenizer(object):
                 return token(value, 'PUNCT')
             elif value in self.CURRENCY + self.OTHER_PUNCT + self.PUNCT:
                 return token(value, 'SYMB')
-            elif self.URL.match(value):
+            elif self.URL.search(value):
                 return token(value, 'URL')
+            elif self.NUMALPHA.search(value):
+                return token(value, 'WORD')
             elif self.DIGIT.search(value):
                 return token(value, 'DIGIT')
             else:
@@ -147,9 +153,12 @@ class NaiveTokenizer(object):
             if self.URL.search(excpected_token) or self.DIGIT.search(excpected_token):
                 if self.URL.search(excpected_token):
                     start, end = self.URL.search(excpected_token).start(), self.URL.search(excpected_token).end()
-                else:
+                elif not isnumalpha(excpected_token):
                     start, end = self.DIGIT.search(excpected_token).start(), \
                                  self.DIGIT.search(excpected_token).end()
+                else:
+                    start, end = self.NUMALPHA.search(excpected_token).start(), \
+                                 self.NUMALPHA.search(excpected_token).end()
                 first, middile, last = excpected_token[:start], excpected_token[start:end], excpected_token[end:]
                 if first:
                     for tok in get_sequence(first):
@@ -168,6 +177,16 @@ if __name__ == '__main__':
     # print(list(tokenizer.tokenize('2 + 2 = 4, а 2*2 == 5!')))
 
     assert [token.Value for token in list(tokenizer.tokenize(
+        'Спешите приобрести последние автомобили Volvo XS60!'
+    ))] == ['Спешите', 'приобрести', 'последние', 'автомобили', 'Volvo', 'XS60', '!']
+
+    assert [token.Value for token in list(tokenizer.tokenize(
+        'Последняя модель телефона марки Siemens C-60 вызвала большой интерес '
+        'у покупателей в течение пары дней с первого дня продажи.'
+    ))] == ['Последняя', 'модель', 'телефона', 'марки', 'Siemens', 'C-60', 'вызвала', 'большой', 'интерес',
+            'у', 'покупателей', 'в', 'течение', 'пары', 'дней', 'с', 'первого', 'дня', 'продажи', '.']
+
+    assert [token.Value for token in list(tokenizer.tokenize(
         'Курс доллара на сегодняшний день составляет 62.73₽, курс евро - 73,73 ₽.'
     ))] == ['Курс', 'доллара', 'на', 'сегодняшний', 'день', 'составляет', '62.73', '₽', ',',
             'курс', 'евро', '-', '73,73', '₽', '.']
@@ -175,7 +194,7 @@ if __name__ == '__main__':
     assert [token.Value for token in list(tokenizer.tokenize(
         'В г. Санкт-Петербург ожидаются дожди с грозами, температура составит около 2-х градусов тепла.'
     ))] == ['В', 'г.', 'Санкт-Петербург', 'ожидаются', 'дожди', 'с', 'грозами', ',',
-            'температура', 'составит', 'около', '2', '-х', 'градусов', 'тепла', '.']
+            'температура', 'составит', 'около', '2-х', 'градусов', 'тепла', '.']
 
     assert [token.Value for token in list(tokenizer.tokenize(
         'В огороде бузина, а в Киеве - дядька.'
