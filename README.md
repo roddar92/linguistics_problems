@@ -5,6 +5,7 @@ Welcome to the main page of my project! This repository stores examples of lingu
 My name is Daria, I'm a software engineer with skills in natural language processing. My general scientific interests are knowledge bases and facts extraction. There are very important analysis tools that provides semantic analysis and text mining.
 
 Project has next sections:
+* [Pre-morphology](#pre-morphology)
 * [Morphology](#morphology)
 * [Knowledge engineering](#knowledge-engineering)
 * [N-grams applications](#n-grams-applications)
@@ -14,12 +15,15 @@ In the source code three languages is supported now: English, Russian and Finnis
 
 Source code:
 
+#### Pre-morphology
+- [Russian tokenizer](src/russian/NaiveTokenizer.py)
+
 #### Morphology
 - [Russian patronymic generator](src/russian/Patronymic-ya.py)
 - [Russian diminutive names generator](src/russian/Diminutive_Names.py)
 - [Russian cases generator (dative)](src/russian/Russian_Caser.py)
 - [Russian cognate words checker](src/russian/Cognate_Words.py)
-- [Syllable Module (word syllables count (russian/english) and word syllables list (russian))](src/russian/Syllables.py)
+- [Syllable Module (word syllables count (russian/english/finnish) and word syllables list (russian/finnish))](src/russian/Syllables.py)
 - [English Adjective Comparisoner](src/english/Comparative_or_Superlative.py)
 - [Common English question generator](src/english/Question.py)
 - [Finnish Predicative Sentences](src/suomi/FinnishPredicativeQuestioner.py)
@@ -31,7 +35,7 @@ Source code:
 - [Bookshelf](src/ontologies/biblio)
 
 #### N-grams applications
-- [N-gram dictionary (for spelling)](src/ngrams/NGramDictionaryManager.py)
+- [N-gram dictionary (for spelling/for language modeling)](src/ngrams/NGramDictionaryManager.py)
 
 #### Games
  - [Russian Cities](src/russian/games/Cities.py)
