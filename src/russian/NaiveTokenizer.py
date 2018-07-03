@@ -7,9 +7,9 @@ class NaiveTokenizer(object):
 
     def __init__(self):
         with open('../russian/resources/tokenizer/abbreviations.txt', 'r') as inf:
-            self.abbr = [
+            self.abbr = {
                 line.strip().lower() for line in inf
-            ]
+            }
 
         with open('../russian/resources/tokenizer/tlds-alpha-by-domain.txt', 'r') as inf:
             self.tlds = [
@@ -23,10 +23,7 @@ class NaiveTokenizer(object):
         url += r'(?:(?:([A-Z0-9][A-Z0-9-_]+)@([A-Z0-9-_\.])+[A-Z0-9]\.)' \
                r'|(?:[A-Z0-9][A-Z0-9-]{0,61}[A-Z0-9]\.)+)'
 
-        tld = r'(' + self.tlds[0]
-        for i in range(1, len(self.tlds)):
-            tld += r'|{}'.format(self.tlds[i])
-        tld += r')'
+        tld = r'(' + r'|'.join(self.tlds) + r')'
 
         url += tld
         url += r'|(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
@@ -37,10 +34,10 @@ class NaiveTokenizer(object):
 
         self.URL = re.compile(url, re.IGNORECASE)
         self.CURRENCY = '$€£¢¥₽'
-        self.OTHER_PUNCT = '#%^~±'
+        self.OTHER_PUNCT = '#%^~±°'
         self.PUNCT = string.punctuation
         self.DIGIT = re.compile(r'((\d)+([.,](\d)+)?)')
-        self.NUMALPHA = re.compile(r'([.\w-]+)')
+        self.NUMALPHA = re.compile(r'([/.\w-]+)')
         self.EOS = '.?!'
         self.INS = ',:;'
         self.QUOTES = '\"\'\`«»“”‘’'
@@ -226,3 +223,11 @@ if __name__ == '__main__':
         'Следите за новостями здесь : facebook.com/zebrochka.Подписывайтесь на наш "канал" и оставляйте лайки !!!'
     ))] == ['Следите', 'за', 'новостями', 'здесь', ':', 'facebook.com/zebrochka.Подписывайтесь',
             'на', 'наш', '"', 'канал', '"', 'и', 'оставляйте', 'лайки', '!!!']
+
+    assert [token.Value for token in list(tokenizer.tokenize(
+        'Максимальная скорость ветра - 5 м/с.'
+    ))] == ['Максимальная', 'скорость', 'ветра', '-', '5', 'м/с', '.']
+
+    assert [token.Value for token in list(tokenizer.tokenize(
+        'Нефть за $27/барр. обеспечена!'
+    ))] == ['Нефть', 'за', '$', '27/барр.', 'обеспечена', '!']
