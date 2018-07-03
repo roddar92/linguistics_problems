@@ -20,6 +20,7 @@ class Game(object):
             "Этот город уже был в игре, назови другой:"
         ]
         self.BYE_PHRASES = [
+            "стоп",
             "конец",
             "хватит",
             "устал",
@@ -27,20 +28,21 @@ class Game(object):
             "отстань"
         ]
 
-        self.allowed_cities = list()
-        self.current_cities = list()
+        self.allowed_cities = set()
+        self.guessed_cities = set()
+        self.previous_city = None
         self.status = "init"
 
         self.used_letters = defaultdict(int)
 
         with open("../resources/ru_cities.txt", "r", encoding='utf-8') as f:
-            self.allowed_cities = [
+            self.allowed_cities = {
                 line.strip() for line in f
-            ]
+            }
 
-        self.allowed_letters = Counter([
+        self.allowed_letters = Counter(
             city[0] for city in self.allowed_cities
-        ])
+        )
 
     @staticmethod
     def get_city_name(city):
@@ -62,7 +64,7 @@ class Game(object):
         return self.used_letters[letter] == self.allowed_letters[letter]
 
     def _is_all_cities_exausted(self):
-        return set(self.allowed_cities) == set(self.current_cities)
+        return self.allowed_cities == self.guessed_cities
 
     def _find_index_of_right_letter(self, previous_city):
         ind = -1
@@ -73,24 +75,24 @@ class Game(object):
         return ind
 
     def _get_last_city(self):
-        return self.current_cities[-1]
+        return self.previous_city
 
     def _check_rules(self, word):
-        if len(self.current_cities) != 0:
-            previous_city = self.current_cities[-1]
-            ind = self._find_index_of_right_letter(previous_city)
-            return previous_city[ind] == word[0]
+        if len(self.guessed_cities) != 0:
+            ind = self._find_index_of_right_letter(self.previous_city)
+            return self.previous_city[ind] == word[0]
 
         return True
 
     def _make_city_used(self, city):
-        self.current_cities.append(city)
+        self.previous_city = city
+        self.guessed_cities.add(city)
         self._register_used_first_letter(city)
 
     def check_city(self, city):
         if city not in self.allowed_cities:
             raise CitiesGameException(random.choice(self.UNKNOWN_CITY))
-        elif city in self.current_cities:
+        elif city in self.guessed_cities:
             raise CitiesGameException(random.choice(self.USED_CITY))
         elif not self._check_rules(city):
             previous_city = self._get_last_city()
@@ -106,7 +108,7 @@ class Game(object):
         ind = self._find_index_of_right_letter(last_city)
         letter = last_city[ind]
         cities_starts_with_letter = [word for word in self.allowed_cities
-                                     if word.startswith(letter) and word not in self.current_cities]
+                                     if word.startswith(letter) and word not in self.guessed_cities]
         city = random.choice(cities_starts_with_letter)
         self._make_city_used(city)
         print(self.get_city_name(city))
