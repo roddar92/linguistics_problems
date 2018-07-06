@@ -6,6 +6,7 @@ My name is Daria, I'm a software engineer with skills in natural language proces
 
 Project has next sections:
 * [Pre-morphology](#pre-morphology)
+* [Phonology](#phonology)
 * [Morphology](#morphology)
 * [Knowledge engineering](#knowledge-engineering)
 * [N-grams applications](#n-grams-applications)
@@ -18,12 +19,14 @@ Source code:
 #### Pre-morphology
 - [Russian tokenizer](src/russian/NaiveTokenizer.py)
 
+#### Phonology
+- [Syllable Module (word syllables count (russian/english/finnish) and word syllables list (russian/finnish))](src/russian/Syllables.py)
+
 #### Morphology
 - [Russian patronymic generator](src/russian/Patronymic-ya.py)
 - [Russian diminutive names generator](src/russian/Diminutive_Names.py)
 - [Russian cases generator (dative)](src/russian/Russian_Caser.py)
 - [Russian cognate words checker](src/russian/Cognate_Words.py)
-- [Syllable Module (word syllables count (russian/english/finnish) and word syllables list (russian/finnish))](src/russian/Syllables.py)
 - [English Adjective Comparisoner](src/english/Comparative_or_Superlative.py)
 - [Common English question generator](src/english/Question.py)
 - [Finnish Predicative Sentences](src/suomi/FinnishPredicativeQuestioner.py)
@@ -36,6 +39,7 @@ Source code:
 
 #### N-grams applications
 - [N-gram dictionary (for spelling/for language modeling)](src/ngrams/NGramDictionaryManager.py)
+- [Simple spell-checker (based on n-grams and Damerau-Levenstein distance)](src/russian/SpellChecker.py)
 
 #### Games
  - [Russian Cities](src/russian/games/Cities.py)
