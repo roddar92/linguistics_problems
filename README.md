@@ -40,6 +40,11 @@ Source code:
 #### N-grams applications
 - [N-gram dictionary (for spelling/for language modeling)](src/ngrams/NGramDictionaryManager.py)
 - [Simple spell-checker (based on n-grams and Damerau-Levenstein distance)](src/russian/SpellChecker.py)
+- Advanced spell-checker based on:
+    - dictionary of words from good texts with 2-3-gram index;
+    - train language model with 2-grams on good texts;
+    - retrieval `candidates` with Damerau-Levenstein distance;
+    - find `candidate` with max probability of bigram `max{ P(prev_word, candidate), candidate in candidates}`
 
 #### Games
  - [Russian Cities](src/russian/games/Cities.py)
