@@ -30,6 +30,7 @@ Source code:
 - [English Adjective Comparisoner](src/english/Comparative_or_Superlative.py)
 - [Common English question generator](src/english/Question.py)
 - [Finnish Predicative Sentences](src/suomi/FinnishPredicativeQuestioner.py)
+- [Russian POS-tagger](src/russian/NaivePosTagger.py)
 
 #### Knowledge engineering
 - [Family tree](src/ontologies/Pedigree.py)
