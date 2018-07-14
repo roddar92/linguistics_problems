@@ -115,14 +115,15 @@ def features(sequence, i):
 
     # последняя буква - гласная
     if is_vowel(seq[-1]):
-        yield "last_vowel=" + "ya" if seq.endswith('ya') else "yu" if seq.endswith('yu') else seq[-1]
+        yield "last_vowel=" + seq[-2:] \
+            if re.search(r'y[au]$', seq) or (len(seq) >= 2 and is_vowel(seq[-2])) else seq[-1]
 
     # содержит -'иц'
     if 'its' in seq or re.search(r'\w+nik', seq):
         yield "with_its"
 
     # содержит некоторые суффиксы
-    if re.search(r'\w+sk', seq):
+    if re.search(r'\w+[stz][kn]', seq):
         yield "with_sk_suffix"
 
     if re.search(r'\w+st?v', seq):
@@ -130,6 +131,9 @@ def features(sequence, i):
 
     if re.search(r'\w+ov', seq):
         yield "with_ov_suffix"
+
+    if re.search(r'\w+vn', seq):
+        yield "with_vn_suffix"
 
     if re.search(r'\w+[ei]k', seq):
         yield "with_eik_suffix"
@@ -139,28 +143,15 @@ def features(sequence, i):
         yield "with_nn"
 
     # содержит 'чн', 'чк'
-    if 'chk' in seq or 'chn' in seq:
+    if 'chk' in seq or 'chn' in seq or 'schn' in seq:
         yield "with_chk"
 
     # содержит 'нк'
     if 'nk' in seq:
         yield "with_nk"
 
-    # содержит 'что', 'это'
-    if 'chtob' in seq or re.search(r'^aet[aiou]', seq, re.IGNORECASE):
-        yield "with_sconj_subwords"
-
-    if re.search(r'^(aet[aiou][jmt]?|svo[eij][jmy]?|[kt]ak[aio][jmy]?|kajjd|nekotor)', seq, re.IGNORECASE) or \
-            re.search(r'^e(go|ё)$', seq, re.IGNORECASE) or seq in ['a', 'an', 'the', 'to', 'tom']:
-        yield "with_det_subwords"
-
-    # содержит 'был', 'явл', 'будет' ...
-    if 'byl' in seq or seq.startswith('yavl') or re.search(r'^bud[eu]', seq, re.IGNORECASE):
-        yield "with_aux_subwords"
-
-    # частицы 'не-ни', 'бы', 'ли' ...
-    if re.search(r'^(by|li|n[ei]|jje)$', seq, re.IGNORECASE):
-        yield "is_part"
+    if re.search(r'l[aeio]?', seq, re.IGNORECASE):
+        yield "ends_with_l"
 
     # содержит суффиксы 'ющ', 'ящ', 'ищ', 'вш'
     if re.search(r'\w+(y[aiu]sch|vsh)', seq) or seq.endswith('v'):
@@ -209,7 +200,6 @@ def features(sequence, i):
         next = sequence[i + 1].split("\t")[1]
         # следующая состоит из букв и цифр
         yield "next_is_alnum=" + str(next.isalnum())
-
 
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("../resources/train.data", "r"), features)
