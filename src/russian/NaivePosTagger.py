@@ -147,15 +147,19 @@ def features(sequence, i):
         yield "with_nk"
 
     # содержит 'что', 'это'
-    if 'chto' in seq or re.search(r'^aet[aiou]', seq):
+    if 'chtob' in seq or re.search(r'^aet[aiou]', seq, re.IGNORECASE):
         yield "with_sconj_subwords"
 
+    if re.search(r'^(aet[aiou][jmt]?|svo[eij][jmy]?|[kt]ak[aio][jmy]?|kajjd|nekotor)', seq, re.IGNORECASE) or \
+            re.search(r'^e(go|ё)$', seq, re.IGNORECASE) or seq in ['a', 'an', 'the', 'to', 'tom']:
+        yield "with_det_subwords"
+
     # содержит 'был', 'явл', 'будет' ...
-    if 'byl' in seq or seq.startswith('yavl') or re.search(r'^bud[eu]', seq):
+    if 'byl' in seq or seq.startswith('yavl') or re.search(r'^bud[eu]', seq, re.IGNORECASE):
         yield "with_aux_subwords"
 
     # частицы 'не-ни', 'бы', 'ли' ...
-    if re.search(r'^(by|li|n[ei])$', seq):
+    if re.search(r'^(by|li|n[ei]|jje)$', seq, re.IGNORECASE):
         yield "is_part"
 
     # содержит суффиксы 'ющ', 'ящ', 'ищ', 'вш'
