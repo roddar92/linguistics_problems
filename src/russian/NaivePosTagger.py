@@ -126,6 +126,9 @@ def features(sequence, i):
     if re.search(r'\w+(sh|jj)k', seq):
         yield "with_shk_suffix"
 
+    if re.search(r'\w+[ln]`k', seq):
+        yield "with_lnk_suffix"
+
     # contains 'нн'
     if 'nn' in seq:
         yield "with_nn"
@@ -138,10 +141,6 @@ def features(sequence, i):
     if re.search(r'\w+[jlmrstvz]n', seq):
         yield "with_n_suffix"
 
-    # ends with 'л' and similar endings
-    if re.search(r'l[aeio]?$', seq):
-        yield "ends_with_l"
-
     # contains suffixes 'ющ', 'ящ', 'ищ', 'вш'
     if re.search(r'\w+((y[au]|i)s?ch|vsh)', seq) or seq.endswith('v'):
         yield "with_part_sch_suffixes"
@@ -149,12 +148,6 @@ def features(sequence, i):
     # ends with 'ся'
     if seq.endswith("sya") or seq.endswith('s\''):
         yield "ends_with_sya"
-
-    if seq.endswith('j'):
-        yield "ends_with_j"
-
-    if 'w' in seq.lower():
-        yield "with_w_letter"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[1]
