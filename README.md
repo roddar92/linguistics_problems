@@ -18,6 +18,7 @@ Source code:
 
 #### Pre-morphology
 - [Russian tokenizer](src/russian/NaiveTokenizer.py)
+- [Transliteration Russian <=> Latin (with spell-checker)](src/russian/NaiveTransliterator.py)
 
 #### Phonology
 - [Syllable Module (word syllables count (russian/english/finnish) and word syllables list (russian/finnish))](src/russian/Syllables.py)
