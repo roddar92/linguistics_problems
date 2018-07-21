@@ -11,10 +11,10 @@ class Transliterator:
 
         self.phonemes = {
             'я': ['ya', 'ia', 'ja'],
-            'ю': ['yu'],
+            'ю': ['yu', 'ju'],
             'э': ['ae'],
             'б': ['b'],
-            'в': ['v'],
+            'в': ['v', 'w'],
             'д': ['d'],
             'п': ['p'],
             'и': ['i'],
@@ -45,6 +45,10 @@ class Transliterator:
             'ы': ['y']
         }
 
+        self.need_spell = need_spell
+        self.tokenizer = None
+        self.spell_checker = None
+
         if need_spell:
             self.tokenizer = NaiveTokenizer()
             self.spell_checker = StatisticalSpeller()
@@ -58,9 +62,6 @@ class Transliterator:
         self.inverted_phonemes['x'] = 'кс'
 
         self.keys = str.maketrans(self.straight_phonemes)
-        self.need_spell = need_spell
-        self.tokenizer = None
-        self.spell_checker = None
 
     def transliterate(self, text):
         return text.translate(self.keys)
