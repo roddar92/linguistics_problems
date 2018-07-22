@@ -1,3 +1,4 @@
+import re
 import string
 
 
@@ -60,6 +61,7 @@ class Transliterator:
         self.inverted_phonemes = {t: k for k, v in self.phonemes.items() for t in v}
 
         self.inverted_phonemes['x'] = 'кс'
+        self.inverted_phonemes['iy'] = 'ый'
 
         self.keys = str.maketrans(self.straight_phonemes)
 
@@ -77,7 +79,10 @@ class Transliterator:
                 elems += [self.inverted_phonemes[text[i:i+3]]]
                 i += 3
             elif text[i:i+2] in self.inverted_phonemes:
-                elems += [self.inverted_phonemes[text[i:i+2]]]
+                if text[i:i+2] == 'iy':
+                    elems += ['ий' if re.search(r'[жкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i+2]]]
+                else:
+                    elems += [self.inverted_phonemes[text[i:i+2]]]
                 i += 2
             else:
                 elems += [self.inverted_phonemes[text[i]] if text[i] in self.inverted_phonemes else text[i]]
@@ -103,5 +108,7 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Tsarskoe Selo') == 'Царскоe Сeло'
     assert transliterator.inverse_transliterate('Sankt-Peterburg') == 'Санкт-Пeтeрбург'
     assert transliterator.inverse_transliterate('Aeti letnie dozhdi') == 'Эти лeтниe дожди'
+    assert transliterator.inverse_transliterate('Nash zelyoniy mir') == 'Наш зeлёный мир'
+    assert transliterator.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
     assert transliterator.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
