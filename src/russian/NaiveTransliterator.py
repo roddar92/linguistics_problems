@@ -80,7 +80,7 @@ class Transliterator:
                 i += 3
             elif text[i:i+2] in self.inverted_phonemes:
                 if text[i:i+2] == 'iy':
-                    elems += ['ий' if re.search(r'[жкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i+2]]]
+                    elems += ['ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i+2]]]
                 else:
                     elems += [self.inverted_phonemes[text[i:i+2]]]
                 i += 2
