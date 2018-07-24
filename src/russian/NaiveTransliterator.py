@@ -31,7 +31,7 @@ class Transliterator:
             'у': ['u'],
             'ф': ['f'],
             'х': ['kh', 'h'],
-            'ц': ['ts', 'tc', 'tz'],
+            'ц': ['ts', 'tc', 'tz', 'c'],
             'ч': ['ch'],
             'ш': ['sh'],
             'щ': ['shch', 'sch'],
@@ -105,6 +105,7 @@ if __name__ == '__main__':
     assert transliterator.transliterate('я поймал бабочку') == 'ya pojmal babochku'
     assert transliterator.transliterate('Эти летние дожди!') == 'Aeti lеtniе dozhdi!'
     assert transliterator.transliterate('Железнодорожный романс') == 'Zhеlеznodorozhnyj romans'
+    assert transliterator.inverse_transliterate('Shveciia') == 'Швeция'
     assert transliterator.inverse_transliterate('Tsarskoe Selo') == 'Царскоe Сeло'
     assert transliterator.inverse_transliterate('Sankt-Peterburg') == 'Санкт-Пeтeрбург'
     assert transliterator.inverse_transliterate('Aeti letnie dozhdi') == 'Эти лeтниe дожди'
