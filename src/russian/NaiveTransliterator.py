@@ -1,6 +1,6 @@
+# -*- coding: utf-8 -*-
 import re
 import string
-
 
 from src.russian.NaiveTokenizer import NaiveTokenizer
 from src.russian.SpellChecker import StatisticalSpeller
@@ -34,7 +34,7 @@ class Transliterator:
             'ц': ['ts', 'tc', 'tz', 'c'],
             'ч': ['ch'],
             'ш': ['sh'],
-            'щ': ['shch', 'sch'],
+            'щ': ['shch', 'sch', 'shh'],
             'ж': ['zh', 'jj'],
             'к': ['k'],
             'г': ['g'],
@@ -65,6 +65,15 @@ class Transliterator:
 
         self.keys = str.maketrans(self.straight_phonemes)
 
+    @staticmethod
+    def is_vowel(character):
+        return character.lower() in 'аeёиоуыэюя'
+
+    @staticmethod
+    def simple_spell_euristic(word):
+        word = re.sub(r'ця', 'тся', word, re.IGNORECASE)
+        return word
+
     def transliterate(self, text):
         return text.translate(self.keys)
 
@@ -72,30 +81,41 @@ class Transliterator:
         elems = []
         i = 0
         while i < len(text):
-            if text[i:i+4] in self.inverted_phonemes:
-                elems += [self.inverted_phonemes[text[i:i+4]]]
+            if i == len(text) - 1 or text[i + 1] in string.punctuation or text[i + 1].isspace():
+                symbol = text[i]
+                output_symbol = 'й' if symbol in 'iy' and self.is_vowel(elems[-1]) \
+                    else self.inverted_phonemes[symbol] if text[i] in self.inverted_phonemes \
+                    else symbol
+                elems += [output_symbol]
+                i += 1
+            elif text[i:i + 4] in self.inverted_phonemes:
+                elems += [self.inverted_phonemes[text[i:i + 4]]]
                 i += 4
-            elif text[i:i+3] in self.inverted_phonemes:
-                elems += [self.inverted_phonemes[text[i:i+3]]]
+            elif text[i:i + 3] in self.inverted_phonemes:
+                elems += [self.inverted_phonemes[text[i:i + 3]]]
                 i += 3
-            elif text[i:i+2] in self.inverted_phonemes:
-                if text[i:i+2] == 'iy':
-                    elems += ['ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i+2]]]
+            elif text[i:i + 2] in self.inverted_phonemes:
+                if text[i:i + 2] in ['ij', 'iy']:
+                    elems += ['ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i + 2]]]
                 else:
-                    elems += [self.inverted_phonemes[text[i:i+2]]]
+                    elems += [self.inverted_phonemes[text[i:i + 2]]]
                 i += 2
             else:
-                elems += [self.inverted_phonemes[text[i]] if text[i] in self.inverted_phonemes else text[i]]
+                output_symbol = self.inverted_phonemes[text[i]] if text[i] in self.inverted_phonemes else text[i]
+                elems += [output_symbol]
                 i += 1
 
         res = ''.join(elems)
         if self.need_spell:
-            tokens = self.tokenizer.tokenize(res)
+            # todo: add spell checker for this case
+            '''
             elements = [
-                self.spell_checker.rectify(token.Value) if token not in string.punctuation else token
-                for token in tokens
+                self.spell_checker.rectify(token.Value) if token.Type == 'WORD' else token.Value
+                for token in self.tokenizer.tokenize(res)
             ]
-            res = ''.join(elements)
+            res = ' '.join(elements)
+            '''
+            res = self.simple_spell_euristic(res)
 
         return res
 
@@ -105,6 +125,7 @@ if __name__ == '__main__':
     assert transliterator.transliterate('я поймал бабочку') == 'ya pojmal babochku'
     assert transliterator.transliterate('Эти летние дожди!') == 'Aeti lеtniе dozhdi!'
     assert transliterator.transliterate('Железнодорожный романс') == 'Zhеlеznodorozhnyj romans'
+    assert transliterator.inverse_transliterate('Neizbezhnyj') == 'Нeизбeжный'
     assert transliterator.inverse_transliterate('Shveciia') == 'Швeция'
     assert transliterator.inverse_transliterate('Tsarskoe Selo') == 'Царскоe Сeло'
     assert transliterator.inverse_transliterate('Sankt-Peterburg') == 'Санкт-Пeтeрбург'
@@ -113,3 +134,8 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
     assert transliterator.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
+
+    # todo: try to implement HMM (Hidden Markov Model)
+    transliterator = Transliterator(need_spell=True)
+    assert transliterator.inverse_transliterate(
+        'Andrey, Arsenii, Nikolaj sobirajutsia v Dubai') == 'Андрeй, Арсeний, Николай собираются в Дубай'
