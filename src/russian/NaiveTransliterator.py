@@ -36,7 +36,7 @@ class Transliterator:
             'ш': ['sh'],
             'щ': ['shch', 'sch', 'shh'],
             'ж': ['zh', 'jj'],
-            'к': ['k'],
+            'к': ['k', 'ck'],
             'г': ['g'],
             'ь': ['\''],
             'ъ': ['#'],
@@ -132,6 +132,9 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Aeti letnie dozhdi') == 'Эти лeтниe дожди'
     assert transliterator.inverse_transliterate('Nash zelyoniy mir') == 'Наш зeлёный мир'
     assert transliterator.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
+    assert transliterator.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
+    assert transliterator.inverse_transliterate('Roschino') == 'Рощино'
+    assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
     assert transliterator.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
 
