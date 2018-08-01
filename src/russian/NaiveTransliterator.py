@@ -29,7 +29,7 @@ class Transliterator:
             'н': ['n'],
             'а': ['a'],
             'у': ['u'],
-            'ф': ['f'],
+            'ф': ['f', 'ph'],
             'х': ['kh', 'h'],
             'ц': ['ts', 'tc', 'tz', 'c'],
             'ч': ['ch'],
@@ -135,6 +135,7 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
     assert transliterator.inverse_transliterate('Roschino') == 'Рощино'
     assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
+    assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
     assert transliterator.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
 
