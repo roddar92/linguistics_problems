@@ -10,7 +10,7 @@ class Transliterator:
 
     def __init__(self, need_spell=False):
 
-        self.phonemes = {
+        self.PHONEMES = {
             'я': ['ya', 'ia', 'ja'],
             'ю': ['yu', 'ju'],
             'э': ['ae'],
@@ -46,6 +46,18 @@ class Transliterator:
             'ы': ['y']
         }
 
+        self.COMPLEX_PHONEMES = {
+            'tch': ['т', 'ч'],
+            'tsh': ['т', 'ш']
+        }
+
+        self.UNCORRECTED_PHOMENES = {
+            'ця': 'тся',
+            'цч': 'тщ',
+            'шч': 'щ',
+            'цх': 'щ'
+        }
+
         self.need_spell = need_spell
         self.tokenizer = None
         self.spell_checker = None
@@ -54,14 +66,17 @@ class Transliterator:
             self.tokenizer = NaiveTokenizer()
             self.spell_checker = StatisticalSpeller()
 
-        for phoneme in self.phonemes.copy():
-            self.phonemes[phoneme.upper()] = [phonem.capitalize() for phonem in self.phonemes[phoneme]]
+        for phoneme in self.PHONEMES.copy():
+            self.PHONEMES[phoneme.upper()] = [phoneme.capitalize() for phoneme in self.PHONEMES[phoneme]]
 
-        self.straight_phonemes = {k: v[0] for k, v in self.phonemes.items()}
-        self.inverted_phonemes = {t: k for k, v in self.phonemes.items() for t in v}
+        self.straight_phonemes = {k: v[0] for k, v in self.PHONEMES.items()}
+        self.inverted_phonemes = {t: k for k, v in self.PHONEMES.items() for t in v}
 
         self.inverted_phonemes['x'] = 'кс'
         self.inverted_phonemes['iy'] = 'ый'
+        self.inverted_phonemes['ij'] = 'ый'
+
+        self.inverted_phonemes.update(self.COMPLEX_PHONEMES)
 
         self.keys = str.maketrans(self.straight_phonemes)
 
@@ -69,9 +84,9 @@ class Transliterator:
     def is_vowel(character):
         return character.lower() in 'аeёиоуыэюя'
 
-    @staticmethod
-    def simple_spell_euristic(word):
-        word = re.sub(r'ця', 'тся', word, re.IGNORECASE)
+    def simple_spell_euristic(self, word):
+        for phoneme, replaced in self.UNCORRECTED_PHOMENES.items():
+            word = re.sub(r'' + phoneme, replaced, word, re.IGNORECASE)
         return word
 
     def transliterate(self, text):
@@ -83,16 +98,18 @@ class Transliterator:
         while i < len(text):
             if i == len(text) - 1 or text[i + 1] in string.punctuation or text[i + 1].isspace():
                 symbol = text[i]
-                output_symbol = 'й' if symbol in 'iy' and self.is_vowel(elems[-1]) \
+                output_symbol = 'й' if symbol in 'ijy' and self.is_vowel(elems[-1]) \
                     else self.inverted_phonemes[symbol] if text[i] in self.inverted_phonemes \
                     else symbol
                 elems += [output_symbol]
                 i += 1
             elif text[i:i + 4] in self.inverted_phonemes:
-                elems += [self.inverted_phonemes[text[i:i + 4]]]
+                phoneme = self.inverted_phonemes[text[i:i + 4]]
+                elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 4
             elif text[i:i + 3] in self.inverted_phonemes:
-                elems += [self.inverted_phonemes[text[i:i + 3]]]
+                phoneme = self.inverted_phonemes[text[i:i + 3]]
+                elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 3
             elif text[i:i + 2] in self.inverted_phonemes:
                 if text[i:i + 2] in ['ij', 'iy']:
@@ -125,6 +142,7 @@ if __name__ == '__main__':
     assert transliterator.transliterate('я поймал бабочку') == 'ya pojmal babochku'
     assert transliterator.transliterate('Эти летние дожди!') == 'Aeti lеtniе dozhdi!'
     assert transliterator.transliterate('Железнодорожный романс') == 'Zhеlеznodorozhnyj romans'
+
     assert transliterator.inverse_transliterate('Neizbezhnyj') == 'Нeизбeжный'
     assert transliterator.inverse_transliterate('Shveciia') == 'Швeция'
     assert transliterator.inverse_transliterate('Tsarskoe Selo') == 'Царскоe Сeло'
@@ -143,3 +161,5 @@ if __name__ == '__main__':
     transliterator = Transliterator(need_spell=True)
     assert transliterator.inverse_transliterate(
         'Andrey, Arsenii, Nikolaj sobirajutsia v Dubai') == 'Андрeй, Арсeний, Николай собираются в Дубай'
+    assert transliterator.inverse_transliterate(
+        'tscheslavniy i tshcheslavnij khodjat paroj') == 'тщeславный и тщeславный ходят парой'
