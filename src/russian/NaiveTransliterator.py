@@ -11,8 +11,8 @@ class Transliterator:
     def __init__(self, need_spell=False):
 
         self.PHONEMES = {
-            'я': ['ya', 'ia', 'ja'],
-            'ю': ['yu', 'iu', 'ju'],
+            'я': ['ya', 'ia', 'ja', 'â'],
+            'ю': ['yu', 'iu', 'ju', 'û'],
             'э': ['ae'],
             'б': ['b'],
             'в': ['v', 'w'],
@@ -20,8 +20,8 @@ class Transliterator:
             'п': ['p'],
             'и': ['i'],
             'о': ['o'],
-            'e': ['е', 'ie'],
-            'ё': ['yo', 'jo'],
+            'e': ['е', 'ie', 'je'],
+            'ё': ['yo', 'jo', 'yë', 'ë'],
             'з': ['z'],
             'й': ['j'],
             'л': ['l'],
@@ -32,10 +32,10 @@ class Transliterator:
             'ф': ['f', 'ph'],
             'х': ['kh', 'h'],
             'ц': ['ts', 'tc', 'tz', 'c'],
-            'ч': ['ch'],
-            'ш': ['sh'],
-            'щ': ['shch', 'shh'],
-            'ж': ['zh', 'jj'],
+            'ч': ['ch', 'č'],
+            'ш': ['sh', 'š'],
+            'щ': ['shch', 'shh', 'šč', 'ŝ'],
+            'ж': ['zh', 'jj', 'ž'],
             'к': ['k', 'ck'],
             'г': ['g'],
             'ь': ['\''],
@@ -47,6 +47,8 @@ class Transliterator:
         }
 
         self.COMPLEX_PHONEMES = {
+            'jog': ['й', 'о', 'г'],
+            'yog': ['й', 'о', 'г'],
             'tch': ['т', 'ч'],
             'tsh': ['т', 'ш']
         }
@@ -55,7 +57,9 @@ class Transliterator:
             'ця': 'тся',
             'цч': 'тщ',
             'шч': 'щ',
-            'цх': 'щ'
+            '([жш])(ы)': r'\1и',
+            '([чщ])(я)': r'\1а',
+            '([чщ])(ю)': r'\1у'
         }
 
         self.need_spell = need_spell
@@ -112,7 +116,7 @@ class Transliterator:
                 elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 3
             elif text[i:i + 2] in self.inverted_phonemes:
-                if text[i:i + 2] in ['ie']:
+                if text[i:i + 2] in ['ie', 'je']:
                     elems += [self.inverted_phonemes[text[i:i + 2]]
                               if i == 0 or self.is_vowel(elems[-1]) or not elems[-1].isalpha() else 'ие']
                 elif text[i:i + 2] in ['ij', 'iy', 'yi', 'yj']:
@@ -126,7 +130,10 @@ class Transliterator:
                 i += 1
 
         res = ''.join(elems)
+        res = self.simple_spell_euristic(res)
+
         if self.need_spell:
+            pass
             # todo: add spell checker for this case
             '''
             elements = [
@@ -135,12 +142,12 @@ class Transliterator:
             ]
             res = ' '.join(elements)
             '''
-            res = self.simple_spell_euristic(res)
 
         return res
 
 
 if __name__ == '__main__':
+    # todo: try to implement HMM (Hidden Markov Model)
     transliterator = Transliterator()
     assert transliterator.transliterate('я поймал бабочку') == 'ya pojmal babochku'
     assert transliterator.transliterate('Эти летние дожди!') == 'Aeti lеtniе dozhdi!'
@@ -155,15 +162,12 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
     assert transliterator.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
     assert transliterator.inverse_transliterate('schyot') == 'счёт'
-    assert transliterator.inverse_transliterate('iezhi') == 'eжи'
+    assert transliterator.inverse_transliterate('iezhi i jojjonok jeli žyrniy yogurt') == 'eжи и ёжонок eли жирный йогурт'
     assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
     assert transliterator.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
     assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
     assert transliterator.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
-
-    # todo: try to implement HMM (Hidden Markov Model)
-    transliterator = Transliterator(need_spell=True)
     assert transliterator.inverse_transliterate(
         'Andrey, Arsenii, Nikolaj sobirajutsia v Dubai') == 'Андрeй, Арсeний, Николай собираются в Дубай'
     assert transliterator.inverse_transliterate(
