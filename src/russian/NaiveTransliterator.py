@@ -12,7 +12,7 @@ class Transliterator:
 
         self.PHONEMES = {
             'я': ['ya', 'ia', 'ja'],
-            'ю': ['yu', 'ju'],
+            'ю': ['yu', 'iu', 'ju'],
             'э': ['ae'],
             'б': ['b'],
             'в': ['v', 'w'],
@@ -34,7 +34,7 @@ class Transliterator:
             'ц': ['ts', 'tc', 'tz', 'c'],
             'ч': ['ch'],
             'ш': ['sh'],
-            'щ': ['shch', 'sch', 'shh'],
+            'щ': ['shch', 'shh'],
             'ж': ['zh', 'jj'],
             'к': ['k', 'ck'],
             'г': ['g'],
@@ -112,7 +112,7 @@ class Transliterator:
                 elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 3
             elif text[i:i + 2] in self.inverted_phonemes:
-                if text[i:i + 2] in ['ij', 'iy']:
+                if text[i:i + 2] in ['ij', 'iy', 'yi', 'yj']:
                     elems += ['ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i + 2]]]
                 else:
                     elems += [self.inverted_phonemes[text[i:i + 2]]]
@@ -151,8 +151,9 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Nash zelyoniy mir') == 'Наш зeлёный мир'
     assert transliterator.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
     assert transliterator.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
-    assert transliterator.inverse_transliterate('Roschino') == 'Рощино'
+    assert transliterator.inverse_transliterate('schyot') == 'счёт'
     assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
+    assert transliterator.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
     assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
     assert transliterator.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
