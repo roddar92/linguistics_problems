@@ -10,6 +10,8 @@ class Transliterator:
 
     def __init__(self, need_spell=False):
 
+        self.RU_VOWELS = 'аeёиоуыэюя'
+
         self.PHONEMES = {
             'я': ['ya', 'ia', 'ja', 'â'],
             'ю': ['yu', 'iu', 'ju', 'û'],
@@ -53,13 +55,14 @@ class Transliterator:
             'tsh': ['т', 'ш']
         }
 
-        self.UNCORRECTED_PHOMENES = {
-            'ця': 'тся',
-            'цч': 'тщ',
-            'шч': 'щ',
-            '([жш])(ы)': r'\1и',
-            '([чщ])(я)': r'\1а',
-            '([чщ])(ю)': r'\1у'
+        self.UNCORRECTED_PHONEMES = {
+            re.compile(r'ця'): 'тся',
+            re.compile(r'цч'): 'тщ',
+            re.compile(r'шч'): 'щ',
+            re.compile(r'([жш])(ы)'): r'\1и',
+            re.compile(r'([' + self.RU_VOWELS + r'])ы'): r'\1й',
+            re.compile(r'([чщ])(я)'): r'\1а',
+            re.compile(r'([чщ])(ю)'): r'\1у'
         }
 
         self.need_spell = need_spell
@@ -84,13 +87,12 @@ class Transliterator:
 
         self.keys = str.maketrans(self.straight_phonemes)
 
-    @staticmethod
-    def is_vowel(character):
-        return character.lower() in 'аeёиоуыэюя'
+    def is_vowel(self, character):
+        return character.lower() in self.RU_VOWELS
 
     def simple_spell_euristic(self, word):
-        for phoneme, replaced in self.UNCORRECTED_PHOMENES.items():
-            word = re.sub(r'' + phoneme, replaced, word, re.IGNORECASE)
+        for phoneme, replaced in self.UNCORRECTED_PHONEMES.items():
+            word = phoneme.sub(replaced, word, re.IGNORECASE)
         return word
 
     def transliterate(self, text):
@@ -102,7 +104,7 @@ class Transliterator:
         while i < len(text):
             if i == len(text) - 1 or text[i + 1] in string.punctuation or text[i + 1].isspace():
                 symbol = text[i]
-                output_symbol = 'й' if symbol in 'ijy' and self.is_vowel(elems[-1]) \
+                output_symbol = 'й' if symbol in 'i' and self.is_vowel(elems[-1]) \
                     else self.inverted_phonemes[symbol] if text[i] in self.inverted_phonemes \
                     else symbol
                 elems += [output_symbol]
@@ -162,10 +164,12 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
     assert transliterator.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
     assert transliterator.inverse_transliterate('schyot') == 'счёт'
-    assert transliterator.inverse_transliterate('iezhi i jojjonok jeli žyrniy yogurt') == 'eжи и ёжонок eли жирный йогурт'
+    assert transliterator.inverse_transliterate(
+        'iezhi i jojjonok jeli žyrniy yogurt') == 'eжи и ёжонок eли жирный йогурт'
     assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
     assert transliterator.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
     assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
+    assert transliterator.inverse_transliterate('leyka') == 'лeйка'
     assert transliterator.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
     assert transliterator.inverse_transliterate(
