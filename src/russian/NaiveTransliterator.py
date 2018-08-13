@@ -15,14 +15,14 @@ class Transliterator:
         self.PHONEMES = {
             'я': ['ya', 'ia', 'ja', 'â'],
             'ю': ['yu', 'iu', 'ju', 'û'],
-            'э': ['ae'],
+            'э': ['ae', 'ė'],
             'б': ['b'],
             'в': ['v', 'w'],
             'д': ['d'],
             'п': ['p'],
             'и': ['i'],
             'о': ['o'],
-            'e': ['е', 'ie', 'je'],
+            'e': ['е', 'ie', 'je', 'ye'],
             'ё': ['yo', 'jo', 'yë', 'ë'],
             'з': ['z'],
             'й': ['j'],
@@ -63,6 +63,11 @@ class Transliterator:
             re.compile(r'([' + self.RU_VOWELS + r'])ы'): r'\1й',
             re.compile(r'([чщ])(я)'): r'\1а',
             re.compile(r'([чщ])(ю)'): r'\1у'
+        }
+
+        self.COMBINATED_PHONEMES = {
+            'ie': 'ие',
+            'ye': 'ые'
         }
 
         self.need_spell = need_spell
@@ -118,9 +123,10 @@ class Transliterator:
                 elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 3
             elif text[i:i + 2] in self.inverted_phonemes:
-                if text[i:i + 2] in ['ie', 'je']:
+                if text[i:i + 2] in ['ie', 'ye']:
                     elems += [self.inverted_phonemes[text[i:i + 2]]
-                              if i == 0 or self.is_vowel(elems[-1]) or not elems[-1].isalpha() else 'ие']
+                              if i == 0 or self.is_vowel(elems[-1]) or not elems[-1].isalpha()
+                              else self.COMBINATED_PHONEMES[text[i:i + 2]]]
                 elif text[i:i + 2] in ['ij', 'iy', 'yi', 'yj']:
                     elems += ['ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i + 2]]]
                 else:
@@ -166,6 +172,8 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('schyot') == 'счёт'
     assert transliterator.inverse_transliterate(
         'iezhi i jojjonok jeli žyrniy yogurt') == 'eжи и ёжонок eли жирный йогурт'
+    assert transliterator.inverse_transliterate('ulitsa Yefimova') == 'улица Eфимова'
+    assert transliterator.inverse_transliterate('ah, ėti chyornye glaza!') == 'ах, эти чёрные глаза!'
     assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
     assert transliterator.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
     assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
