@@ -11,6 +11,7 @@ class Transliterator:
     def __init__(self, need_spell=False):
 
         self.RU_VOWELS = 'аeёиоуыэюя'
+        self.AFFIXES = re.compile(r'(^|\s+)(pod|raz|s|iz|pred|ot|ob|bez)$', re.IGNORECASE)
 
         self.PHONEMES = {
             'я': ['ya', 'ia', 'ja', 'â'],
@@ -33,7 +34,7 @@ class Transliterator:
             'у': ['u'],
             'ф': ['f', 'ph'],
             'х': ['kh', 'h'],
-            'ц': ['ts', 'tc', 'tz', 'c'],
+            'ц': ['ts', 'tc', 'tz', 'c', 'cz'],
             'ч': ['ch', 'č'],
             'ш': ['sh', 'š'],
             'щ': ['shch', 'shh', 'šč', 'ŝ'],
@@ -56,17 +57,18 @@ class Transliterator:
         }
 
         self.UNCORRECTED_PHONEMES = {
-            re.compile(r'ця'): 'тся',
-            re.compile(r'цч'): 'тщ',
-            re.compile(r'шч'): 'щ',
-            re.compile(r'([жш])(ы)'): r'\1и',
-            re.compile(r'([' + self.RU_VOWELS + r'])ы'): r'\1й',
-            re.compile(r'([чщ])(я)'): r'\1а',
-            re.compile(r'([чщ])(ю)'): r'\1у'
+            re.compile(r'ця', re.IGNORECASE): 'тся',
+            re.compile(r'цч', re.IGNORECASE): 'тщ',
+            re.compile(r'шч', re.IGNORECASE): 'щ',
+            re.compile(r'([жш])(ы)', re.IGNORECASE): r'\1и',
+            re.compile(r'([' + self.RU_VOWELS + r'])ы', re.IGNORECASE): r'\1й',
+            re.compile(r'([чщ])(я)', re.IGNORECASE): r'\1а',
+            re.compile(r'([чщ])(ю)', re.IGNORECASE): r'\1у'
         }
 
         self.COMBINATED_PHONEMES = {
             'ie': 'ие',
+            'je': 'ье',
             'ye': 'ые'
         }
 
@@ -95,6 +97,9 @@ class Transliterator:
     def is_vowel(self, character):
         return character.lower() in self.RU_VOWELS
 
+    def starts_with_affix(self, text):
+        return self.AFFIXES.search(text)
+
     def simple_spell_euristic(self, word):
         for phoneme, replaced in self.UNCORRECTED_PHONEMES.items():
             word = phoneme.sub(replaced, word, re.IGNORECASE)
@@ -114,20 +119,24 @@ class Transliterator:
                     else symbol
                 elems += [output_symbol]
                 i += 1
-            elif text[i:i + 4] in self.inverted_phonemes:
+            elif i + 4 <= len(text) - 1 and text[i:i + 4] in self.inverted_phonemes:
                 phoneme = self.inverted_phonemes[text[i:i + 4]]
                 elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 4
-            elif text[i:i + 3] in self.inverted_phonemes:
+            elif i + 3 <= len(text) - 1 and text[i:i + 3] in self.inverted_phonemes:
                 phoneme = self.inverted_phonemes[text[i:i + 3]]
                 elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 3
             elif text[i:i + 2] in self.inverted_phonemes:
-                if text[i:i + 2] in ['ie', 'ye']:
+                if text[i:i + 2].lower() in ['ia', 'ya', 'ja', 'ie', 'ye', 'je']:
+                    answer = self.COMBINATED_PHONEMES[text[i:i + 2]] \
+                        if text[i:i + 2] in ['ie', 'ye', 'je'] else self.inverted_phonemes[text[i:i + 2]]
                     elems += [self.inverted_phonemes[text[i:i + 2]]
                               if i == 0 or self.is_vowel(elems[-1]) or not elems[-1].isalpha()
-                              else self.COMBINATED_PHONEMES[text[i:i + 2]]]
-                elif text[i:i + 2] in ['ij', 'iy', 'yi', 'yj']:
+                              else 'ъ' + self.inverted_phonemes[text[i:i + 2]]
+                              if i > 0 and not self.is_vowel(text[i - 1]) and self.starts_with_affix(text[:i])
+                              else answer]
+                elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj']:
                     elems += ['ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i + 2]]]
                 else:
                     elems += [self.inverted_phonemes[text[i:i + 2]]]
@@ -171,13 +180,16 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
     assert transliterator.inverse_transliterate('schyot') == 'счёт'
     assert transliterator.inverse_transliterate(
-        'iezhi i jojjonok jeli žyrniy yogurt') == 'eжи и ёжонок eли жирный йогурт'
+        'Iezhi i jojjonok jeli žyrniy yogurt') == 'Eжи и ёжонок eли жирный йогурт'
     assert transliterator.inverse_transliterate('ulitsa Yefimova') == 'улица Eфимова'
     assert transliterator.inverse_transliterate('ah, ėti chyornye glaza!') == 'ах, эти чёрные глаза!'
     assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
     assert transliterator.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
     assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
     assert transliterator.inverse_transliterate('leyka') == 'лeйка'
+    assert transliterator.inverse_transliterate(
+        'moi podiezd, i ya vyiezzhayu s Bolshoy Podyacheskoj na orientirovanie') == \
+        'мой подъeзд, и я выeзжаю с Болшой Подъячeской на ориентирование'
     assert transliterator.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
     assert transliterator.inverse_transliterate(
