@@ -16,6 +16,7 @@ class Transliterator:
             re.IGNORECASE
         )
         self.E_AFFIX = re.compile(r'(^|\s+)[Ss]$', re.IGNORECASE)
+        self.CH_REGEX = re.compile(r'(^|\s+)ch$', re.IGNORECASE)
 
         self.PHONEMES = {
             'я': ['ya', 'ia', 'ja', 'â'],
@@ -123,16 +124,23 @@ class Transliterator:
                     else symbol
                 elems += [output_symbol]
                 i += 1
-            elif i + 4 <= len(text) - 1 and text[i:i + 4] in self.inverted_phonemes:
+            elif i + 4 <= len(text) and text[i:i + 4] in self.inverted_phonemes:
                 phoneme = self.inverted_phonemes[text[i:i + 4]]
                 elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 4
-            elif i + 3 <= len(text) - 1 and text[i:i + 3] in self.inverted_phonemes:
+            elif i + 3 <= len(text) and text[i:i + 3] in self.inverted_phonemes:
                 phoneme = self.inverted_phonemes[text[i:i + 3]]
                 elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 3
-            elif text[i:i + 2] in self.inverted_phonemes:
-                if text[i:i + 2].lower() in ['ia', 'ya', 'ja', 'ie', 'ye', 'je', 'yu', 'iu', 'ju']:
+            elif i + 2 <= len(text) and text[i:i + 2] in self.inverted_phonemes:
+                if self.CH_REGEX.search(text[:i + 2]):
+                    if text[i + 2:].startswith('ro'):
+                        elems += ['х' if text[i:i + 2].islower() else 'Х']
+                    elif text[i + 2:].startswith('ri'):
+                        elems += ['к' if text[i:i + 2].islower() else 'К']
+                    else:
+                        elems += [self.inverted_phonemes[text[i:i + 2]]]
+                elif text[i:i + 2].lower() in ['ia', 'ya', 'ja', 'ie', 'ye', 'je', 'yu', 'iu', 'ju']:
                     answer = self.COMBINATED_PHONEMES[text[i:i + 2]] \
                         if text[i:i + 2] in ['ie', 'ye', 'je'] else self.inverted_phonemes[text[i:i + 2]]
                     elems += [self.inverted_phonemes[text[i:i + 2]]
@@ -141,8 +149,11 @@ class Transliterator:
                               if i > 0 and not self.is_vowel(text[i - 1]) and (self.starts_with_affix(text[:i])
                               or (text[i:i + 2] in ['ie', 'ye', 'je'] and self.E_AFFIX.search(text[:i])))
                               else answer]
-                elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj']:
+                elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj'] and not text[i + 2].isalnum():
                     elems += ['ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i + 2]]]
+                elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj']:
+                    elems += [self.inverted_phonemes[text[i:i + 1]]]
+                    i -= 1
                 else:
                     elems += [self.inverted_phonemes[text[i:i + 2]]]
                 i += 2
@@ -192,6 +203,8 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
     assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
     assert transliterator.inverse_transliterate('leyka') == 'лeйка'
+    assert transliterator.inverse_transliterate('znanija') == 'знания'
+    assert transliterator.inverse_transliterate('Chris i Chrom') == 'Крис и Хром'
     assert transliterator.inverse_transliterate('Siezd k Syamozeru') == 'Съeзд к Сямозeру'
     assert transliterator.inverse_transliterate(
         'moi podiezd, i ya vyiezzhayu s Bolshoy Podyacheskoj na orientirovanie') == \
