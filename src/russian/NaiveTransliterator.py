@@ -86,7 +86,8 @@ class Transliterator:
             self.spell_checker = StatisticalSpeller()
 
         for phoneme in self.PHONEMES.copy():
-            self.PHONEMES[phoneme.upper()] = [phoneme.capitalize() for phoneme in self.PHONEMES[phoneme]]
+            if not self.is_solid_or_soft_sign(phoneme):
+                self.PHONEMES[phoneme.capitalize()] = [ph.capitalize() for ph in self.PHONEMES[phoneme]]
 
         self.straight_phonemes = {k: v[0] for k, v in self.PHONEMES.items()}
         self.inverted_phonemes = {t: k for k, v in self.PHONEMES.items() for t in v}
@@ -98,6 +99,9 @@ class Transliterator:
         self.inverted_phonemes.update(self.COMPLEX_PHONEMES)
 
         self.keys = str.maketrans(self.straight_phonemes)
+
+    def is_solid_or_soft_sign(self, letter):
+        return letter in 'ъь'
 
     def is_vowel(self, character):
         return character.lower() in self.RU_VOWELS
@@ -204,6 +208,7 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
     assert transliterator.inverse_transliterate('leyka') == 'лeйка'
     assert transliterator.inverse_transliterate('znanija') == 'знания'
+    assert transliterator.inverse_transliterate('ploshchad\' Alexandra Pushkina') == 'площадь Алeксандра Пушкина'
     assert transliterator.inverse_transliterate('Chris i Chrom') == 'Крис и Хром'
     assert transliterator.inverse_transliterate('Siezd k Syamozeru') == 'Съeзд к Сямозeру'
     assert transliterator.inverse_transliterate(
