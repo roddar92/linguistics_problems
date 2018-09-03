@@ -100,7 +100,8 @@ class Transliterator:
 
         self.keys = str.maketrans(self.straight_phonemes)
 
-    def is_solid_or_soft_sign(self, letter):
+    @staticmethod
+    def is_solid_or_soft_sign(letter):
         return letter in 'ъь'
 
     def is_vowel(self, character):
