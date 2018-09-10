@@ -93,6 +93,7 @@ class Transliterator:
         self.inverted_phonemes = {t: k for k, v in self.PHONEMES.items() for t in v}
 
         self.inverted_phonemes['x'] = 'кс'
+        self.inverted_phonemes['qu'] = 'кв'
         self.inverted_phonemes['iy'] = 'ый'
         self.inverted_phonemes['ij'] = 'ый'
 
@@ -207,6 +208,7 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
     assert transliterator.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
     assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
+    assert transliterator.inverse_transliterate('aqualangisty') == 'аквалангисты'
     assert transliterator.inverse_transliterate('leyka') == 'лeйка'
     assert transliterator.inverse_transliterate('znanija') == 'знания'
     assert transliterator.inverse_transliterate('ploshchad\' Alexandra Pushkina') == 'площадь Алeксандра Пушкина'
