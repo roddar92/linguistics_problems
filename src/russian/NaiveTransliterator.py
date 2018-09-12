@@ -200,6 +200,7 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('Nash zelyoniy mir') == 'Наш зeлёный мир'
     assert transliterator.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
     assert transliterator.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
+    assert transliterator.inverse_transliterate('Idi, Yaandreev, urok otvechat\'!') == 'Иди, Яандрeeв, урок отвeчать!'
     assert transliterator.inverse_transliterate('schyot') == 'счёт'
     assert transliterator.inverse_transliterate(
         'Iezhi i jojjonok jeli žyrniy yogurt') == 'Eжи и ёжонок eли жирный йогурт'
