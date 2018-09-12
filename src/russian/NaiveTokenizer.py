@@ -40,7 +40,9 @@ class NaiveTokenizer(object):
         self.NUMALPHA = re.compile(r'([/.\w-]+)')
         self.EOS = '.?!'
         self.INS = ',:;'
-        self.QUOTES = '\"\'\`«»“”‘’'
+        self.QUOTES = '\"\'\`'
+        self.LQUOTES = '«“‘'
+        self.RQUOTES = '»”’'
         self.LBRACKETS = '<([{'
         self.RBRACKETS = '>)]}'
 
@@ -57,7 +59,7 @@ class NaiveTokenizer(object):
             state = START
 
             for c in cur_token:
-                if c in self.QUOTES + self.LBRACKETS + self.RBRACKETS + self.INS:
+                if c in self.QUOTES + self.LQUOTES + self.RQUOTES + self.LBRACKETS + self.RBRACKETS + self.INS:
                     if state == START:
                         state = INS
                         cur_tok += c
@@ -131,6 +133,10 @@ class NaiveTokenizer(object):
                 return token(value, 'LBR')
             elif value in self.RBRACKETS:
                 return token(value, 'RBR')
+            elif value in self.LQUOTES:
+                return token(value, 'LQUOTE')
+            elif value in self.RQUOTES:
+                return token(value, 'RQUOTE')
             elif value in self.QUOTES:
                 return token(value, 'QUOTE')
             elif value in self.EOS + self.INS:
