@@ -6,7 +6,7 @@ from collections import namedtuple
 class NaiveTokenizer(object):
 
     def __init__(self):
-        with open('../russian/resources/tokenizer/abbreviations.txt', 'r') as inf:
+        with open('../russian/resources/tokenizer/abbreviations.txt', 'r', encoding='utf-8') as inf:
             self.abbr = {
                 line.strip().lower() for line in inf
             }
