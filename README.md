@@ -18,7 +18,7 @@ Source code:
 
 #### Pre-morphology
 - [Russian tokenizer](src/russian/NaiveTokenizer.py)
-- [Sentence boundary detector](src/russian/NaiveSentenceBoundaryDetector.py)
+- [Sentence boundary detection](src/russian/NaiveSentenceBoundaryDetector.py)
 - [Transliteration Russian <=> Latin (with spell-checker)](src/russian/NaiveTransliterator.py)
 
 #### Phonology
