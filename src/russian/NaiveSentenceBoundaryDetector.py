@@ -23,11 +23,6 @@ class NaiveSentenceBoundaryDetector(object):
             return False
 
     def extract_sentences(self, text):
-
-        def split_sentence(sentences_list, curr_sentence):
-            sentences_list += [' '.join(curr_sentence)]
-            curr_sentence[:] = []
-
         _STATUS_START = 0
         _STATUS_SPLIT = 1
         _STATUS_MISS = 2
@@ -38,7 +33,6 @@ class NaiveSentenceBoundaryDetector(object):
         _current_status = _STATUS_START
         _prev_token, _prev_ttype = '', ''
 
-        sentences = []
         current_sentence = []
         for token in self.tokenizer.tokenize(text):
             val = token.Value
@@ -90,7 +84,8 @@ class NaiveSentenceBoundaryDetector(object):
                 _current_status = _STATUS_MISS
 
             if _current_status == _STATUS_SPLIT:
-                split_sentence(sentences, current_sentence)
+                yield ' '.join(current_sentence)
+                current_sentence = []
 
             current_sentence += [val]
 
@@ -98,25 +93,30 @@ class NaiveSentenceBoundaryDetector(object):
             _prev_ttype = token.Type
 
         if current_sentence:
-            split_sentence(sentences, current_sentence)
-        return sentences
+            yield ' '.join(current_sentence)
 
 
 if __name__ == '__main__':
+
+    test_texts = [
+        'Сегодня был чудесный день. Я заполнил в анкете свои Ф.И.О. и наконец понял, что поступил в университет.',
+        'Сегодня чудесный день. Я.Ю. Никитенко прогуливался возле дома со своим мопсом.',
+        'Сегодня был чудесный день! Я.Ю. Никитенко и Ко прогуливался возле дома со своим мопсом.',
+        '«Сегодня был чудесный день!» Я.Ю. Никитенко гулял возле дома с таксой.',
+        '"Сегодня был чудесный день!" '
+        'Я.Ю. Никитенко прогуливался (И хочу заметить, не один!) '
+        'возле дома со своим мопсом.',
+        '"Сегодня был чудесный день!" Я.Ю. Никитенко прогуливался со своим мопсом и т. д.',
+        'Сегодня был чудесный день и т. д. Я.Ю. Никитенко гулял со своим мопсом.',
+        'Сегодня был чудесный день? Я даже и не думал и т. д. и т. п.',
+        'Сегодня был чудесный день?!. Ну наадо же..',
+        'В 999 г. н.э. Древний Мир уже имел свою историю. Проф. Ивановский к тому времени записал новый альбом.',
+        'Сегодня был чудесный день... Не правда ль?..',
+        'Какой чудесный день.Какой чудесный пень. Какой чудесный я и песенка моя! Ля-ля-ля!',
+        'В фильме снимались: Петя, Вася, Серёга и др. '
+        'Сегодня хорошая погода, не правда ль?..'
+    ]
+
     sbd = NaiveSentenceBoundaryDetector()
-    print(sbd.extract_sentences('Сегодня был чудесный день. Я заполнил в анкете свои Ф.И.О. '
-                                'и наконец понял, что поступил в университет.'))
-    print(sbd.extract_sentences('Сегодня чудесный день. Я.Ю. Никитенко прогуливался возле дома со своим мопсом.'))
-    print(sbd.extract_sentences('Сегодня был чудесный день! Я.Ю. Никитенко прогуливался возле дома со своим мопсом.'))
-    print(sbd.extract_sentences('«Сегодня был чудесный день!» Я.Ю. Никитенко прогуливался возле дома со своим мопсом.'))
-    print(sbd.extract_sentences('"Сегодня был чудесный день!" '
-                                'Я.Ю. Никитенко прогуливался (И хочу заметить, не один!) '
-                                'возле дома со своим мопсом.'))
-    print(sbd.extract_sentences('"Сегодня был чудесный день!" Я.Ю. Никитенко прогуливался со своим мопсом и т. д.'))
-    print(sbd.extract_sentences('Сегодня был чудесный день и т. д. Я.Ю. Никитенко прогуливался со своим мопсом.'))
-    print(sbd.extract_sentences('Сегодня был чудесный день? Я даже и не думал и т. д. и т. п.'))
-    print(sbd.extract_sentences('Сегодня был чудесный день?!. Ну наадо же..'))
-    print(sbd.extract_sentences('Сегодня был чудесный день... Не правда ль?..'))
-    print(sbd.extract_sentences('Какой чудесный день.Какой чудесный пень. Какой чудесный я и песенка моя! Ля-ля-ля!'))
-    print(sbd.extract_sentences('В фильме снимались: Петя, Вася, Серёга и др. '
-                                'Сегодня хорошая погода, не правда ль?..'))
+    for test_text in test_texts:
+        print(list(sbd.extract_sentences(test_text)))
