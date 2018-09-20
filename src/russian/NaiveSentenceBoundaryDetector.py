@@ -50,7 +50,7 @@ class NaiveSentenceBoundaryDetector(object):
                         if len(_prev_token) <= 1:
                             _current_status = _STATUS_MISS
                         else:
-                            _current_status = _STATUS_SPLIT
+                            _current_status = _STATUS_EXPTED
             elif token.Type == 'QUOTE':
                 _inside_quotes = not _inside_quotes
 
@@ -70,10 +70,7 @@ class NaiveSentenceBoundaryDetector(object):
             else:
                 if _prev_token:
                     if _prev_token in self.EOS or self.MULTI_PUNCT.search(_prev_token):
-                        if _current_status == _STATUS_MISS:
-                            _current_status = _STATUS_EXPTED
-                        else:
-                            _current_status = _STATUS_MISS
+                        _current_status = _STATUS_EXPTED
                     elif _prev_ttype in ['RBR', 'RQUOTE']:
                         _current_status = _STATUS_EXPTED
                     elif _prev_ttype == 'QUOTE' and not _inside_quotes:
@@ -109,6 +106,7 @@ if __name__ == '__main__':
     sbd = NaiveSentenceBoundaryDetector()
     print(sbd.extract_sentences('Сегодня был чудесный день. Я заполнил в анкете свои Ф.И.О. '
                                 'и наконец понял, что поступил в университет.'))
+    print(sbd.extract_sentences('Сегодня чудесный день. Я.Ю. Никитенко прогуливался возле дома со своим мопсом.'))
     print(sbd.extract_sentences('Сегодня был чудесный день! Я.Ю. Никитенко прогуливался возле дома со своим мопсом.'))
     print(sbd.extract_sentences('«Сегодня был чудесный день!» Я.Ю. Никитенко прогуливался возле дома со своим мопсом.'))
     print(sbd.extract_sentences('"Сегодня был чудесный день!" '
