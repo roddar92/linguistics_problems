@@ -3,7 +3,7 @@ import re
 import string
 
 from src.russian.NaiveTokenizer import NaiveTokenizer
-from src.russian.SpellChecker import StatisticalSpeller
+# from src.russian.SpellChecker import StatisticalSpeller
 
 
 class Transliterator:
@@ -16,7 +16,8 @@ class Transliterator:
             re.IGNORECASE
         )
         self.E_AFFIX = re.compile(r'(^|\s+)[Ss]$', re.IGNORECASE)
-        self.CH_REGEX = re.compile(r'(^|\s+)ch$', re.IGNORECASE)
+        self.CH_START_REGEX = re.compile(r'(^|\s+)ch$', re.IGNORECASE)
+        self.CH_END_REGEX = re.compile(r'^ch($|\s+|\W)', re.IGNORECASE)
 
         self.PHONEMES = {
             'я': ['ya', 'ia', 'ja', 'â'],
@@ -83,7 +84,7 @@ class Transliterator:
 
         if need_spell:
             self.tokenizer = NaiveTokenizer()
-            self.spell_checker = StatisticalSpeller()
+            # self.spell_checker = StatisticalSpeller()
 
         for phoneme in self.PHONEMES.copy():
             if not self.is_solid_or_soft_sign(phoneme):
@@ -122,7 +123,12 @@ class Transliterator:
     def inverse_transliterate(self, text):
         elems = []
         i = 0
+        is_upper = 0
+
         while i < len(text):
+            if i == 0 or text[i - 1].isspace() or text[i - 1] in string.punctuation:
+                is_upper = 1 if text[i].isupper() else 0
+
             if i == len(text) - 1 or text[i + 1] in string.punctuation or text[i + 1].isspace():
                 symbol = text[i]
                 output_symbol = 'й' if symbol in 'i' and self.is_vowel(elems[-1]) \
@@ -139,13 +145,20 @@ class Transliterator:
                 elems += [phoneme] if isinstance(phoneme, str) else phoneme
                 i += 3
             elif i + 2 <= len(text) and text[i:i + 2] in self.inverted_phonemes:
-                if self.CH_REGEX.search(text[:i + 2]):
+                if self.CH_START_REGEX.search(text[:i + 2]):
                     if text[i + 2:].startswith('ro'):
                         elems += ['х' if text[i:i + 2].islower() else 'Х']
                     elif text[i + 2:].startswith('ri'):
                         elems += ['к' if text[i:i + 2].islower() else 'К']
                     else:
                         elems += [self.inverted_phonemes[text[i:i + 2]]]
+                elif self.CH_END_REGEX.search(text[i:]):
+                    if ''.join(elems[-2:]) in ['ви', 'ны'] and is_upper == 1:
+                        elems += [self.inverted_phonemes[text[i:i + 2]]]
+                    elif elems[-1] in 'иы':
+                        elems += ['х']
+                    else:
+                        elems += ['ч']
                 elif text[i:i + 2].lower() in ['ia', 'ya', 'ja', 'ie', 'ye', 'je', 'yu', 'iu', 'ju']:
                     answer = self.COMBINATED_PHONEMES[text[i:i + 2]] \
                         if text[i:i + 2] in ['ie', 'ye', 'je'] else self.inverted_phonemes[text[i:i + 2]]
@@ -215,6 +228,8 @@ if __name__ == '__main__':
     assert transliterator.inverse_transliterate('shhuka plyvyot k shkhune') == 'щука плывёт к шхунe'
     assert transliterator.inverse_transliterate('ploshchad\' Alexandra Pushkina') == 'площадь Алeксандра Пушкина'
     assert transliterator.inverse_transliterate('Chris i Chrom') == 'Крис и Хром'
+    assert transliterator.inverse_transliterate('kotorych, strojnych, San Sanych') == 'которых, стройных, Сан Саныч'
+    assert transliterator.inverse_transliterate('palach') == 'палач'
     assert transliterator.inverse_transliterate('Siezd k Syamozeru') == 'Съeзд к Сямозeру'
     assert transliterator.inverse_transliterate(
         'moi podiezd, i ya vyiezzhayu s Bolshoy Podyacheskoj na orientirovanie') == \
