@@ -2,7 +2,7 @@
 import re
 import string
 
-from src.russian.NaiveTokenizer import NaiveTokenizer
+# from src.russian.NaiveTokenizer import NaiveTokenizer
 # from src.russian.SpellChecker import StatisticalSpeller
 
 
@@ -83,7 +83,8 @@ class Transliterator:
         self.spell_checker = None
 
         if need_spell:
-            self.tokenizer = NaiveTokenizer()
+            pass
+            # self.tokenizer = NaiveTokenizer()
             # self.spell_checker = StatisticalSpeller()
 
         for phoneme in self.PHONEMES.copy():
@@ -200,43 +201,43 @@ class Transliterator:
 
 if __name__ == '__main__':
     # todo: try to implement HMM (Hidden Markov Model)
-    transliterator = Transliterator()
-    assert transliterator.transliterate('я поймал бабочку') == 'ya pojmal babochku'
-    assert transliterator.transliterate('Эти летние дожди!') == 'Aeti lеtniе dozhdi!'
-    assert transliterator.transliterate('Железнодорожный романс') == 'Zhеlеznodorozhnyj romans'
+    translit = Transliterator()
+    assert translit.transliterate('я поймал бабочку') == 'ya pojmal babochku'
+    assert translit.transliterate('Эти летние дожди!') == 'Aeti lеtniе dozhdi!'
+    assert translit.transliterate('Железнодорожный романс') == 'Zhеlеznodorozhnyj romans'
 
-    assert transliterator.inverse_transliterate('Neizbezhnyj') == 'Нeизбeжный'
-    assert transliterator.inverse_transliterate('Shveciia') == 'Швeция'
-    assert transliterator.inverse_transliterate('Tsarskoe Selo') == 'Царскоe Сeло'
-    assert transliterator.inverse_transliterate('Sankt-Peterburg') == 'Санкт-Пeтeрбург'
-    assert transliterator.inverse_transliterate('Aeti letnie dozhdi') == 'Эти лeтние дожди'
-    assert transliterator.inverse_transliterate('Nash zelyoniy mir') == 'Наш зeлёный мир'
-    assert transliterator.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
-    assert transliterator.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
-    assert transliterator.inverse_transliterate('Idi, Yaandreyev, urok otvechat\'!') == 'Иди, Яандрeeв, урок отвeчать!'
-    assert transliterator.inverse_transliterate('schyot') == 'счёт'
-    assert transliterator.inverse_transliterate(
+    assert translit.inverse_transliterate('Neizbezhnyj') == 'Нeизбeжный'
+    assert translit.inverse_transliterate('Shveciia') == 'Швeция'
+    assert translit.inverse_transliterate('Tsarskoe Selo') == 'Царскоe Сeло'
+    assert translit.inverse_transliterate('Sankt-Peterburg') == 'Санкт-Пeтeрбург'
+    assert translit.inverse_transliterate('Aeti letnie dozhdi') == 'Эти лeтние дожди'
+    assert translit.inverse_transliterate('Nash zelyoniy mir') == 'Наш зeлёный мир'
+    assert translit.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
+    assert translit.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
+    assert translit.inverse_transliterate('Idi, Yaandreyev, urok otvechat\'!') == 'Иди, Яандрeeв, урок отвeчать!'
+    assert translit.inverse_transliterate('schyot') == 'счёт'
+    assert translit.inverse_transliterate(
         'Iezhi i jojjonok jeli žyrniy yogurt') == 'Eжи и ёжонок eли жирный йогурт'
-    assert transliterator.inverse_transliterate('ulitsa Yefimova') == 'улица Eфимова'
-    assert transliterator.inverse_transliterate('ah, ėti chyornye glaza!') == 'ах, эти чёрные глаза!'
-    assert transliterator.inverse_transliterate('Roshchino') == 'Рощино'
-    assert transliterator.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
-    assert transliterator.inverse_transliterate('Frankophoniia') == 'Франкофония'
-    assert transliterator.inverse_transliterate('aqualangisty') == 'аквалангисты'
-    assert transliterator.inverse_transliterate('leyka') == 'лeйка'
-    assert transliterator.inverse_transliterate('znanija') == 'знания'
-    assert transliterator.inverse_transliterate('shhuka plyvyot k shkhune') == 'щука плывёт к шхунe'
-    assert transliterator.inverse_transliterate('ploshchad\' Alexandra Pushkina') == 'площадь Алeксандра Пушкина'
-    assert transliterator.inverse_transliterate('Chris i Chrom') == 'Крис и Хром'
-    assert transliterator.inverse_transliterate('kotorych, strojnych, San Sanych') == 'которых, стройных, Сан Саныч'
-    assert transliterator.inverse_transliterate('palach') == 'палач'
-    assert transliterator.inverse_transliterate('Siezd k Syamozeru') == 'Съeзд к Сямозeру'
-    assert transliterator.inverse_transliterate(
+    assert translit.inverse_transliterate('ulitsa Yefimova') == 'улица Eфимова'
+    assert translit.inverse_transliterate('ah, ėti chyornye glaza!') == 'ах, эти чёрные глаза!'
+    assert translit.inverse_transliterate('Roshchino') == 'Рощино'
+    assert translit.inverse_transliterate('slavnyi soldat Shvejk') == 'славный солдат Швeйк'
+    assert translit.inverse_transliterate('Frankophoniia') == 'Франкофония'
+    assert translit.inverse_transliterate('aqualangisty') == 'аквалангисты'
+    assert translit.inverse_transliterate('leyka') == 'лeйка'
+    assert translit.inverse_transliterate('znanija') == 'знания'
+    assert translit.inverse_transliterate('shhuka plyvyot k shkhune') == 'щука плывёт к шхунe'
+    assert translit.inverse_transliterate('ploshchad\' Alexandra Pushkina') == 'площадь Алeксандра Пушкина'
+    assert translit.inverse_transliterate('Chris i Chrom') == 'Крис и Хром'
+    assert translit.inverse_transliterate('kotorych, strojnych, San Sanych') == 'которых, стройных, Сан Саныч'
+    assert translit.inverse_transliterate('palach') == 'палач'
+    assert translit.inverse_transliterate('Siezd k Syamozeru') == 'Съeзд к Сямозeру'
+    assert translit.inverse_transliterate(
         'moi podiezd, i ya vyiezzhayu s Bolshoy Podyacheskoj na orientirovanie') == \
         'мой подъeзд, и я выeзжаю с Болшой Подъячeской на ориентирование'
-    assert transliterator.inverse_transliterate(
+    assert translit.inverse_transliterate(
         'zelyonaja doska i xerox stoyat ryadom') == 'зeлёная доска и ксeрокс стоят рядом'
-    assert transliterator.inverse_transliterate(
+    assert translit.inverse_transliterate(
         'Andrey, Arsenii, Nikolaj sobirajutsia v Dubai') == 'Андрeй, Арсeний, Николай собираются в Дубай'
-    assert transliterator.inverse_transliterate(
+    assert translit.inverse_transliterate(
         'tscheslavniy i tshcheslavnij khodjat paroj') == 'тщeславный и тщeславный ходят парой'
