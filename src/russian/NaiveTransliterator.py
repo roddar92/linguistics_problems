@@ -17,7 +17,9 @@ class Transliterator:
         )
         self.E_AFFIX = re.compile(r'(^|\s+)[Ss]$', re.IGNORECASE)
         self.CH_START_REGEX = re.compile(r'(^|\s+)ch$', re.IGNORECASE)
-        self.CH_END_REGEX = re.compile(r'^ch($|\s+|\W)', re.IGNORECASE)
+        self.CH_END_REGEX = re.compile(r'^ch($|\s+|' +
+                                       r'|'.join(['\\' + punct for punct in string.punctuation]) +
+                                       r')', re.IGNORECASE)
 
         self.PHONEMES = {
             'я': ['ya', 'ia', 'ja', 'â'],
