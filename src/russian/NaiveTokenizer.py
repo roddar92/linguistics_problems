@@ -32,6 +32,8 @@ class NaiveTokenizer(object):
         url += r'(?:(\/\S+[^\.\,\s]))?'
         url += r')'
 
+        emjoi_pattern = r'([\=\:\;8BX][\-\~\^oc]?[PD3\<\>\}\{\]\[\)\(\/]+)'
+
         self.URL = re.compile(url, re.IGNORECASE)
         self.CURRENCY = '$€£¢¥₽'
         self.OTHER_PUNCT = '#%^~±°'
@@ -39,7 +41,7 @@ class NaiveTokenizer(object):
         self.DIGIT = re.compile(r'((\d)+([.,](\d)+)?)')
         self.ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
         self.NUMALPHA = re.compile(r'([/.\w-]+)')
-        self.EMJOI = re.compile(r'([\=\:\;]([pPdD\)\(\/])+)')
+        self.EMJOI = re.compile(r'(' + emjoi_pattern + r')+')
         self.EOS = '.?!'
         self.INS = ',:;'
         self.QUOTES = '\"\'\`'
@@ -263,5 +265,9 @@ if __name__ == '__main__':
     ))] == ['В', 'графе', 'надо', 'указать', 'свои', 'Ф.И.О.']
 
     assert [token.Value for token in list(tokenizer.tokenize(
-        'Я очень -очень рада этому событию ;)'
-    ))] == ['Я', 'очень', '-очень', 'рада', 'этому', 'событию', ';)']
+        'Я очень -очень рада этому событию ;) :^3'
+    ))] == ['Я', 'очень', '-очень', 'рада', 'этому', 'событию', ';)', ':^3']
+
+    assert [token.Value for token in list(tokenizer.tokenize(
+        'Я рада этому событию ;):^3'
+    ))] == ['Я', 'рада', 'этому', 'событию', ';):^3']
