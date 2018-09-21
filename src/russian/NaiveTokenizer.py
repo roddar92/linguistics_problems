@@ -39,6 +39,7 @@ class NaiveTokenizer(object):
         self.DIGIT = re.compile(r'((\d)+([.,](\d)+)?)')
         self.ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
         self.NUMALPHA = re.compile(r'([/.\w-]+)')
+        self.EMJOI = re.compile(r'([\=\:\;]([pPdD\)\(\/])+)')
         self.EOS = '.?!'
         self.INS = ',:;'
         self.QUOTES = '\"\'\`'
@@ -150,18 +151,23 @@ class NaiveTokenizer(object):
                 return token(value, 'WORD')
             elif self.DIGIT.search(value):
                 return token(value, 'DIGIT')
+            elif self.EMJOI.search(value):
+                return token(value, 'EMJOI')
             else:
                 return token(value, 'WORD')
 
         for excpected_token in text.split():
             if self.URL.search(excpected_token) or \
                     self.DIGIT.search(excpected_token) or \
-                    self.ABBR_WITH_POINTS.search(excpected_token):
+                    self.ABBR_WITH_POINTS.search(excpected_token) or self.EMJOI.search(excpected_token):
                 if self.URL.search(excpected_token):
                     start, end = self.URL.search(excpected_token).start(), self.URL.search(excpected_token).end()
                 elif self.ABBR_WITH_POINTS.search(excpected_token):
                     start, end = self.ABBR_WITH_POINTS.search(excpected_token).start(), \
                                  self.ABBR_WITH_POINTS.search(excpected_token).end()
+                elif self.EMJOI.search(excpected_token):
+                    start, end = self.EMJOI.search(excpected_token).start(), \
+                                 self.EMJOI.search(excpected_token).end()
                 elif not isnumalpha(excpected_token):
                     start, end = self.DIGIT.search(excpected_token).start(), \
                                  self.DIGIT.search(excpected_token).end()
@@ -255,3 +261,7 @@ if __name__ == '__main__':
     assert [token.Value for token in list(tokenizer.tokenize(
         'В графе надо указать свои Ф.И.О.'
     ))] == ['В', 'графе', 'надо', 'указать', 'свои', 'Ф.И.О.']
+
+    assert [token.Value for token in list(tokenizer.tokenize(
+        'Я очень -очень рада этому событию ;)'
+    ))] == ['Я', 'очень', '-очень', 'рада', 'этому', 'событию', ';)']

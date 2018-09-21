@@ -4,7 +4,6 @@ from src.russian.NaiveTokenizer import NaiveTokenizer
 
 class NaiveSentenceBoundaryDetector(object):
     def __init__(self):
-        # self.EMJOI
         self.EOS = '.?!'
         self.MULTI_PUNCT = re.compile(r'([.?!]){2,}')
         self.ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
@@ -35,8 +34,8 @@ class NaiveSentenceBoundaryDetector(object):
 
         current_sentence = []
         for token in self.tokenizer.tokenize(text):
-            val = token.Value
-            if token.Type not in ['WORD', 'DIGIT', 'URL', 'QUOTE', 'LBR', 'LQUOTE', 'RBR', 'RQUOTE']:
+            ttype, val = token.Type, token.Value
+            if ttype not in ['WORD', 'DIGIT', 'URL', 'QUOTE', 'LBR', 'LQUOTE', 'RBR', 'RQUOTE']:
                 if val in self.EOS or self.MULTI_PUNCT.search(val):
                     if val in '?!' or self.MULTI_PUNCT.search(val):
                         _current_status = _STATUS_MISS
@@ -45,16 +44,16 @@ class NaiveSentenceBoundaryDetector(object):
                             _current_status = _STATUS_MISS
                         else:
                             _current_status = _STATUS_EXPTED
-            elif token.Type == 'QUOTE':
+            elif ttype == 'QUOTE':
                 _inside_quotes = not _inside_quotes
 
                 if not _inside_quotes and (self.is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
                     _current_status = _STATUS_EXPTED
                 else:
                     _current_status = _STATUS_MISS
-            elif token.Type in ['LBR', 'LQUOTE']:
+            elif ttype in ['LBR', 'LQUOTE']:
                 _brackets_count += 1
-            elif token.Type in ['RBR', 'RQUOTE']:
+            elif ttype in ['RBR', 'RQUOTE']:
                 _brackets_count -= 1
 
                 if _brackets_count == 0 and (self.is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
@@ -90,7 +89,7 @@ class NaiveSentenceBoundaryDetector(object):
             current_sentence += [val]
 
             _prev_token = val
-            _prev_ttype = token.Type
+            _prev_ttype = ttype
 
         if current_sentence:
             yield ' '.join(current_sentence)
