@@ -7,7 +7,7 @@ from nltk import word_tokenize, sent_tokenize
 
 class WordDictBuilder:
     def __init__(self):
-        self.stop_words = string.punctuation + '«»→↑—✰'
+        self.stop_words = string.punctuation + '«»→↑—✰⛭№•/\\'
         self.word_dict = None
 
     def build_dict(self, file_collection):
@@ -28,7 +28,7 @@ class WordDictBuilder:
     def collect_dictionary(self, text):
         counter = Counter(
             [word.lower() for sent in sent_tokenize(text)
-             for word in word_tokenize(sent) if word not in self.stop_words]
+             for word in word_tokenize(sent) if not (word in self.stop_words or word.isdecimal() or not word.isalpha())]
         )
         self.word_dict += counter
 
@@ -88,3 +88,4 @@ if __name__ == "__main__":
     print(decompounder.decompuond('малышикарлсонкоторыйживётнакрыше'))
     print(decompounder.decompuond('зубзолотой'))
     print(decompounder.decompuond('огнибольшогогорода'))
+    print(decompounder.decompuond('сказкаонильсеидикихгусях'))
