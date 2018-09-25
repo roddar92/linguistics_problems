@@ -32,9 +32,9 @@ class WordDictBuilder:
         )
         self.word_dict += counter
 
-    def normalize_frequencies(self):
+    def normalize_frequencies(self, alpha=1.0):
         n = sum(self.word_dict.values())
-        return {word: float(freq / n) for word, freq in self.word_dict.items()}
+        return {word: float((freq + alpha) / (n + alpha * n)) for word, freq in self.word_dict.items()}
 
 
 class WordDecompounder:
@@ -44,7 +44,7 @@ class WordDecompounder:
         self.total = sum(self.dictionary.values())
         self.max_word_length = max(map(len, self.dictionary))
 
-    def decompuond(self, text):
+    def split(self, text):
         return self._viterbi_segment(text)
 
     def _word_probability(self, word):
@@ -83,9 +83,9 @@ if __name__ == "__main__":
     wdb.save_dictionary(PATH_TO_DICTIONARY)
 
     print()
-    print('Decompounding of words..')
+    print('Decompounding of a text into words..')
     decompounder = WordDecompounder(PATH_TO_DICTIONARY)
-    print(decompounder.decompuond('малышикарлсонкоторыйживётнакрыше'))
-    print(decompounder.decompuond('зубзолотой'))
-    print(decompounder.decompuond('огнибольшогогорода'))
-    print(decompounder.decompuond('сказкаонильсеидикихгусях'))
+    print(decompounder.split('малышикарлсонкоторыйживётнакрыше'))
+    print(decompounder.split('зубзолотой'))
+    print(decompounder.split('огнибольшогогорода'))
+    print(decompounder.split('сказкаонильсеидикихгусях'))
