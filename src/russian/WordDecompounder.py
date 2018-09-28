@@ -1,7 +1,9 @@
+import os
 import pickle
 import string
 
 from collections import Counter
+from math import log
 from nltk import word_tokenize, sent_tokenize
 
 
@@ -10,11 +12,11 @@ class WordDictBuilder:
         self.stop_words = string.punctuation + '«»→↑—✰⛭№•/\\'
         self.word_dict = None
 
-    def build_dict(self, file_collection):
+    def build_dict(self, collection):
         self.word_dict = Counter()
-        for filename in file_collection:
-            with open(filename, 'r', encoding='utf-8') as f:
-                self.collect_dictionary(f.read())
+        for f in os.listdir(collection):
+            if f.endswith('.txt'):
+                self.collect_dictionary(open(os.path.join(collection, f), 'r', encoding='utf-8').read())
 
     def save_dictionary(self, filename):
         with open(filename, 'wb') as f:
@@ -52,6 +54,7 @@ class WordDecompounder:
         total = self.total if not 0 <= prob <= 1 else 1
         return prob / total
 
+    # Find the most probable sequence of words with Viterbi algorithm
     def _viterbi_segment(self, text):
         probs, lasts = [1.0], [0]
         for i in range(1, len(text) + 1):
@@ -68,18 +71,50 @@ class WordDecompounder:
         return words, probs[-1]
 
 
+class WordDecompounderWithoutPrioriProb:
+    # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
+    def __init__(self, path_to_dictionary):
+        self.words = list(pickle.load(open(path_to_dictionary, 'rb')).keys())
+        total = len(self.words)
+        self.wordcost = dict((w, log((i + 1) * log(total))) for i, w in enumerate(self.words))
+        self.maxword = max(map(len, self.words))
+
+    def split(self, text):
+        # Find the best match for the i first characters, assuming cost has
+        # been built for the i-1 first characters.
+        # Returns a pair (match_cost, match_length).
+        def best_match(pos):
+            candidates = enumerate(reversed(costs[max(0, pos - self.maxword):pos]))
+            return min((c + self.wordcost.get(text[pos - k - 1:pos], 9e999), k + 1) for k, c in candidates)
+
+        # Build the cost array.
+        costs, lengths = [0], [0]
+        for i in range(1, len(text) + 1):
+            cost, length = best_match(i)
+            costs.append(cost)
+            lengths.append(length)
+
+        # Backtrack to recover the minimal-cost string.
+        out = []
+        i = len(text)
+        while i > 0:
+            out.append(text[i - lengths[i]:i])
+            i -= lengths[i]
+
+        return " ".join(reversed(out))
+
+
 if __name__ == "__main__":
-    fnames = [
-        'resources/corpus/a.txt', 'resources/corpus/b.txt', 'resources/corpus/c.txt'  # and more files
-    ]
+    path_to_collection = 'resources/corpus'
 
     print('Collecting of a dictionary..')
     wdb = WordDictBuilder()
-    wdb.build_dict(fnames)
+    wdb.build_dict(path_to_collection)
 
     normalized_dict = wdb.normalize_frequencies()
-    for k, v in sorted(normalized_dict.items(), key=lambda x: -x[1]):
-        print(k, '--', v)
+    print(len(normalized_dict))
+    for key, val in sorted(normalized_dict.items(), key=lambda x: -x[1]):
+        print(key, '--', val)
 
     PATH_TO_DICTIONARY = 'resources/corpus/dictionary.pkl'
     wdb.save_dictionary(PATH_TO_DICTIONARY)
@@ -91,3 +126,13 @@ if __name__ == "__main__":
     print(decompounder.split('зубзолотой'))
     print(decompounder.split('огнибольшогогорода'))
     print(decompounder.split('сказкаонильсеидикихгусях'))
+    print(decompounder.split('царьпетр'))
+
+    print()
+    print('Decompounding of a text into words ..')
+    decompounder = WordDecompounderWithoutPrioriProb(PATH_TO_DICTIONARY)
+    print(decompounder.split('малышикарлсонкоторыйживётнакрыше'))
+    print(decompounder.split('зубзолотой'))
+    print(decompounder.split('огнибольшогогорода'))
+    print(decompounder.split('сказкаонильсеидикихгусях'))
+    print(decompounder.split('царьпетр'))
