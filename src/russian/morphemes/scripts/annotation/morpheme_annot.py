@@ -34,8 +34,8 @@ VERB_REPLACEMENT_RULES = {
     re.compile(r'(?<![аеиоуыэюя])([аеиоуыэюя])\['): r'[\1/END][',
     re.compile(r'(я)$'): r'[\1/SFX]',
     re.compile(r'([уюаяи]щ|вш|енн|инн|нн)\['): r'[\1/SFX][',
-    re.compile(r'([аяие]л)\['): r'[\1/SFX][',
-    re.compile(r'([аяие]л)$'): r'[\1/SFX]',
+    re.compile(r'([аяиеыё]л)\['): r'[\1/SFX][',
+    re.compile(r'([аяиеыё]л)$'): r'[\1/SFX]',
     re.compile(r'([нкш])\['): r'[\1/SFX][',
     re.compile(r'(ом|ов|ам|ем|им|ым)$'): r'[\1/SFX]',
     re.compile(r'(ич)\['): r'[\1/SFX][',
@@ -67,9 +67,19 @@ def annotate_morphemes(input_dir, output_dir, path_to_filename):
             if t[-1] in 'SAV' and '-' in t[0]:
                 if t[-1] in 'SV':
                     for w in t[0].split('-'):
-                        t_new = (w, t[-1])
+                        index = None
+                        if re.search(r'([.,?!…]+)', w):
+                            index = re.search(r'([.,?!…]+)', w).start()
+                        t_new = (w[:index], t[-1])
                         f2.write(str((apply_rules(t_new), t[-1])))
                         f2.write('\n')
+
+                        if index:
+                            t_new = (w[index:], 'NONLEX')
+                            f2.write(str(t_new))
+                            f2.write('\n')
+                            index = None
+
                         f2.flush()
                 else:
                     t_new = (''.join(t[0].split('-')), t[-1])
@@ -77,9 +87,21 @@ def annotate_morphemes(input_dir, output_dir, path_to_filename):
                     f2.write('\n')
                     f2.flush()
             else:
-                t_new = (apply_rules(t), t[-1]) if t[-1] not in EXCEPTED_POS else t
+                index = None
+                w, pos = t
+                if re.search(r'([.,?!…]+)', w):
+                    index = re.search(r'([.,?!…]+)', w).start()
+
+                t_new = (apply_rules((w[:index], pos)), t[-1]) if t[-1] not in EXCEPTED_POS else t
                 f2.write(str(t_new))
                 f2.write('\n')
+
+                if index:
+                    t_new = (w[index:], 'NONLEX')
+                    f2.write(str(t_new))
+                    f2.write('\n')
+                    index = None
+
                 f2.flush()
 
 
