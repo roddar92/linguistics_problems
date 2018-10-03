@@ -10,21 +10,40 @@ class HMMClassifier:
     def find_morphemes(self, word, pos_tag):
         # must return the best combination of morphemes (used Viterbi algorithm)
         def t_prob(s1, s2):
-            return self.trans[s1][s2] or 0
+            state_prob = self.trans.get(s1, {})
+            if state_prob:
+                return state_prob.get(s2, 0)
+            else:
+                return 0
 
         def e_prob(w, pos, s):
-            return self.emis[s][(w, pos)]
+            state_prob = self.emis.get(s, {})
+            if state_prob:
+                return state_prob.get((w, pos), 0)
+            else:
+                return 0
 
         def s_prob(s):
-            return self.start_states[s]
+            return self.start_states.get(s, 0)
 
         probs, morphs, lasts, states = [], [], [], []
         prob, k, st = max((s_prob(st) * e_prob(word[0:k], pos_tag, st), k, st)
                           for k in range(max(0, len(word) - self.max_word_len))
                           for st in HMMModelHandler.get_states())
+        probs.append(prob)
+        states.append(st)
+        lasts.append(k)
         for j in (k, len(word) + 1):
             prob, k, st = max(probs[t] * (e_prob(word[t:j], pos_tag, st) * t_prob(states[t], st), k, st)
                               for t in range(max(0, len(word) - self.max_word_len))
                               for st in HMMModelHandler.get_states())
+            probs.append(prob)
+            states.append(st)
+            lasts.append(k)
+
+        i = len(word)
+        while i > 0:
+            morphs.append(word[lasts[i]:i])
+            i = lasts[i]
 
         return [(morph, HMMModelHandler.decode_label(s)) for morph, s in zip(reversed(morphs), states)]
