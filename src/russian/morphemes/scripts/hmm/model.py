@@ -23,6 +23,10 @@ class HMMModelHandler:
     def decode_label(cls, label):
         return cls.encoder.inverse_transform(label)
 
+    @classmethod
+    def get_states(cls):
+        return cls.encoder.classes_
+
     def save_model(self, path_to_model):
         probs = (self.starts, self.transitions, self.emissions)
         pickle.dump(probs, open(path_to_model + '-hmm.pkl', 'wb'))
@@ -46,7 +50,7 @@ class HMMModelHandler:
             s = self.encoder.transform(state)
             self.emissions[s][(observation, pos)] += 1
             if not prev_state:
-                self.starts[state] += 1
+                self.starts[s] += 1
             else:
                 s1 = self.encoder.transform(prev_state)
                 self.transitions[s1][s] += 1
