@@ -10,10 +10,11 @@ NOUN_REPLACEMENT_RULES = {
     re.compile(r'(?<![аеиоуыэюя])([аеиоуыэюя])$'): r'[\1/END]',
     re.compile(r'(?<![аеиоуыэюя])([аеиоуыэюя])\['): r'[\1/END][',
     re.compile(r'(ая|ай|ий|ой|ый|ые|ою|ия|ие|ии|ию|ей|ую|ее|ое)$'): r'[\1/END]',
-    re.compile(r'(ом|ов|ам|ем|им|ым|ит|ах|их|ых)$'): r'[\1/END]',
+    re.compile(r'(ом|ов|ам|ем|им|ым)\['): r'[\1/END][',
+    re.compile(r'(ом|ов|ам|ем|им|ым|ах|их|ых)$'): r'[\1/END]',
     re.compile(r'(знь)$'): r'[\1/SFX]',
     re.compile(r'([аеёи]нн?|нн?)\['): r'[\1/SFX][',
-    re.compile(r'(ович|ость|ост|ичн|тель?|ниц|ник|щик|ств|ск|ек|ик|ок|чк|оч|чн|ич|зн|ст|сн)\['): r'[\1/SFX][',
+    re.compile(r'(ович|ость|ост|ичн|тель?|ниц|ник|щик|ств|ск|ек|ик|ок|чк|оч|чн|ич|яч|зн|ст|сн)\['): r'[\1/SFX][',
     re.compile(r'(ен|ов)\['): r'[\1/IFX][',
     re.compile(r'^(не|во[зс]|пере|бе[зс]|пр[иео]|обо?|анти|пред|под|вы|по|ра[зс]|о|за|из|до|от)'): r'[\1/AFX]',
     re.compile(r'\]([^\[\]]+)\['): r'][\1/RT][',
@@ -50,6 +51,7 @@ EXCEPTED_POS = ['CONJ', 'PR', 'NONLEX', 'S-PRO', 'ADV-PRO', 'PART']
 
 def apply_rules(word_tuple):
     word, pos = word_tuple
+    word = re.sub(r'ё', 'е', word)
     rules = NOUN_REPLACEMENT_RULES if pos in 'S A A-PRO'.split() else VERB_REPLACEMENT_RULES
     for replacement_cond, replacement_rule in rules.items():
         word = replacement_cond.sub(replacement_rule, word)
