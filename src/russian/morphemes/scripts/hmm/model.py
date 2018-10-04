@@ -39,7 +39,7 @@ class HMMModelHandler:
 
     def store_probabilities(self, line, delimiter='][', annot_delimiter='/'):
         prev_state = None
-        annotation, pos = tuple(eval(line))
+        annotation, poss = tuple(eval(line))
         for element in annotation.split(delimiter):
             if element.startswith(delimiter[-1]):
                 element = element[1:]
@@ -48,7 +48,8 @@ class HMMModelHandler:
             observation, state = element.split(annot_delimiter)
 
             s = self.encoder.transform(state)
-            self.emissions[s][(observation, pos)] += 1
+            for pos in poss.split(','):
+                self.emissions[s][(observation, pos)] += 1
             if not prev_state:
                 self.starts[s] += 1
             else:

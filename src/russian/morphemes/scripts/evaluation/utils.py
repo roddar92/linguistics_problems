@@ -19,6 +19,7 @@ def annot2label(input_dir, output_dir):
 
             all_pairs_count, labels_count = 0, 0
             pos_tags_counter = Counter()
+            unique_counter = Counter()
 
             for line in fin.readlines():
                 word, pos = tuple(eval(line.strip()))
@@ -31,10 +32,11 @@ def annot2label(input_dir, output_dir):
                     fout.write('\n')
                     labels_count += 1
                 pos_tags_counter[pos] += 1
+                unique_counter[word] += 1
                 all_pairs_count += 1
             fout.flush()
-            out_descr.write('{}: Processed all {} lines and labels - {}'.format(
-                input_file, all_pairs_count, labels_count))
+            out_descr.write('{}: Processed all {} lines and labels - {}, unique words - {}'.format(
+                input_file, all_pairs_count, labels_count, len(unique_counter)))
             out_descr.write('\n')
             out_descr.write('POS TAGS:')
             out_descr.write('\n')
