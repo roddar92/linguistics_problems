@@ -53,9 +53,9 @@ def annot2label(input_dir, output_dir):
                 if res:
                     fout.write(','.join(res) + '\t' + pos)
                     fout.write('\n')
+                    unique_counter[word] += 1
                     labels_count += 1
                 pos_tags_counter[pos] += 1
-                unique_counter[word] += 1
                 all_pairs_count += 1
             fout.flush()
 
