@@ -24,24 +24,28 @@ class HMMClassifier:
         def s_prob(s):
             return self.start_states.get(s, 0)
 
-        probs, morphs, lasts, states = [], [], [], []
-        prob, k, st = max((s_prob(st) * e_prob(word[0:k], pos_tag, st), k, st)
-                          for k in range(max(0, len(word) - self.max_word_len))
-                          for st in HMMModelHandler.get_states())
-        probs.append(prob)
-        states.append(st)
-        lasts.append(k)
-        for j in range(k, len(word) + 1):
-            prob, k, st = max(probs[t] * (e_prob(word[t:j], pos_tag, st) * t_prob(states[t], st), k, st)
+        def st_prob(prev_state, start_state, next_state):
+            if not states:
+                return s_prob(start_state)
+            else:
+                return t_prob(states[prev_state], next_state)
+
+        probs, lasts, states = [1.0], [0], []
+        for j in range(1, len(word) + 1):
+            prob, k, st = max((probs[t] * e_prob(word[t:j], pos_tag, st) * st_prob(t, start, st), t, st)
                               for t in range(max(0, len(word) - self.max_word_len))
-                              for st in HMMModelHandler.get_states())
+                              for st in HMMModelHandler.get_states()
+                              for start in [0, 1])
             probs.append(prob)
             states.append(st)
             lasts.append(k)
 
+        morphs = []
         i = len(word)
         while i > 0:
-            morphs.append(word[lasts[i]:i])
+            morphs.append(
+                (word[lasts[i]:i], HMMModelHandler.decode_label(states[i]))
+            )
             i = lasts[i]
 
-        return [(morph, HMMModelHandler.decode_label(s)) for morph, s in zip(reversed(morphs), states)]
+        return reversed(morphs)
