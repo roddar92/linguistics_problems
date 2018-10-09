@@ -7,7 +7,7 @@ class HMMClassifier:
         self.start_states, self.trans, self.emis = HMMModelHandler.normalize_model(start_states, trans, emis)
         self.max_word_len = max(map(len, [t[0] for raw in self.emis for t in raw.keys()]))
 
-    def find_the_best_partition(self, word, pos_tag):
+    def find_the_best_partition(self, word, pos_tag=None):
         # return the best combination of morphemes (used Viterbi algorithm)
         def t_prob(s1, s2):
             state_prob = self.trans.get(s1, {})
@@ -19,7 +19,10 @@ class HMMClassifier:
             state_prob = self.emis.get(s, {})
             if not state_prob:
                 return 0
-            return state_prob.get((w, pos), 0)
+            if pos:
+                return state_prob.get((w, pos), 0)
+            else:
+                return sum(state_prob.get((ww, _), 0) for ww,  _ in state_prob.values() if ww == w)
 
         def s_prob(s):
             return self.start_states.get(s, 0)

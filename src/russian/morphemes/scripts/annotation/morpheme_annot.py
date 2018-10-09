@@ -4,7 +4,7 @@ import re
 
 RT = r'([^\[\]]+)'
 ROOT = re.compile(r'(.+)')
-NOUN_SUFFIXES = r'(ович|ость|ост|ист|ичн|тель?|еньк|ниц|ник|щик|енк|ньк|ушк|ишк|ичн|ист|изм|ств|' \
+NOUN_SUFFIXES = r'(ович|ическ|ость|ост|ист|ичн|тель?|еньк|альн|ниц|ник|щик|енк|ньк|ушк|ишк|ичн|ист|изм|ств|' \
                 r'ск|ек|ик|ец|йц|нц|ок|чк|оч|ов|чн|ич|яч|зн|ст|сн|иц|к)'
 PAST_VB_SFX = r'([аяиеыё]л)'
 ENDING = r'(?<![аеиоуыэюя])([аеиоуыэюя])'
@@ -19,12 +19,11 @@ NOUN_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + ADJ_ENDINGS + r'$'): r'[\1/END]',
     re.compile(r'(?<!^)(ом|ов|ам|ем|им|ым)\['): r'[\1/END][',
     re.compile(r'(?<!^)(ом|ов|ам|ем|им|ым|ах|их|ых|ях)$'): r'[\1/END]',
+    re.compile(r'(?<!^)' + r'([йь])$'): r'[\1/END]',
     re.compile(r'(?<!^)(знь)$'): r'[\1/SFX]',
     re.compile(r'(?<!^)([аеёи]нн?|нн?)\['): r'[\1/SFX][',
-    re.compile(r'(?<!^)' + NOUN_SUFFIXES + '\['):
-        r'[\1/SFX][',
-    re.compile(r'(?<!^)' + NOUN_SUFFIXES + '$'):
-        r'[\1/SFX]',
+    re.compile(r'(?<!^)' + NOUN_SUFFIXES + '\['): r'[\1/SFX][',
+    re.compile(r'(?<!^)' + NOUN_SUFFIXES + '$'): r'[\1/SFX]',
     re.compile(r'(ен|ов)\['): r'[\1/IFX][',
     re.compile(r'^' + AFFIX + r'(?!$)'): r'[\1/AFX]',
     re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
@@ -35,10 +34,10 @@ NOUN_REPLACEMENT_RULES = {
 VERB_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + r'(с[ья])$'): r'[\1/PSFX]',
     re.compile(r'(?<!^)' + VERB_ENDINGS + r'$'): r'[\1/END]',
-    re.compile(r'(?<!^)' + VERB_ENDINGS + r'\['): r'[\1/END][',
+    re.compile(r'(?<!^)' + VERB_ENDINGS + r'\[(с[ья])'): r'[\1/END][\2',
     re.compile(r'(?<!^)' + ADJ_ENDINGS + r'$'): r'[\1/END]',
     re.compile(r'(?<!^)' + r'([уюаяеи]шь)$'): r'[\1/END]',
-    re.compile(r'(?<!^)' + r'([уюаяеи]шь)\['): r'[\1/END][',
+    re.compile(r'(?<!^)' + r'([уюаяеи]шь)\[(с[ья])'): r'[\1/END][\2',
     re.compile(r'(?<!^)' + r'(ть)\['): r'[\1/END][',
     re.compile(r'(?<!^)' + r'(ть)$'): r'[\1/END]',
     re.compile(r'(?<!^)([аеиоуыэюя])\[ть'): r'[\1/SFX][ть',
@@ -82,7 +81,7 @@ def annotate_morphemes(input_dir, output_dir, path_to_filename):
         for line in f1.readlines():
             t = tuple(eval(line.strip()))
             if t[-1] in 'S A V ADV'.split() and '-' in t[0]:
-                if t[-1] in 'S V ADV'.split():
+                if t[-1] in 'S V ADV'.split() or t[-1] == 'A' and len(set(t[0].split('-'))) == 1:
                     for w in t[0].split('-'):
                         index = None
                         if re.search(r'([.,?!…]+)', w):

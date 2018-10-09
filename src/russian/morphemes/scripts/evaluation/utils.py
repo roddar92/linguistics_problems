@@ -45,18 +45,21 @@ def annot2label(input_dir, output_dir):
             unique_counter = Counter()
 
             for line in fin.readlines():
-                word, pos = tuple(eval(line.strip()))
-                res = []
-                for elem in ANNOT_PATTERN.finditer(word):
-                    morph, morph_type = elem.group(1), elem.group(2)
-                    res += ['{}-{}'.format(morph, morph_type)]
-                if res:
-                    fout.write(','.join(res) + '\t' + pos)
-                    fout.write('\n')
-                    unique_counter[word] += 1
-                    labels_count += 1
-                pos_tags_counter[pos] += 1
-                all_pairs_count += 1
+                try:
+                    word, pos = tuple(eval(line.strip()))
+                    res = []
+                    for elem in ANNOT_PATTERN.finditer(word):
+                        morph, morph_type = elem.group(1), elem.group(2)
+                        res += ['{}-{}'.format(morph, morph_type)]
+                    if res:
+                        fout.write(','.join(res) + '\t' + pos)
+                        fout.write('\n')
+                        unique_counter[word] += 1
+                        labels_count += 1
+                    pos_tags_counter[pos] += 1
+                    all_pairs_count += 1
+                except:
+                    print(line)
             fout.flush()
 
             write_statistics_over_file(all_pairs_count, labels_count,
