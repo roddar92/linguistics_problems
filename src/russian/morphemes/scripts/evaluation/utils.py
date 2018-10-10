@@ -4,7 +4,7 @@ import sys
 from collections import Counter
 
 
-STATES = ['AFX', 'RT', 'IFX', 'SFX', 'END', 'PSFX']
+STATES = ['AFX', 'RT', 'IFX', 'SFX', 'END', 'PSFX', 'IMPSFX', 'SFXEND', 'RTEND']
 ALL_EXCLUDE_BRACKETS = r'([^\[\]]+)'
 ANNOT = r'\[' + ALL_EXCLUDE_BRACKETS + r'/(' + r'|'.join(STATES) + r')\]'
 ANNOT_PATTERN = re.compile(ANNOT, re.IGNORECASE)
@@ -23,7 +23,7 @@ def annot2label(input_dir, output_dir):
             out_descr.write('\n')
 
     def write_pos_statistics(pos_tags_counter, descr=sys.stdout):
-        descr.write('ALL POS TAGS:')
+        descr.write('ALL TAGS:')
         descr.write('\n')
         for pos, count in pos_tags_counter.most_common():
             descr.write('{} - {}'.format(pos, count))
@@ -33,6 +33,7 @@ def annot2label(input_dir, output_dir):
     whole_pairs_count, whole_labels_count = 0, 0
     whole_pos_tags_counter = Counter()
     whole_unique_counter = Counter()
+    whole_mopheme_counter = Counter()
 
     for f in os.listdir(input_dir):
         input_file = os.path.join(input_dir, f)
@@ -43,6 +44,7 @@ def annot2label(input_dir, output_dir):
             all_pairs_count, labels_count = 0, 0
             pos_tags_counter = Counter()
             unique_counter = Counter()
+            mopheme_counter = Counter()
 
             for line in fin.readlines():
                 try:
@@ -51,6 +53,7 @@ def annot2label(input_dir, output_dir):
                     for elem in ANNOT_PATTERN.finditer(word):
                         morph, morph_type = elem.group(1), elem.group(2)
                         res += ['{}-{}'.format(morph, morph_type)]
+                        mopheme_counter[morph_type] += 1
                     if res:
                         fout.write(','.join(res) + '\t' + pos)
                         fout.write('\n')
@@ -65,17 +68,20 @@ def annot2label(input_dir, output_dir):
             write_statistics_over_file(all_pairs_count, labels_count,
                                        len(unique_counter), descr=out_descr, filename=input_file)
             write_pos_statistics(pos_tags_counter, descr=out_descr)
+            write_pos_statistics(mopheme_counter, descr=out_descr)
             out_descr.write('\n')
             out_descr.flush()
 
             whole_pos_tags_counter.update(pos_tags_counter)
             whole_unique_counter.update(unique_counter)
+            whole_mopheme_counter.update(mopheme_counter)
             whole_pairs_count += all_pairs_count
             whole_labels_count += labels_count
 
     write_statistics_over_file(whole_pairs_count, whole_labels_count,
                                len(whole_unique_counter), descr=out_descr)
     write_pos_statistics(whole_pos_tags_counter, descr=out_descr)
+    write_pos_statistics(whole_mopheme_counter, descr=out_descr)
     out_descr.flush()
 
     if out_descr:
