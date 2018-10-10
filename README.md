@@ -35,6 +35,9 @@ Source code:
 - [Finnish Predicative Sentences](src/suomi/FinnishPredicativeQuestioner.py)
 - [Russian POS-tagger](src/russian/NaivePosTagger.py)
 
+#### Syntax
+- [Syntax analyzer for simple sentences](src/russian/NaiveSyntaxAnalyzer.py)
+
 #### Knowledge engineering
 - [Family tree](src/ontologies/Pedigree.py)
 - [Abstract ontology for company](src/ontologies/CompanyOntology.py)
