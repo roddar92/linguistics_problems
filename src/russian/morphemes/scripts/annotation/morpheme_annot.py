@@ -14,17 +14,27 @@ AFFIX = r'(не|во[зс]|пере|бе[зс]|пр[иео]|обо?|анти|п�
 
 NOUN_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + r'(ого|его)$'): r'[\1/END]',
+    re.compile(r'(?<!^)' + r'((ом|ов|ам|ем|им|ым)и)$'): r'[\1/END]',
     re.compile(r'(?<!^)' + ENDING + r'$'): r'[\1/END]',
     re.compile(r'(?<!^)' + ENDING + r'\['): r'[\1/END][',
     re.compile(r'(?<!^)' + ADJ_ENDINGS + r'$'): r'[\1/END]',
     re.compile(r'(?<!^)(ом|ов|ам|ем|им|ым)\['): r'[\1/END][',
     re.compile(r'(?<!^)(ом|ов|ам|ем|им|ым|ах|их|ых|ях)$'): r'[\1/END]',
-    re.compile(r'(?<!^)' + r'([йь])$'): r'[\1/END]',
+    re.compile(r'(?<!^)' + r'([йь])$'): r'[\1/RTEND]',
     re.compile(r'(?<!^)(знь)$'): r'[\1/SFX]',
     re.compile(r'(?<!^)([аеёи]нн?|нн?)\['): r'[\1/SFX][',
     re.compile(r'(?<!^)' + NOUN_SUFFIXES + '\['): r'[\1/SFX][',
     re.compile(r'(?<!^)' + NOUN_SUFFIXES + '$'): r'[\1/SFX]',
     re.compile(r'(ен|ов)\['): r'[\1/IFX][',
+    re.compile(r'^' + AFFIX + r'(?!$)'): r'[\1/AFX]',
+    re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
+    re.compile(r'^' + RT + r'\['): r'[\1/RT]['
+}
+
+
+ADV_REPLACEMENT_RULES = {
+    re.compile(r'(?<!^)([аеиоуы])$'): r'[\1/SFX]',
+    re.compile(r'(?<!^)(н)\['): r'[\1/SFX][',
     re.compile(r'^' + AFFIX + r'(?!$)'): r'[\1/AFX]',
     re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
     re.compile(r'^' + RT + r'\['): r'[\1/RT]['
@@ -48,7 +58,7 @@ VERB_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + PAST_VB_SFX + '\['): r'[\1/SFX][',
     re.compile(r'(?<!^)' + PAST_VB_SFX + r'$'): r'[\1/SFX]',
     re.compile(r'(?<!^)([нкш])\['): r'[\1/SFX][',
-    re.compile(r'(?<!^)(ом|ов|ам|ем|им|ым)$'): r'[\1/SFX]',
+    re.compile(r'(?<!^)(ем|им)'): r'[\1/SFX]',
     re.compile(r'(?<!^)(ич)\['): r'[\1/SFX][',
     re.compile(r'^' + AFFIX + r'(?!$)'): r'[\1/AFX]',
     re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
@@ -65,7 +75,8 @@ def apply_rules(word_tuple):
 
     word, pos = word_tuple
     word = re.sub(r'ё', 'е', word)
-    rules = NOUN_REPLACEMENT_RULES if pos in 'S A A-PRO NUM'.split() else VERB_REPLACEMENT_RULES
+    rules = NOUN_REPLACEMENT_RULES if pos in 'S A A-PRO NUM'.split() \
+        else ADV_REPLACEMENT_RULES if pos == 'ADV' else VERB_REPLACEMENT_RULES
     if is_long_seq(word):
         for replacement_cond, replacement_rule in rules.items():
             word = replacement_cond.sub(replacement_rule, word)
