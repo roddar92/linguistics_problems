@@ -27,8 +27,10 @@ NOUN_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + NOUN_SUFFIXES + '$'): r'[\1/SFX]',
     re.compile(r'(ен|ов)\['): r'[\1/IFX][',
     re.compile(r'^' + AFFIX + r'(?!$)'): r'[\1/AFX]',
+    re.compile(r'AFX\](ъ)'): r'AFX][\1/AFXEND]',
     re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
-    re.compile(r'^' + RT + r'\['): r'[\1/RT]['
+    re.compile(r'^' + RT + r'\['): r'[\1/RT][',
+    re.compile(r'\]' + RT + r'$'): r'][\1/RT]'
 }
 
 
@@ -36,8 +38,10 @@ ADV_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)([аеиоуы])$'): r'[\1/SFX]',
     re.compile(r'(?<!^)(н)\['): r'[\1/SFX][',
     re.compile(r'^' + AFFIX + r'(?!$)'): r'[\1/AFX]',
+    re.compile(r'AFX\](ъ)'): r'AFX][\1/AFXEND]',
     re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
-    re.compile(r'^' + RT + r'\['): r'[\1/RT]['
+    re.compile(r'^' + RT + r'\['): r'[\1/RT][',
+    re.compile(r'\]' + RT + r'$'): r'][\1/RT]'
 }
 
 
@@ -61,8 +65,10 @@ VERB_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)(ем|им)'): r'[\1/SFX]',
     re.compile(r'(?<!^)(ич)\['): r'[\1/SFX][',
     re.compile(r'^' + AFFIX + r'(?!$)'): r'[\1/AFX]',
+    re.compile(r'AFX\](ъ)'): r'AFX][\1/AFXEND]',
     re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
-    re.compile(r'^' + RT + r'\['): r'[\1/RT]['
+    re.compile(r'^' + RT + r'\['): r'[\1/RT][',
+    re.compile(r'\]' + RT + r'$'): r'][\1/RT]'
 }
 
 

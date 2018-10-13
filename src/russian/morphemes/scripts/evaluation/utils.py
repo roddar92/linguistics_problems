@@ -4,7 +4,7 @@ import sys
 from collections import Counter
 
 
-STATES = ['AFX', 'RT', 'IFX', 'SFX', 'END', 'PSFX', 'IMPSFX', 'SFXEND', 'RTEND']
+STATES = ['AFX', 'RT', 'IFX', 'SFX', 'END', 'PSFX', 'IMPSFX', 'SFXEND', 'RTEND', 'AFXEND']
 ALL_EXCLUDE_BRACKETS = r'([^\[\]]+)'
 ANNOT = r'\[' + ALL_EXCLUDE_BRACKETS + r'/(' + r'|'.join(STATES) + r')\]'
 ANNOT_PATTERN = re.compile(ANNOT, re.IGNORECASE)
