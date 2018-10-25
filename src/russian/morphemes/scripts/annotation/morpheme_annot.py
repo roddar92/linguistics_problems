@@ -4,11 +4,11 @@ import re
 
 RT = r'([^\[\]]+)'
 ROOT = re.compile(r'(.+)')
-NOUN_SUFFIXES = r'(ович|ость|ост|ист|ичн|тель?|ниц|ник|щик|енк|ньк|ушк|ишк|изм|ств|' \
+NOUN_SUFFIXES = r'(ович|ость|ост(?=([аэеиоуыя]$))|ист|ичн|тель?|ниц|ник|щик|енк|ньк|ушк|ишк|изм|ств|' \
                 r'ек|ик|ец|йц|нц|ок|ов|ич|яч|иц|ц|к)'
-ADJ_SUFFIXES = r'(ическ|ост|ист|ичн|тель?|еньк|альн|енк|ньк|ушк|ишк|ичн|изм|ств|' \
-                r'ск|йц|нц|чк|оч|ов|чн|ич|зн|ст|сн|иц|ив|к)'
-PAST_VB_SFX = r'([аяиеыё]л)'
+ADJ_SUFFIXES = r'(ическ|ост(?=н)|ист(?=[а-я])|ичн|тель?|еньк|альн|енк|ньк|ушк|ишк|ичн|изм|ств|' \
+                r'ск|йц|нц|чк|оч|ов|чн|ич|зн|ст(?=[а-я])|сн|иц|ив|к)'
+PAST_VB_SFX = r'([аяиеыё])(л)'
 ENDING = r'(?<![аеиоуыэюя])([аеиоуыэюя])'
 ADJ_ENDINGS = r'(ая|ай|ий|ой|ый|ые|ою|ия|ие|ии|ию|ую|ее|ое)'
 VERB_ENDINGS = r'([уюаяеи]те?)'
@@ -69,6 +69,14 @@ ADV_REPLACEMENT_RULES = {
 }
 
 
+PRO_REPLACEMENT_RULES = {
+    re.compile(r'(?<!^)([ео](го|й)|и[мх]и?|[аеиоуый])$'): r'[\1/END]',
+    re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
+    re.compile(r'^' + RT + r'\['): r'[\1/RT][',
+    re.compile(r'\]' + RT + r'$'): r'][\1/RT]'
+}
+
+
 VERB_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + r'(с[ья])$'): r'[\1/PSFX]',
     re.compile(r'(?<!^)' + VERB_ENDINGS + r'$'): r'[\1/END]',
@@ -85,8 +93,8 @@ VERB_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + r'([вя])$'): r'[\1/SFX]',
     re.compile(r'(?<!^)([уюаяи]щ|вш|енн|инн|нн)\['): r'[\1/SFX][',
     re.compile(r'(?<!^)(а)\[нн'): r'[\1/SFX][нн',
-    re.compile(r'(?<!^)' + PAST_VB_SFX + '\['): r'[\1/SFX][',
-    re.compile(r'(?<!^)' + PAST_VB_SFX + r'$'): r'[\1/SFX]',
+    re.compile(r'(?<!^)' + PAST_VB_SFX + '\['): r'[\1/SFX][\2/SFX][',
+    re.compile(r'(?<!^)' + PAST_VB_SFX + r'$'): r'[\1/SFX][\2/SFX]',
     re.compile(r'(?<!^)([нкш])\['): r'[\1/SFX][',
     re.compile(r'(?<!^)(ем|им)\['): r'[\1/SFX][',
     re.compile(r'(?<!^)(ич)\['): r'[\1/SFX][',
@@ -107,8 +115,9 @@ def apply_rules(word_tuple):
 
     word, pos = word_tuple
     word = re.sub(r'ё', 'е', word)
-    rules = NOUN_REPLACEMENT_RULES if pos in 'S S-PRO'.split() \
-        else ADJ_REPLACEMENT_RULES if pos in 'A A-PRO NUM'.split() \
+    rules = NOUN_REPLACEMENT_RULES if pos == 'S' \
+        else ADJ_REPLACEMENT_RULES if pos in 'A NUM'.split() \
+        else PRO_REPLACEMENT_RULES if pos in 'A-PRO S-PRO'.split() \
         else ADV_REPLACEMENT_RULES if pos == 'ADV' else VERB_REPLACEMENT_RULES
     if is_long_seq(word):
         for replacement_cond, replacement_rule in rules.items():
