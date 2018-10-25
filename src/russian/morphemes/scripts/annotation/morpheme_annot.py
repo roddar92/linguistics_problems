@@ -4,16 +4,39 @@ import re
 
 RT = r'([^\[\]]+)'
 ROOT = re.compile(r'(.+)')
-NOUN_SUFFIXES = r'(ович|ическ|ость|ост|ист|ичн|тель?|еньк|альн|ниц|ник|щик|енк|ньк|ушк|ишк|ичн|ист|изм|ств|' \
-                r'ск|ек|ик|ец|йц|нц|ок|чк|оч|ов|чн|ич|яч|зн|ст|сн|иц|к)'
+NOUN_SUFFIXES = r'(ович|ость|ост|ист|ичн|тель?|ниц|ник|щик|енк|ньк|ушк|ишк|изм|ств|' \
+                r'ек|ик|ец|йц|нц|ок|ов|ич|яч|иц|ц|к)'
+ADJ_SUFFIXES = r'(ическ|ост|ист|ичн|тель?|еньк|альн|енк|ньк|ушк|ишк|ичн|изм|ств|' \
+                r'ск|йц|нц|чк|оч|ов|чн|ич|зн|ст|сн|иц|ив|к)'
 PAST_VB_SFX = r'([аяиеыё]л)'
 ENDING = r'(?<![аеиоуыэюя])([аеиоуыэюя])'
 ADJ_ENDINGS = r'(ая|ай|ий|ой|ый|ые|ою|ия|ие|ии|ию|ую|ее|ое)'
 VERB_ENDINGS = r'([уюаяеи]те?)'
-AFFIX = r'(не|во[зс]|пере|бе[зс]|пр[иео]|обо?|анти|пред|под|еже|вы|по|ра[зс]|у|о|за|из|до|от)'
-NOUN_AFFIX = r'(не|во[зс]|бе[зс]|пр[иео]|анти|сверх|пред|еже|под|ра[зс])'
+AFFIX = r'(на|не|во[зс]|пере|бе[зс]|пр[иео]|обо?|анти|пред|под|еже|вы|по|ра[зс]|у|о|за|из|до|от|вз)'
+NOUN_AFFIX = r'(во[зс]|бе[зс]|пр[иео]|анти|сверх|пред|еже|под|ра[зс]|вз)'
 
 NOUN_REPLACEMENT_RULES = {
+    re.compile(r'(?<!^)' + r'(ого|его)$'): r'[\1/END]',
+    re.compile(r'(?<!^)' + r'((ом|ам|ем|им|ым)и)$'): r'[\1/END]',
+    re.compile(r'(?<!^)(е[ей])$'): r'[\1/SFX]',
+    re.compile(r'(?<!^)' + ENDING + r'$'): r'[\1/END]',
+    re.compile(r'(?<!^)' + ENDING + r'\['): r'[\1/END][',
+    re.compile(r'(?<!^)(ом|ов|ам|ем|им|ым|ах|их|ых|ях)$'): r'[\1/END]',
+    re.compile(r'(?<!^)' + r'([йь])$'): r'[\1/RTEND]',
+    re.compile(r'(?<!^)(знь)$'): r'[\1/SFX]',
+    re.compile(r'(?<!^)([аеёи]нн?|нн?)\['): r'[\1/SFX][',
+    re.compile(r'(?<!^)' + NOUN_SUFFIXES + '\['): r'[\1/SFX][',
+    re.compile(r'(?<!^)' + NOUN_SUFFIXES + '$'): r'[\1/SFX]',
+    re.compile(r'(ен|ов)\['): r'[\1/IFX][',
+    re.compile(r'^' + NOUN_AFFIX + r'(?!$)'): r'[\1/AFX]',
+    re.compile(r'AFX\](ъ)'): r'AFX][\1/AFXEND]',
+    re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
+    re.compile(r'^' + RT + r'\['): r'[\1/RT][',
+    re.compile(r'\]' + RT + r'$'): r'][\1/RT]'
+}
+
+
+ADJ_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + r'(ого|его)$'): r'[\1/END]',
     re.compile(r'(?<!^)' + r'((ом|ам|ем|им|ым)и)$'): r'[\1/END]',
     re.compile(r'(?<!^)(е[ей])$'): r'[\1/SFX]',
@@ -22,10 +45,10 @@ NOUN_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)' + ADJ_ENDINGS + r'$'): r'[\1/END]',
     re.compile(r'(?<!^)(ом|ов|ам|ем|им|ым|ах|их|ых|ях)$'): r'[\1/END]',
     re.compile(r'(?<!^)' + r'([йь])$'): r'[\1/RTEND]',
-    re.compile(r'(?<!^)(знь)$'): r'[\1/SFX]',
     re.compile(r'(?<!^)([аеёи]нн?|нн?)\['): r'[\1/SFX][',
-    re.compile(r'(?<!^)' + NOUN_SUFFIXES + '\['): r'[\1/SFX][',
-    re.compile(r'(?<!^)' + NOUN_SUFFIXES + '$'): r'[\1/SFX]',
+    re.compile(r'(?<!^)' + ADJ_SUFFIXES + '\['): r'[\1/SFX][',
+    re.compile(r'(?<!^)' + ADJ_SUFFIXES + '$'): r'[\1/SFX]',
+    re.compile(r'(?<!^)([уюаяи]щ|ем|им)\['): r'[\1/SFX][',
     re.compile(r'(ен|ов)\['): r'[\1/IFX][',
     re.compile(r'^' + AFFIX + r'(?!$)'): r'[\1/AFX]',
     re.compile(r'AFX\](ъ)'): r'AFX][\1/AFXEND]',
@@ -58,8 +81,8 @@ VERB_REPLACEMENT_RULES = {
     re.compile(r'(?<!^)([аеиоуыэюя])\[ть'): r'[\1/SFX][ть',
     re.compile(r'(?<!^)' + ENDING + r'$'): r'[\1/END]',
     re.compile(r'(?<!^)' + ENDING + r'\['): r'[\1/END][',
-    re.compile(r'(?<!^)' + r'(я)\[сь'): r'[\1/SFX][сь',
-    re.compile(r'(?<!^)' + r'(я)$'): r'[\1/SFX]',
+    re.compile(r'(?<!^)' + r'([вя])\[сь'): r'[\1/SFX][сь',
+    re.compile(r'(?<!^)' + r'([вя])$'): r'[\1/SFX]',
     re.compile(r'(?<!^)([уюаяи]щ|вш|енн|инн|нн)\['): r'[\1/SFX][',
     re.compile(r'(?<!^)(а)\[нн'): r'[\1/SFX][нн',
     re.compile(r'(?<!^)' + PAST_VB_SFX + '\['): r'[\1/SFX][',
@@ -84,7 +107,8 @@ def apply_rules(word_tuple):
 
     word, pos = word_tuple
     word = re.sub(r'ё', 'е', word)
-    rules = NOUN_REPLACEMENT_RULES if pos in 'S A A-PRO NUM'.split() \
+    rules = NOUN_REPLACEMENT_RULES if pos in 'S S-PRO'.split() \
+        else ADJ_REPLACEMENT_RULES if pos in 'A A-PRO NUM'.split() \
         else ADV_REPLACEMENT_RULES if pos == 'ADV' else VERB_REPLACEMENT_RULES
     if is_long_seq(word):
         for replacement_cond, replacement_rule in rules.items():

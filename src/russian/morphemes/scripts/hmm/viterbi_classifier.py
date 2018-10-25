@@ -27,15 +27,15 @@ class HMMClassifier:
         def s_prob(s):
             return self.start_states.get(s, 0)
 
-        def st_prob(prev_state, start_state, next_state):
+        def st_prob(states, t, start_state, next_state):
             if not states:
                 return s_prob(start_state)
             else:
-                return t_prob(states[prev_state], next_state)
+                return t_prob(states[t], next_state)
 
         probs, lasts, states = [1.0], [0], []
         for j in range(1, len(word) + 1):
-            prob, k, st = max((probs[t] * e_prob(word[t:j], pos_tag, st) * st_prob(t, start, st), t, st)
+            prob, k, st = max((probs[t] * e_prob(word[t:j], pos_tag, st) * st_prob(states, t, start, st), t, st)
                               for t in range(max(0, len(word) - self.max_word_len))
                               for st in HMMModelHandler.get_states()
                               for start in [0, 1])
