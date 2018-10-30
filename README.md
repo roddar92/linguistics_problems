@@ -21,6 +21,7 @@ Source code:
 - [Sentence boundary detection](src/russian/NaiveSentenceBoundaryDetector.py)
 - [Transliteration Russian <=> Latin (with spell-checker)](src/russian/NaiveTransliterator.py)
 - [Word decomposition](src/russian/WordDecompounder.py)
+- [Camel case segmentator](src/english/CamelCaseSplitter.py)
 
 #### Phonology
 - [Syllable Module (word syllables count (russian/english/finnish) and word syllables list (russian/finnish))](src/russian/Syllables.py)
