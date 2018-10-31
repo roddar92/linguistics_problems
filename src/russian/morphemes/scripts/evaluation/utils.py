@@ -3,11 +3,32 @@ import re
 import sys
 from collections import Counter, defaultdict
 
-
 STATES = ['AFX', 'RT', 'IFX', 'SFX', 'END', 'PSFX', 'IMPSFX', 'SFXEND', 'RTEND', 'AFXEND']
 ALL_EXCLUDE_BRACKETS = r'([^\[\]]+)'
 ANNOT = r'\[' + ALL_EXCLUDE_BRACKETS + r'/(' + r'|'.join(STATES) + r')\]'
 ANNOT_PATTERN = re.compile(ANNOT, re.IGNORECASE)
+
+
+def annot2word(input_dir, output_dir):
+    for f in os.listdir(input_dir):
+        input_file = os.path.join(input_dir, f)
+        output_file = os.path.join(output_dir, f)
+        with open(input_file, 'r', encoding='utf-8') as fin, \
+                open(output_file, 'w', encoding='utf-8') as fout:
+
+            for line in fin.readlines():
+                try:
+                    word = ''
+                    annot_word, pos = tuple(eval(line.strip()))
+                    for elem in ANNOT_PATTERN.finditer(annot_word):
+                        morph, _ = elem.group(1), elem.group(2)
+                        word += morph
+                    if word:
+                        fout.write(word + '\t' + pos)
+                        fout.write('\n')
+                except:
+                    print(line)
+            fout.flush()
 
 
 def annot2label(input_dir, output_dir):
@@ -115,3 +136,5 @@ if __name__ == '__main__':
     INPUT_DIR = '../../resources/corpora/annot_ready'
     OUTPUT_DIR = '../../resources/corpora/true_labels'
     annot2label(INPUT_DIR, OUTPUT_DIR)
+    OUTPUT_DIR = '../../resources/corpora/words_for_parsing'
+    annot2word(INPUT_DIR, OUTPUT_DIR)

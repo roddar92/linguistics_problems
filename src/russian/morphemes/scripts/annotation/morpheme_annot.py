@@ -70,7 +70,7 @@ ADV_REPLACEMENT_RULES = {
 
 
 PRO_REPLACEMENT_RULES = {
-    re.compile(r'(?<!^)([ео](го|й)|и[мх]и?|[аеиоуый])$'): r'[\1/END]',
+    re.compile(r'(?<!^)([ео](го|й)|[еи][мх]и?|[аеиоуыйэюя])$'): r'[\1/END]',
     re.compile(r'\]' + RT + r'\['): r'][\1/RT][',
     re.compile(r'^' + RT + r'\['): r'[\1/RT][',
     re.compile(r'\]' + RT + r'$'): r'][\1/RT]'
