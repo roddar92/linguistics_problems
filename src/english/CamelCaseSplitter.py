@@ -27,6 +27,9 @@ class CamelCaseSplitter:
                     if word.isupper() and len(word) > 1:
                         answer += [word[:-1]]
                         word = word[-1] + ch
+                    elif word and not word.isupper():
+                        answer += [word]
+                        word = ch
                     else:
                         word += ch
                     curr_state = _is_lower
@@ -59,5 +62,7 @@ if __name__ == "__main__":
     assert ccs.split('Type4HTMLWord') == ['Type', '4', 'HTML', 'Word']
     assert ccs.split('Type123Word') == ['Type', '123', 'Word']
     assert ccs.split('123Type4Word') == ['123', 'Type', '4', 'Word']
+    assert ccs.split('123type4word') == ['123', 'type', '4', 'word']
+    assert ccs.split('type4THEWord') == ['type', '4', 'THE', 'Word']
     assert ccs.split('helloWorld') == ['hello', 'World']
     assert ccs.split('hello-MyWorld') == ['hello', '-', 'My', 'World']
