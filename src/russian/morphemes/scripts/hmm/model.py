@@ -48,8 +48,11 @@ class HMMModelHandler:
             observation, state = element.split(annot_delimiter)
 
             s = self.encoder.transform(state)
-            for pos in poss.split(','):
-                self.emissions[s][(observation, pos)] += 1
+            if state not in ['RT', 'RTEND', 'HYP']:
+                for pos in poss.split(','):
+                    self.emissions[s][(observation, pos)] += 1
+            else:
+                self.emissions[s][observation] += 1
             if not prev_state:
                 self.starts[s] += 1
             else:
