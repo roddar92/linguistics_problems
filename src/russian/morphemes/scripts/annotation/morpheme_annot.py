@@ -134,27 +134,18 @@ def annotate_morphemes(input_dir, output_dir, path_to_filename):
         for line in f1.readlines():
             t = tuple(eval(line.strip()))
             if t[-1] in 'S A V ADV'.split() and '-' in t[0]:
-                if t[-1] in 'S V ADV'.split() or t[-1] == 'A' and len(set(t[0].split('-'))) == 1:
-                    for w in t[0].split('-'):
-                        index = None
-                        if re.search(r'([.,?!…]+)', w):
-                            index = re.search(r'([.,?!…]+)', w).start()
-                        t_new = (w[:index], t[-1])
-                        f2.write(str((apply_rules(t_new), t[-1])))
-                        f2.write('\n')
-
-                        if index:
-                            t_new = (w[index:], 'NONLEX')
-                            f2.write(str(t_new))
-                            f2.write('\n')
-                            index = None
-
-                        f2.flush()
-                else:
-                    t_new = (''.join(t[0].split('-')), t[-1])
-                    f2.write(str((apply_rules(t_new), t[-1])))
-                    f2.write('\n')
-                    f2.flush()
+                processed_words = []
+                for w in t[0].split('-'):
+                    index = None
+                    if re.search(r'([.,?!…]+)', w):
+                        index = re.search(r'([.,?!…]+)', w).start()
+                    t_new = (w[:index], t[-1])
+                    processed_words += [apply_rules(t_new)]
+                processed_word = '[-/HYP]'.join(processed_words)
+                t_new = (processed_word, t[-1])
+                f2.write(str(t_new))
+                f2.write('\n')
+                f2.flush()
             else:
                 index = None
                 w, pos = t
