@@ -22,6 +22,7 @@ Source code:
 - [Transliteration Russian <=> Latin (with spell-checker)](src/russian/NaiveTransliterator.py)
 - [Word decomposition](src/russian/WordDecompounder.py)
 - [Camel case segmentator](src/english/CamelCaseSplitter.py)
+- [Russian number2text converter](src/russian/TextNormalizer.py)
 
 #### Phonology
 - [Syllable Module (word syllables count (russian/english/finnish) and word syllables list (russian/finnish))](src/russian/Syllables.py)
