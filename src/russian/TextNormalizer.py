@@ -63,7 +63,18 @@ class Number2TextConverter:
         "M": 1000
     }
 
+    FRAC_REM = {
+        1: 'десятая',
+        2: 'сотая',
+        3: 'тысячная',
+        4: 'десятитысячная',
+        5: 'стотысячная',
+        6: 'миллионная',
+        7: 'десятимиллионная',
+    }
+
     _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
+    _DECIMAL = re.compile(r'(\d+)[\.,](\d+)')
 
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
@@ -98,14 +109,43 @@ class Number2TextConverter:
                 i += 2
         return number
 
-    def _inflect_thousands(self, n, word):
+    def _inflect_word(self, n, word):
         return self.morph.parse(word)[0].make_agree_with_number(n).word
 
     def convert(self, number, grammems=None, ordered=False):
-        if type(number) == str and self._ROMAN_REGEX.match(number):
-            return self.convert(self._roman2arabic(number.upper()), grammems=grammems, ordered=ordered)
+        if type(number) == float:
+            number = str(number)
 
-        decomposition = self._number2decomposition(number)
+        if type(number) == str and self._DECIMAL.search(number):
+            decimal = self._DECIMAL.search(number)
+            b_point, a_point = int(decimal.group(1)), decimal.group(2)
+
+            rem = self.FRAC_REM[len(a_point)]
+            a_str = self.convert(b_point).split()
+            b_str = self.convert(int(a_point)).split()
+
+            if a_str[-1] == 'один':
+                a_str += [self.morph.parse(a_str.pop())[0].inflect({'femn'}).word]
+            elif a_str[-1] == 'два':
+                a_str.pop()
+                a_str += ['две']
+            if b_str[-1] == 'один':
+                b_str += [self.morph.parse(b_str.pop())[0].inflect({'femn'}).word]
+            elif b_str[-1] == 'два':
+                b_str.pop()
+                b_str += ['две']
+
+            result = '{} {} {} {}'.format(
+                ' '.join(a_str), self._inflect_word(b_point, 'целая'),
+                ' '.join(b_str), self._inflect_word(int(a_point), rem)
+            )
+            return result
+
+        if type(number) == str and self._ROMAN_REGEX.match(number):
+            decomposition = self._number2decomposition(self._roman2arabic(number.upper()))
+        else:
+            decomposition = self._number2decomposition(number)
+
         answer = []
         for i, n in enumerate(decomposition):
             ordered_condition = ordered and i == len(decomposition) - 1
@@ -129,8 +169,10 @@ class Number2TextConverter:
                     w = self.DOZENS[k][0]
                 elif k == 2 and n > 1000:
                     w = 'двух' if ordered_condition else 'две'
-                elif k >= 100:
+                elif k > 100:
                     w = self.HUNDREDS[k][key][:-2] if ordered_condition else self.HUNDREDS[k][key]
+                elif k == 100:
+                    w = self.HUNDREDS[k][0]
                 elif k >= 10 and not (11 <= k <= 19):
                     w = self.DOZENS[k][key]
                 else:
@@ -139,7 +181,7 @@ class Number2TextConverter:
                 if k > 1 and not ordered_condition:
                     answer.append(w)
                 thousand = self.THOUSANDS[t]
-                word_for_thousand = thousand[1] if ordered_condition else self._inflect_thousands(k, thousand[0])
+                word_for_thousand = thousand[1] if ordered_condition else self._inflect_word(k, thousand[0])
                 if ordered_condition:
                     word_for_thousand = (w if k > 1 else '') + word_for_thousand
                 answer.append(word_for_thousand)
@@ -200,8 +242,10 @@ if __name__ == '__main__':
     assert converter.convert(1114, ordered=True) == 'тысяча сто четырнадцатый'
     assert converter.convert(2345) == 'две тысячи триста сорок пять'
     assert converter.convert(2345, ordered=True) == 'две тысячи триста сорок пятый'
+    assert converter.convert(10000, ordered=True) == 'десятитысячный'
     assert converter.convert(10234) == 'десять тысяч двести тридцать четыре'
     assert converter.convert(10234, ordered=True) == 'десять тысяч двести тридцать четвертый'
+    assert converter.convert(100000, ordered=True) == 'стотысячный'
     assert converter.convert(200000, ordered=True) == 'двухсоттысячный'  # ???
     assert converter.convert(100234) == 'сто тысяч двести тридцать четыре'
     assert converter.convert(100234, ordered=True) == 'сто тысяч двести тридцать четвертый'
@@ -209,3 +253,5 @@ if __name__ == '__main__':
     assert converter.convert(1000214, ordered=True) == 'миллион двести четырнадцатый'
     assert converter.convert(5000214) == 'пять миллионов двести четырнадцать'
     assert converter.convert(5000214, ordered=True) == 'пять миллионов двести четырнадцатый'
+    assert converter.convert(3.31) == 'три целые тридцать одна сотая'
+    assert converter.convert(2.35) == 'две целые тридцать пять сотых'
