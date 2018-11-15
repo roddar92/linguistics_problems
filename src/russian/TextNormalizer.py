@@ -53,7 +53,7 @@ class Number2TextConverter:
     THOUSANDS = {
         1000: {0: 'тысяча', 1: 'тысячный'},
         1000000: {0: 'миллион', 1: 'миллионный'},
-        1000000000: {0: 'миллиард', 1: 'миллиардныйй'}
+        1000000000: {0: 'миллиард', 1: 'миллиардный'}
     }
 
     ROMAN = {
@@ -74,7 +74,7 @@ class Number2TextConverter:
     }
 
     _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
-    _DECIMAL = re.compile(r'(\d+)[\.,](\d+)')
+    _DECIMAL = re.compile(r'(\d+)[.,](\d+)')
 
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
@@ -113,6 +113,17 @@ class Number2TextConverter:
         return self.morph.parse(word)[0].make_agree_with_number(n).word
 
     def convert(self, number, grammems=None, ordered=False):
+
+        def _change_last_word(frac_str):
+            last = frac_str.pop()
+            if last == 'один':
+                frac_str += ['одна']
+            elif last == 'два':
+                frac_str += ['две']
+            else:
+                frac_str += [last]
+            return frac_str
+
         if type(number) == float:
             number = str(number)
 
@@ -124,16 +135,8 @@ class Number2TextConverter:
             a_str = self.convert(b_point).split()
             b_str = self.convert(int(a_point)).split()
 
-            if a_str[-1] == 'один':
-                a_str += [self.morph.parse(a_str.pop())[0].inflect({'femn'}).word]
-            elif a_str[-1] == 'два':
-                a_str.pop()
-                a_str += ['две']
-            if b_str[-1] == 'один':
-                b_str += [self.morph.parse(b_str.pop())[0].inflect({'femn'}).word]
-            elif b_str[-1] == 'два':
-                b_str.pop()
-                b_str += ['две']
+            a_str = _change_last_word(a_str)
+            b_str = _change_last_word(b_str)
 
             result = '{} {} {} {}'.format(
                 ' '.join(a_str), self._inflect_word(b_point, 'целая'),
