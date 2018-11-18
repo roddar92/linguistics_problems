@@ -73,30 +73,8 @@ class Number2TextConverter:
         7: 'десятимиллионная',
     }
 
-    ENDING_TO_GRAMMEME = {
-        'ая': {'femn'},
-        'ое': {'neut'},
-        'ье': {'neut'},
-        'й': {'masc'},
-        'ый': {'masc'},
-        'ой': {'masc'},
-        'е': {'plur'},
-        'ые': {'plur'},
-        'го': {'gent'},
-        'его': {'gent'},
-        'ого': {'gent'},
-        'х': {'plur', 'gent'},
-        'ых': {'plur', 'gent'},
-        'ми': {'gent'},
-        'ти': {'gent'},
-        'ю': {'ablt'},
-        'тью': {'ablt'},
-    }
-
     _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
     _DECIMAL = re.compile(r'(\d+)[.,](\d+)', re.IGNORECASE)
-    _NUMB_WITH_ORD_ENDINGS = re.compile(r'(\d+)-?([оыьа][ехя]|[ео]?го|[еоы]?й|е|х)', re.IGNORECASE)
-    _NUMB_WITH_ENDINGS = re.compile(r'(\d+)-?([мт]?и|(ть)?ю)', re.IGNORECASE)
 
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
@@ -166,19 +144,6 @@ class Number2TextConverter:
             )
             return result
 
-        if type(number) == str:
-            match = self._NUMB_WITH_ORD_ENDINGS.search(number)
-            match2 = self._NUMB_WITH_ENDINGS.search(number)
-            if match or match2:
-                if match:
-                    number, ending = int(match.group(1)), match.group(2)
-                else:
-                    number, ending = int(match2.group(1)), match2.group(2)
-                grammems = self.ENDING_TO_GRAMMEME[ending] | (grammems or set())
-                if number in [2, 3] and ending == 'х':
-                    return 'двух' if number == 2 else 'трех'
-                ordered = match is not None
-
         if type(number) == str and self._ROMAN_REGEX.match(number):
             decomposition = self._number2decomposition(self._roman2arabic(number.upper()))
         else:
@@ -242,7 +207,70 @@ class Number2TextConverter:
 
 # TODO class TextNormalizer with normalization approach (2км => 2 км => два км OR 2 книги => две книги)
 class TextNormalizer:
-    pass
+    _NUMB_WITH_ORD_ENDINGS = re.compile(r'(\d+)-?([оыьа][ехя]|[ео]?го|[еоы]?й|е|х)', re.IGNORECASE)
+    _NUMB_WITH_ENDINGS = re.compile(r'(\d+)-?([мт]?и|(ть)?ю)', re.IGNORECASE)
+    _NUMBERS = re.compile(r'^(\d+([.,]\d+)?)$', re.IGNORECASE)
+    _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
+    _MONTHS = re.compile(r'(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
+                         r'ма[йя]|июня?|июля?|авг(уст)?а?|'
+                         r'сент?(ябр[ья])?|окт(ябр[ья])?|ноя(бр[ья])?|дек(абр[ья])?)', re.IGNORECASE)
+    _YEAR_CENTURY = re.compile(r'(век(а|ов)|вв?|года|гг?)', re.IGNORECASE)
+
+    ENDING_TO_GRAMMEME = {
+        'ая': {'femn'},
+        'ое': {'neut'},
+        'ье': {'neut'},
+        'й': {'masc'},
+        'ый': {'masc'},
+        'ой': {'masc'},
+        'е': {'plur'},
+        'ые': {'plur'},
+        'го': {'gent'},
+        'его': {'gent'},
+        'ого': {'gent'},
+        'х': {'plur', 'gent'},
+        'ых': {'plur', 'gent'},
+        'ми': {'gent'},
+        'ти': {'gent'},
+        'ю': {'ablt'},
+        'тью': {'ablt'},
+    }
+
+    def __init__(self):
+        self.numb2text = Number2TextConverter()
+
+    def _extract_parameters_for_number(self, text):
+        match = self._NUMB_WITH_ORD_ENDINGS.search(text)
+        match2 = self._NUMB_WITH_ENDINGS.search(text)
+        if match:
+            number, ending = int(match.group(1)), match.group(2)
+        else:
+            number, ending = int(match2.group(1)), match2.group(2)
+        grammems = self.ENDING_TO_GRAMMEME[ending]
+        ordered = match is not None
+        return number, ordered, grammems
+
+    def normalize(self, tokens):
+        result = []
+        for i, token in enumerate(tokens):
+            if i + 1 < len(tokens) and (self._NUMBERS.match(tokens[i]) or self._ROMAN_REGEX.match(tokens[i])) and \
+                    (self._MONTHS.search(tokens[i + 1]) or self._YEAR_CENTURY.match(tokens[i + 1])):
+                ordered = True
+                grammems = {'neut'} if self._MONTHS.search(tokens[i + 1]) else {'masc', 'gent'}
+
+            if self._NUMB_WITH_ORD_ENDINGS.search(token) or self._NUMB_WITH_ENDINGS.search(token):
+                number, ordered, grammems = self._extract_parameters_for_number(token)
+                if number in [2, 3] and token.endswith('х'):
+                    result += ['двух' if number == 2 else 'трех']
+                else:
+                    result += [self.numb2text.convert(number, grammems=grammems, ordered=ordered)]
+            elif self._ROMAN_REGEX.match(token):
+                result += [self.numb2text.convert(token, grammems=grammems, ordered=ordered)]
+            elif self._NUMBERS.match(token):
+                result += [self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)]
+            else:
+                result += [token]
+        return result
 
 
 if __name__ == '__main__':
@@ -264,10 +292,6 @@ if __name__ == '__main__':
     assert converter.convert(1234) == 'тысяча двести тридцать четыре'
     assert converter.convert(1234, ordered=True) == 'тысяча двести тридцать четвертый'
     assert converter.convert('xIX', ordered=True) == 'девятнадцатый'
-    assert converter.convert('80-е') == 'восьмидесятые'
-    assert converter.convert('80-х') == 'восьмидесятых'
-    assert converter.convert('21й') == 'двадцать первый'
-    assert converter.convert('3х') == 'трех'
     assert converter.convert('MCmlXXxiV', ordered=True) == 'тысяча девятьсот восемьдесят четвертый'
     assert converter.convert(2000) == 'две тысячи'
     assert converter.convert(2000, ordered=True) == 'двухтысячный'
@@ -299,3 +323,12 @@ if __name__ == '__main__':
     assert converter.convert(5000214, ordered=True) == 'пять миллионов двести четырнадцатый'
     assert converter.convert(3.31) == 'три целые тридцать одна сотая'
     assert converter.convert(2.35) == 'две целые тридцать пять сотых'
+
+    normalizer = TextNormalizer()
+    assert normalizer.normalize(['80-е'])[-1] == 'восьмидесятые'
+    assert normalizer.normalize(['80-х'])[-1] == 'восьмидесятых'
+    assert normalizer.normalize(['21й'])[-1] == 'двадцать первый'
+    assert normalizer.normalize(['3х'])[-1] == 'трех'
+    assert ' '.join(normalizer.normalize(['21', 'июня'])) == 'двадцать первое июня'
+    assert ' '.join(normalizer.normalize(['23', 'июля', '1806', 'года'])) == \
+           'двадцать третье июля тысяча восемсот шестого года'
