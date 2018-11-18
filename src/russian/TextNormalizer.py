@@ -73,8 +73,30 @@ class Number2TextConverter:
         7: 'десятимиллионная',
     }
 
+    ENDING_TO_GRAMMEME = {
+        'ая': {'femn'},
+        'ое': {'neut'},
+        'ье': {'neut'},
+        'й': {'masc'},
+        'ый': {'masc'},
+        'ой': {'masc'},
+        'е': {'plur'},
+        'ые': {'plur'},
+        'го': {'gent'},
+        'его': {'gent'},
+        'ого': {'gent'},
+        'х': {'plur', 'gent'},
+        'ых': {'plur', 'gent'},
+        'ми': {'gent'},
+        'ти': {'gent'},
+        'ю': {'ablt'},
+        'тью': {'ablt'},
+    }
+
     _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
-    _DECIMAL = re.compile(r'(\d+)[.,](\d+)')
+    _DECIMAL = re.compile(r'(\d+)[.,](\d+)', re.IGNORECASE)
+    _NUMB_WITH_ORD_ENDINGS = re.compile(r'(\d+)-?([оыьа][ехя]|[ео]?го|[еоы]?й|е|х)', re.IGNORECASE)
+    _NUMB_WITH_ENDINGS = re.compile(r'(\d+)-?([мт]?и|(ть)?ю)', re.IGNORECASE)
 
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
@@ -144,6 +166,19 @@ class Number2TextConverter:
             )
             return result
 
+        if type(number) == str:
+            match = self._NUMB_WITH_ORD_ENDINGS.search(number)
+            match2 = self._NUMB_WITH_ENDINGS.search(number)
+            if match or match2:
+                if match:
+                    number, ending = int(match.group(1)), match.group(2)
+                else:
+                    number, ending = int(match2.group(1)), match2.group(2)
+                grammems = self.ENDING_TO_GRAMMEME[ending] | (grammems or set())
+                if number in [2, 3] and ending == 'х':
+                    return 'двух' if number == 2 else 'трех'
+                ordered = match is not None
+
         if type(number) == str and self._ROMAN_REGEX.match(number):
             decomposition = self._number2decomposition(self._roman2arabic(number.upper()))
         else:
@@ -170,6 +205,8 @@ class Number2TextConverter:
                     w = self.DOZENS[k][1][:-2] + 'и'
                 elif k in self.DOZENS and ordered_condition:
                     w = self.DOZENS[k][0]
+                elif k == 3 and n > 1000:
+                    w = 'трех' if ordered_condition else 'две'
                 elif k == 2 and n > 1000:
                     w = 'двух' if ordered_condition else 'две'
                 elif k > 100:
@@ -227,6 +264,10 @@ if __name__ == '__main__':
     assert converter.convert(1234) == 'тысяча двести тридцать четыре'
     assert converter.convert(1234, ordered=True) == 'тысяча двести тридцать четвертый'
     assert converter.convert('xIX', ordered=True) == 'девятнадцатый'
+    assert converter.convert('80-е') == 'восьмидесятые'
+    assert converter.convert('80-х') == 'восьмидесятых'
+    assert converter.convert('21й') == 'двадцать первый'
+    assert converter.convert('3х') == 'трех'
     assert converter.convert('MCmlXXxiV', ordered=True) == 'тысяча девятьсот восемьдесят четвертый'
     assert converter.convert(2000) == 'две тысячи'
     assert converter.convert(2000, ordered=True) == 'двухтысячный'
