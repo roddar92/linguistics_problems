@@ -214,7 +214,7 @@ class TextNormalizer:
     _MONTHS = re.compile(r'(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
                          r'ма[йя]|июня?|июля?|авг(уст)?а?|'
                          r'сент?(ябр[ья])?|окт(ябр[ья])?|ноя(бр[ья])?|дек(абр[ья])?)', re.IGNORECASE)
-    _YEAR_CENTURY = re.compile(r'(век(а|ов)|вв?|года|гг?)', re.IGNORECASE)
+    _YEAR_CENTURY = re.compile(r'(век(а|е|ов)|вв?|год[ау]|гг?)', re.IGNORECASE)
 
     ENDING_TO_GRAMMEME = {
         'ая': {'femn'},
@@ -234,9 +234,36 @@ class TextNormalizer:
         'ти': {'gent'},
         'ю': {'ablt'},
         'тью': {'ablt'},
+        'м': {'loc2'},
+        'ом': {'loc2'},
+        'му': {'datv'},
+        'ому': {'datv'},
+        'ым': {'plur', 'datv'}
+    }
+
+    SPEC_UNITS = {
+        'г': {'DATE': 'год', 'OTHER': 'грамм'},
+        'м': {'OTHER': 'метр', 'TIME': 'минута'}
+    }
+
+    UNITS = {
+        'г': 'граммм',
+        'кг': 'килограммм',
+        'Вт': 'ватт',
+        'кВт': 'киловатт',
+        'Гц': 'герц',
+        'кГц': 'килогерц',
+        'л': 'литр',
+        'сек': 'секунда',
+        'мин': 'минута',
+        'мм': 'миллиметр',
+        'см': 'сантиметр',
+        'дм': 'дециметр',
+        'км': 'километр'
     }
 
     def __init__(self):
+        self.morph = pymorphy2.MorphAnalyzer()
         self.numb2text = Number2TextConverter()
 
     def _extract_parameters_for_number(self, text):
@@ -250,13 +277,52 @@ class TextNormalizer:
         ordered = match is not None
         return number, ordered, grammems
 
-    def normalize(self, tokens):
+    def calculate_parameters_by_neighbours(self, text_fragment):
+        grammems, ordered = set(), False
+        gender, number, case = (False, False, False)
+        for token in text_fragment:
+            if self._YEAR_CENTURY.search(token) or self._MONTHS.search(token) or \
+                    self.morph.parse(token)[0].normal_form in ['быть', 'стать']:
+                ordered = True
+                if self._YEAR_CENTURY.match(token):
+                    parse = self.morph.parse(token)
+                    if parse:
+                        grammems = {parse[0].tag.number, parse[0].tag.case}
+                        case = True
+                        number = True
+                    else:
+                        grammems = {'masc', 'gent'}
+                        case = True
+                        gender = True
+                elif self._MONTHS.search(token):
+                    grammems = {'neut'}
+                    case = True
+                elif self.morph.parse(token)[0].normal_form in ['быть', 'стать']:
+                    grammems = {'ablt'}
+                    case = True
+            else:
+                parse = self.morph.parse(token)
+                if not gender and parse[0].tag.gender:
+                    grammems.add(parse[0].tag.gender)
+                    gender = True
+                if not number and parse[0].tag.number:
+                    grammems.add(parse[0].tag.number)
+                    number = True
+                if not case and parse[0].tag.case:
+                    grammems.add(parse[0].tag.case)
+                    case = True
+
+        return ordered, grammems
+
+    def normalize(self, tokens, neighbours=2):
         result = []
         for i, token in enumerate(tokens):
-            if i + 1 < len(tokens) and (self._NUMBERS.match(tokens[i]) or self._ROMAN_REGEX.match(tokens[i])) and \
-                    (self._MONTHS.search(tokens[i + 1]) or self._YEAR_CENTURY.match(tokens[i + 1])):
-                ordered = True
-                grammems = {'neut'} if self._MONTHS.search(tokens[i + 1]) else {'masc', 'gent'}
+
+            # TODO: improve/train ordered and grammems parameters
+            a = 0 if i < neighbours else i - neighbours
+            b = len(tokens) if i + neighbours > len(tokens) + 1 else i + neighbours
+            ordered, grammems = self.calculate_parameters_by_neighbours(
+                tokens[a:i] + tokens[i:b])
 
             if self._NUMB_WITH_ORD_ENDINGS.search(token) or self._NUMB_WITH_ENDINGS.search(token):
                 number, ordered, grammems = self._extract_parameters_for_number(token)
@@ -268,6 +334,8 @@ class TextNormalizer:
                 result += [self.numb2text.convert(token, grammems=grammems, ordered=ordered)]
             elif self._NUMBERS.match(token):
                 result += [self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)]
+            elif token in self.UNITS:
+                result += [self.UNITS[token]]
             else:
                 result += [token]
         return result
@@ -332,3 +400,5 @@ if __name__ == '__main__':
     assert ' '.join(normalizer.normalize(['21', 'июня'])) == 'двадцать первое июня'
     assert ' '.join(normalizer.normalize(['23', 'июля', '1806', 'года'])) == \
            'двадцать третье июля тысяча восемсот шестого года'
+    assert ' '.join(normalizer.normalize(['23', 'июля', '1806', 'года'], neighbours=4)) == \
+           'двадцать третьего июля тысяча восемсот шестого года'
