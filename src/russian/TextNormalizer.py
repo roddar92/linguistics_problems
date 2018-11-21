@@ -115,13 +115,13 @@ class Number2TextConverter:
     def convert(self, number, grammems=None, ordered=False):
 
         def _change_last_word(frac_str):
-            last = frac_str.pop()
-            if last == 'один':
+            last_word = frac_str.pop()
+            if last_word == 'один':
                 frac_str += ['одна']
-            elif last == 'два':
+            elif last_word == 'два':
                 frac_str += ['две']
             else:
-                frac_str += [last]
+                frac_str += [last_word]
             return frac_str
 
         if type(number) == float:
@@ -199,9 +199,17 @@ class Number2TextConverter:
 
         if grammems:
             if not ordered:
-                answer = [self.morph.parse(w)[0].inflect(grammems).word for w in answer]
+                answer = [
+                    self.morph.parse(w)[0].inflect(grammems).word
+                    if self.morph.parse(w)[0].inflect(grammems) is not None else w
+                    for w in answer
+                ]
             else:
-                answer.append(self.morph.parse(answer.pop())[0].inflect(grammems).word)
+                last = answer.pop()
+                answer.append(
+                    self.morph.parse(last)[0].inflect(grammems).word
+                    if self.morph.parse(last)[0].inflect(grammems) is not None else last
+                )
         return ' '.join(answer)
 
 
@@ -210,6 +218,7 @@ class TextNormalizer:
     _NUMB_WITH_ORD_ENDINGS = re.compile(r'(\d+)-?([оыьа][ехя]|[ео]?го|[еоы]?й|е|х)', re.IGNORECASE)
     _NUMB_WITH_ENDINGS = re.compile(r'(\d+)-?([мт]?и|(ть)?ю)', re.IGNORECASE)
     _NUMBERS = re.compile(r'^(\d+([.,]\d+)?)$', re.IGNORECASE)
+    _NUMBERS_WITH_ZEROS = re.compile(r'(?<=\d)(\s)(000)', re.IGNORECASE)
     _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
     _MONTHS = re.compile(r'(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
                          r'ма[йя]|июня?|июля?|авг(уст)?а?|'
@@ -248,6 +257,7 @@ class TextNormalizer:
 
     UNITS = {
         'г': 'граммм',
+        'т': 'тонна',
         'кг': 'килограммм',
         'Вт': 'ватт',
         'кВт': 'киловатт',
@@ -265,6 +275,10 @@ class TextNormalizer:
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
         self.numb2text = Number2TextConverter()
+
+    @classmethod
+    def remove_spaces_between_zeros(cls, text):
+        return cls._NUMBERS_WITH_ZEROS.sub(r'\2', text)
 
     def _extract_parameters_for_number(self, text):
         match = self._NUMB_WITH_ORD_ENDINGS.search(text)
@@ -402,3 +416,6 @@ if __name__ == '__main__':
            'двадцать третье июля тысяча восемсот шестого года'
     assert ' '.join(normalizer.normalize(['23', 'июля', '1806', 'года'], neighbours=4)) == \
            'двадцать третьего июля тысяча восемсот шестого года'
+
+    test_text = TextNormalizer.remove_spaces_between_zeros('20 000 000 тонн').split()
+    assert ' '.join(normalizer.normalize(test_text)) == 'двадцать миллионов тонн'
