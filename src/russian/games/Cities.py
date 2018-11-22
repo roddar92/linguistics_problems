@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
-from collections import defaultdict, Counter
+from collections import defaultdict
 
 
 class CitiesGameException(Exception):
@@ -9,40 +9,35 @@ class CitiesGameException(Exception):
 
 
 class Game(object):
-    def __init__(self):
-        self.UNKNOWN_CITY = [
-            "Такого города не существует! Предложи другой:",
-            "Не знаю такой город, назови другой:",
-            "Такого города нет в моём списке. Предложи другой город:"
-        ]
-        self.USED_CITY = [
-            "Этот город уже был! Давай вспомним какой-нибудь другой город:",
-            "Этот город уже был в игре, назови другой:"
-        ]
-        self.BYE_PHRASES = [
-            "стоп",
-            "конец",
-            "хватит",
-            "устал",
-            "надоело",
-            "отстань"
-        ]
+    UNKNOWN_CITY = [
+        "Такого города не существует! Предложи другой:",
+        "Не знаю такой город, назови другой:",
+        "Такого города нет в моём списке. Предложи другой:"
+    ]
+    USED_CITY = [
+        "Этот город уже был! Давай вспомним какой-нибудь другой:",
+        "Этот город уже был в игре, назови другой:"
+    ]
+    BYE_PHRASES = [
+        "стоп",
+        "конец",
+        "хватит",
+        "устал",
+        "надоело",
+        "отстань"
+    ]
 
-        self.allowed_cities = set()
+    def __init__(self):
+        self.allowed_cities = defaultdict(list)
         self.guessed_cities = set()
         self.previous_city = None
         self.status = "init"
 
-        self.used_letters = defaultdict(int)
-
         with open("../resources/ru_cities.txt", "r", encoding='utf-8') as f:
-            self.allowed_cities = {
-                line.strip() for line in f
-            }
-
-        self.allowed_letters = Counter(
-            city[0] for city in self.allowed_cities
-        )
+            for city in f:
+                city = city.strip()
+                if city:
+                    self.allowed_cities[city[0]] += [city]
 
     @staticmethod
     def get_city_name(city):
@@ -57,14 +52,11 @@ class Game(object):
     def has_except_endings(word):
         return word in 'ъыь'
 
-    def _register_used_first_letter(self, name):
-        self.used_letters[name[0]] += 1
-
     def _is_cities_exausted(self, letter):
-        return self.used_letters[letter] == self.allowed_letters[letter]
+        return self.allowed_cities[letter] == []
 
     def _is_all_cities_exausted(self):
-        return self.allowed_cities == self.guessed_cities
+        return self.allowed_cities.keys() == self.guessed_cities
 
     def _find_index_of_right_letter(self, previous_city):
         ind = -1
@@ -87,13 +79,13 @@ class Game(object):
     def _make_city_used(self, city):
         self.previous_city = city
         self.guessed_cities.add(city)
-        self._register_used_first_letter(city)
+        self.allowed_cities[city[0]].remove(city)
 
     def check_city(self, city):
-        if city not in self.allowed_cities:
-            raise CitiesGameException(random.choice(self.UNKNOWN_CITY))
-        elif city in self.guessed_cities:
+        if city in self.guessed_cities:
             raise CitiesGameException(random.choice(self.USED_CITY))
+        elif city not in self.allowed_cities[city[0]]:
+            raise CitiesGameException(random.choice(self.UNKNOWN_CITY))
         elif not self._check_rules(city):
             previous_city = self._get_last_city()
             correct_letter_index = self._find_index_of_right_letter(previous_city)
@@ -107,9 +99,7 @@ class Game(object):
         last_city = self._get_last_city()
         ind = self._find_index_of_right_letter(last_city)
         letter = last_city[ind]
-        cities_starts_with_letter = [word for word in self.allowed_cities
-                                     if word.startswith(letter) and word not in self.guessed_cities]
-        city = random.choice(cities_starts_with_letter)
+        city = random.choice(self.allowed_cities[letter])
         self._make_city_used(city)
         print(self.get_city_name(city))
 
