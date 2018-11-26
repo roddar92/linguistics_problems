@@ -95,7 +95,7 @@ class Number2TextConverter:
             number //= 10
         return decomposition[::-1]
 
-    def _roman2arabic(self, roman_str):
+    def roman2arabic(self, roman_str):
         number = 0
         i = 0
         while i < len(roman_str):
@@ -145,7 +145,7 @@ class Number2TextConverter:
             return result
 
         if type(number) == str and self._ROMAN_REGEX.match(number):
-            decomposition = self._number2decomposition(self._roman2arabic(number.upper()))
+            decomposition = self._number2decomposition(self.roman2arabic(number.upper()))
         else:
             decomposition = self._number2decomposition(number)
 
@@ -220,10 +220,10 @@ class TextNormalizer:
     _NUMBERS = re.compile(r'^(\d+([.,]\d+)?)$', re.IGNORECASE)
     _NUMBERS_WITH_ZEROS = re.compile(r'(?<=\d)(\s)(000)', re.IGNORECASE)
     _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
-    _MONTHS = re.compile(r'(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
+    _MONTHS = re.compile(r'^(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
                          r'ма[йя]|июня?|июля?|авг(уст)?а?|'
-                         r'сент?(ябр[ья])?|окт(ябр[ья])?|ноя(бр[ья])?|дек(абр[ья])?)', re.IGNORECASE)
-    _YEAR_CENTURY = re.compile(r'(век(а|е|ов)|вв?|год[ау]|гг?)', re.IGNORECASE)
+                         r'сент?(ябр[ья])?|окт(ябр[ья])?|ноя(бр[ья])?|дек(абр[ья])?)$', re.IGNORECASE)
+    _YEAR_CENTURY = re.compile(r'^(век(а|е|ов)|вв?|год[ау]|гг?)$', re.IGNORECASE)
 
     ENDING_TO_GRAMMEME = {
         'ая': {'femn'},
@@ -256,9 +256,12 @@ class TextNormalizer:
     }
 
     UNITS = {
-        'г': 'граммм',
+        'в': 'век',
+        'вв': 'века',
+        'гг': 'годы',
+        'г': 'грамм',
         'т': 'тонна',
-        'кг': 'килограммм',
+        'кг': 'килограмм',
         'Вт': 'ватт',
         'кВт': 'киловатт',
         'Гц': 'герц',
@@ -295,7 +298,7 @@ class TextNormalizer:
         grammems, ordered = set(), False
         gender, number, case = (False, False, False)
         for token in text_fragment:
-            if self._YEAR_CENTURY.search(token) or self._MONTHS.search(token) or \
+            if self._YEAR_CENTURY.match(token) or self._MONTHS.match(token) or \
                     self.morph.parse(token)[0].normal_form in ['быть', 'стать']:
                 ordered = True
                 if self._YEAR_CENTURY.match(token):
@@ -314,7 +317,7 @@ class TextNormalizer:
                 elif self.morph.parse(token)[0].normal_form in ['быть', 'стать']:
                     grammems = {'ablt'}
                     case = True
-            else:
+            elif token not in self.UNITS:
                 parse = self.morph.parse(token)
                 if not gender and parse[0].tag.gender:
                     grammems.add(parse[0].tag.gender)
@@ -331,12 +334,12 @@ class TextNormalizer:
     def normalize(self, tokens, neighbours=2):
         result = []
         for i, token in enumerate(tokens):
-
-            # TODO: improve/train ordered and grammems parameters
-            a = 0 if i < neighbours else i - neighbours
-            b = len(tokens) if i + neighbours > len(tokens) + 1 else i + neighbours
-            ordered, grammems = self.calculate_parameters_by_neighbours(
-                tokens[a:i] + tokens[i:b])
+            if self._ROMAN_REGEX.match(token) or self._NUMBERS.match(token):
+                # TODO: improve/train ordered and grammems parameters
+                a = 0 if i < neighbours else i - neighbours
+                b = len(tokens) if i + neighbours > len(tokens) + 1 else i + neighbours
+                ordered, grammems = self.calculate_parameters_by_neighbours(
+                    tokens[a:i] + tokens[i:b])
 
             if self._NUMB_WITH_ORD_ENDINGS.search(token) or self._NUMB_WITH_ENDINGS.search(token):
                 number, ordered, grammems = self._extract_parameters_for_number(token)
@@ -349,7 +352,17 @@ class TextNormalizer:
             elif self._NUMBERS.match(token):
                 result += [self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)]
             elif token in self.UNITS:
-                result += [self.UNITS[token]]
+                units = self.UNITS[token]
+                if self._ROMAN_REGEX.match(tokens[i - 1]) or self._NUMBERS.match(tokens[i - 1]):
+                    prev_token = tokens[i - 1]
+                    n = self.numb2text.roman2arabic(prev_token) \
+                        if self._ROMAN_REGEX.match(prev_token) else int(prev_token)
+                    units_parse = self.morph.parse(units)
+                    if units_parse:
+                        for unit in units_parse:
+                            if 'nomn' in unit.tag:
+                                units = unit.make_agree_with_number(n).word
+                result += [units]
             else:
                 result += [token]
         return result
@@ -419,3 +432,4 @@ if __name__ == '__main__':
 
     test_text = TextNormalizer.remove_spaces_between_zeros('20 000 000 тонн').split()
     assert ' '.join(normalizer.normalize(test_text)) == 'двадцать миллионов тонн'
+    assert ' '.join(normalizer.normalize(['25', 'кг'])) == 'двадцать пять килограмм'
