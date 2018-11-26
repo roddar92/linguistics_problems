@@ -56,7 +56,7 @@ class Game(object):
         return self.allowed_cities[letter] == []
 
     def _is_all_cities_exausted(self):
-        return self.allowed_cities.keys() == self.guessed_cities
+        return not self.allowed_cities
 
     def _find_index_of_right_letter(self, previous_city):
         ind = -1
@@ -80,11 +80,13 @@ class Game(object):
         self.previous_city = city
         self.guessed_cities.add(city)
         self.allowed_cities[city[0]].remove(city)
+        if len(self.allowed_cities[city[0]]) == 0:
+            del self.allowed_cities[city[0]]
 
     def check_city(self, city):
         if city in self.guessed_cities:
             raise CitiesGameException(random.choice(self.USED_CITY))
-        elif city not in self.allowed_cities[city[0]]:
+        elif city[0] not in self.allowed_cities or city not in self.allowed_cities[city[0]]:
             raise CitiesGameException(random.choice(self.UNKNOWN_CITY))
         elif not self._check_rules(city):
             previous_city = self._get_last_city()
