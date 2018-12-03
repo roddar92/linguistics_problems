@@ -109,10 +109,50 @@ class Transliterator:
     def is_solid_or_soft_sign(letter):
         return letter in 'ъь'
 
-    def is_vowel(self, character):
+    def _has_s_affix(self, text, i):
+        return text[i:i + 2] in ['ie', 'ye', 'je'] and self.E_AFFIX.search(text[:i])
+
+    def _transliterate_ij_ending(self, text, elems, i):
+        symbol = text[i]
+        if symbol in 'i' and self._is_vowel(elems[-1]):
+            return 'й'
+        elif text[i] in self.inverted_phonemes:
+            return self.inverted_phonemes[symbol]
+        else:
+            return symbol
+
+    def _tranliterate_vowels_sequence(self, text, answer, elems, i):
+        if i == 0 or self._is_vowel(elems[-1]) or not elems[-1].isalpha():
+            return self.inverted_phonemes[text[i:i + 2]]
+        elif i > 0 and not self._is_vowel(text[i - 1]) and \
+                (self._starts_with_affix(text[:i]) or self._has_s_affix(text, i)):
+            return 'ъ' + self.inverted_phonemes[text[i:i + 2]]
+        else:
+            return answer
+
+    def _transliterate_ch_sequence(self, text, i):
+        if text[i + 2:].startswith('ro'):
+            return 'х' if text[i:i + 2].islower() else 'Х'
+        elif text[i + 2:].startswith('ri'):
+            return 'к' if text[i:i + 2].islower() else 'К'
+        else:
+            return self.inverted_phonemes[text[i:i + 2]]
+
+    def _transliterate_ch_end_sequence(self, text, elems, i, is_upper):
+        if ''.join(elems[-2:]) in ['ви', 'ны'] and is_upper == 1:
+            return self.inverted_phonemes[text[i:i + 2]]
+        elif elems[-1] in 'иы':
+            return 'х'
+        else:
+            return 'ч'
+
+    def _transliterate_voewl_ending(self, text, elems, i):
+        return 'ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i + 2]]
+
+    def _is_vowel(self, character):
         return character.lower() in self.RU_VOWELS
 
-    def starts_with_affix(self, text):
+    def _starts_with_affix(self, text):
         return self.AFFIXES.search(text)
 
     def simple_spell_euristic(self, word):
@@ -133,11 +173,7 @@ class Transliterator:
                 is_upper = 1 if text[i].isupper() else 0
 
             if i == len(text) - 1 or text[i + 1] in string.punctuation or text[i + 1].isspace():
-                symbol = text[i]
-                output_symbol = 'й' if symbol in 'i' and self.is_vowel(elems[-1]) \
-                    else self.inverted_phonemes[symbol] if text[i] in self.inverted_phonemes \
-                    else symbol
-                elems += [output_symbol]
+                elems += [self._transliterate_ij_ending(text, elems, i)]
                 i += 1
             elif i + 4 <= len(text) and text[i:i + 4] in self.inverted_phonemes:
                 phoneme = self.inverted_phonemes[text[i:i + 4]]
@@ -149,30 +185,15 @@ class Transliterator:
                 i += 3
             elif i + 2 <= len(text) and text[i:i + 2] in self.inverted_phonemes:
                 if self.CH_START_REGEX.search(text[:i + 2]):
-                    if text[i + 2:].startswith('ro'):
-                        elems += ['х' if text[i:i + 2].islower() else 'Х']
-                    elif text[i + 2:].startswith('ri'):
-                        elems += ['к' if text[i:i + 2].islower() else 'К']
-                    else:
-                        elems += [self.inverted_phonemes[text[i:i + 2]]]
+                    elems += [self._transliterate_ch_sequence(text, i)]
                 elif self.CH_END_REGEX.search(text[i:]):
-                    if ''.join(elems[-2:]) in ['ви', 'ны'] and is_upper == 1:
-                        elems += [self.inverted_phonemes[text[i:i + 2]]]
-                    elif elems[-1] in 'иы':
-                        elems += ['х']
-                    else:
-                        elems += ['ч']
+                    elems += [self._transliterate_ch_end_sequence(text, elems, i, is_upper)]
                 elif text[i:i + 2].lower() in ['ia', 'ya', 'ja', 'ie', 'ye', 'je', 'yu', 'iu', 'ju']:
                     answer = self.COMBINATED_PHONEMES[text[i:i + 2]] \
                         if text[i:i + 2] in ['ie', 'ye', 'je'] else self.inverted_phonemes[text[i:i + 2]]
-                    elems += [self.inverted_phonemes[text[i:i + 2]]
-                              if i == 0 or self.is_vowel(elems[-1]) or not elems[-1].isalpha()
-                              else 'ъ' + self.inverted_phonemes[text[i:i + 2]]
-                              if i > 0 and not self.is_vowel(text[i - 1]) and (self.starts_with_affix(text[:i])
-                              or (text[i:i + 2] in ['ie', 'ye', 'je'] and self.E_AFFIX.search(text[:i])))
-                              else answer]
+                    elems += [self._tranliterate_vowels_sequence(text, answer, elems, i)]
                 elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj'] and not text[i + 2].isalnum():
-                    elems += ['ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.inverted_phonemes[text[i:i + 2]]]
+                    elems += [self._transliterate_voewl_ending(text, elems, i)]
                 elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj']:
                     elems += [self.inverted_phonemes[text[i:i + 1]]]
                     i -= 1
