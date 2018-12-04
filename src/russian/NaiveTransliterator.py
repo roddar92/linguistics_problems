@@ -10,6 +10,17 @@ class Transliterator:
 
     def __init__(self, need_spell=False):
 
+        self.SHCH_EXCEPTIONS = [
+            'бекешчаба',
+            'веснушчатость',
+            'вeснушчатый',
+            'кошчи',
+            'пушчонка',
+            'сиводушчатый',
+            'харишчандра',
+            'черешчатый'
+        ]
+
         self.RU_VOWELS = 'аeёиоуыэюя'
         self.AFFIXES = re.compile(
             r'(^|\s+)(pod|raz|iz|pred|ot|ob|bez|in|trans|(sver|dvu|tr([yj][ёo]|ё))k?h)$',
@@ -45,7 +56,7 @@ class Transliterator:
             'ц': ['ts', 'tc', 'tz', 'c', 'cz'],
             'ч': ['ch', 'č'],
             'ш': ['sh', 'š'],
-            'щ': ['shch', 'shh', 'šč', 'ŝ'],
+            'щ': ['shh', 'šč', 'ŝ'],
             'ж': ['zh', 'jj', 'ž'],
             'к': ['k', 'ck'],
             'г': ['g'],
@@ -105,6 +116,9 @@ class Transliterator:
 
         self.keys = str.maketrans(self.straight_phonemes)
 
+    def _is_shch_exceptions(self, word):
+        return word in self.SHCH_EXCEPTIONS
+
     @staticmethod
     def is_solid_or_soft_sign(letter):
         return letter in 'ъь'
@@ -122,7 +136,7 @@ class Transliterator:
             return symbol
 
     def _tranliterate_vowels_sequence(self, text, answer, elems, i):
-        if i == 0 or self._is_vowel(elems[-1]) or not elems[-1].isalpha():
+        if i == 0 or self._is_vowel(elems[-1]) or not elems[-1].isalpha() or elems[-1] == 'ь':
             return self.inverted_phonemes[text[i:i + 2]]
         elif i > 0 and not self._is_vowel(text[i - 1]) and \
                 (self._starts_with_affix(text[:i]) or self._has_s_affix(text, i)):
@@ -174,8 +188,9 @@ class Transliterator:
         return self.AFFIXES.search(text)
 
     def simple_spell_euristic(self, word):
-        for phoneme, replaced in self.UNCORRECTED_PHONEMES.items():
-            word = phoneme.sub(replaced, word, re.IGNORECASE)
+        if not self._is_shch_exceptions(word):
+            for phoneme, replaced in self.UNCORRECTED_PHONEMES.items():
+                word = phoneme.sub(replaced, word, re.IGNORECASE)
         return word
 
     def transliterate(self, text):
@@ -253,6 +268,8 @@ if __name__ == '__main__':
     assert translit.inverse_transliterate('Frankophoniia') == 'Франкофония'
     assert translit.inverse_transliterate('aqualangisty') == 'аквалангисты'
     assert translit.inverse_transliterate('leyka') == 'лeйка'
+    assert translit.inverse_transliterate('schast\'ye') == 'счастьe'
+    assert translit.inverse_transliterate('vesnushchatyi') == 'вeснушчатый'
     assert translit.inverse_transliterate('znanija') == 'знания'
     assert translit.inverse_transliterate('shhuka plyvyot k shkhune') == 'щука плывёт к шхунe'
     assert translit.inverse_transliterate('ploshchad\' Alexandra Pushkina') == 'площадь Алeксандра Пушкина'
