@@ -25,6 +25,7 @@ Source code:
 - [Russian number2text converter](src/russian/TextNormalizer.py)
 
 #### Phonology
+- [Soundex Algorithm Implementation](src/russian/Soundex.py)
 - [Syllable Module (word syllables count (russian/english/finnish) and word syllables list (russian/finnish))](src/russian/Syllables.py)
 
 #### Morphology
