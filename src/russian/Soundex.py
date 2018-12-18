@@ -66,7 +66,8 @@ class RussianSoundex(Soundex):
         re.compile(r'(^|ъ|ь|' + r'|'.join(_vowels) + r')(е)', re.IGNORECASE): 'jэ',
         re.compile(r'(^|ъ|ь|' + r'|'.join(_vowels) + r')(ё)', re.IGNORECASE): 'jо',
         re.compile(r'й', re.IGNORECASE): 'j',
-        re.compile(r'[ъь]', re.IGNORECASE): '',
+        re.compile(r'ъ', re.IGNORECASE): '',
+        re.compile(r'ь', re.IGNORECASE): '\'',
         re.compile(r'([тсзжцчшщ])([жцчшщ])', re.IGNORECASE): r'\2',
         re.compile(r'([лнс])(т)([лнс])', re.IGNORECASE): r'\1\3',
         re.compile(r'(р)(д)(ц)', re.IGNORECASE): r'\1\3',
@@ -100,11 +101,13 @@ if __name__ == '__main__':
     ru_soundex = RussianSoundex()
     assert ru_soundex.transform('ёлочка') == 'JJ070530'
     assert ru_soundex.transform('ёлочка') == ru_soundex.transform('йолочка')
+    assert ru_soundex.transform('кот') == ru_soundex.transform('код')
+    assert ru_soundex.transform('медь') == ru_soundex.transform('меть')
     assert ru_soundex.transform('девчонка') == ru_soundex.transform('девчёнка')
     assert ru_soundex.transform('шчастье') == ru_soundex.transform('счастье')
     assert ru_soundex.transform('агенство') == ru_soundex.transform('агентство')
     assert ru_soundex.transform('ненасный') == ru_soundex.transform('ненастный')
     assert ru_soundex.transform('сонце') == ru_soundex.transform('солнце')
     assert ru_soundex.transform('серце') == ru_soundex.transform('сердце')
-    assert ru_soundex.transform('считать') == 'Ч50404'
-    assert ru_soundex.transform('щитать') == 'Щ50404'
+    assert ru_soundex.transform('считать') == 'Ч50404\''
+    assert ru_soundex.transform('щитать') == 'Щ50404\''
