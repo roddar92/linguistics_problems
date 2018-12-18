@@ -7,7 +7,8 @@ class Soundex(ABC):
     _vowels = ''
     _table = str.maketrans('', '')
 
-    def __init__(self, delete_zeros=False, cut_result=False, seq_cutted_len=4):
+    def __init__(self, delete_first_letter=False, delete_zeros=False, cut_result=False, seq_cutted_len=4):
+        self.delete_first_letter = delete_first_letter
         self.delete_zeros = delete_zeros
         self.cut_result = cut_result
         self.seq_cutted_len = seq_cutted_len
@@ -20,15 +21,17 @@ class Soundex(ABC):
 
     def _use_soundex_algorithm(self, word):
         word = word.lower()
-        first, last = word[0], word[1:]
+        first, last = word[0], word
         last = last.translate(self._table)
         last = self._translate_vowels(last)
         if self.delete_zeros:
             last = re.sub('(0+)', '', last)
             last = re.sub(r'(\w)(\1)+', r'\1', last)
         if self.cut_result:
-            last = last[3:] if len(last) >= 3 else last
+            last = last[:self.seq_cutted_len] if len(last) >= self.seq_cutted_len else last
             last += ('0' * (self.seq_cutted_len - len(last)))
+        if self.delete_first_letter:
+            last = last[1:]
         return first.capitalize() + last.upper()
 
     def get_vowels(self):
@@ -64,7 +67,10 @@ class RussianSoundex(Soundex):
         re.compile(r'(^|ъ|ь|' + r'|'.join(_vowels) + r')(ё)', re.IGNORECASE): 'jо',
         re.compile(r'й', re.IGNORECASE): 'j',
         re.compile(r'[ъь]', re.IGNORECASE): '',
-        re.compile(r'([тсзжцчшщ])([жцчшщ])', re.IGNORECASE): r'\2'
+        re.compile(r'([тсзжцчшщ])([жцчшщ])', re.IGNORECASE): r'\2',
+        re.compile(r'([лнс])(т)([лнс])', re.IGNORECASE): r'\1\3',
+        re.compile(r'(р)(д)(ц)', re.IGNORECASE): r'\1\3',
+        re.compile(r'(л)(н)(ц)', re.IGNORECASE): r'\2\3'
     }
 
     def transform(self, word):
@@ -79,18 +85,26 @@ class SoundexSimilarity:
 
     def similarity(self, word1, word2):
         w1, w2 = self.soundex_converter.transform(word1), self.soundex_converter.transform(word2)
-        table = self.soundex_converter.get_table()
-        if w1[0].translate(table) == w2[0].translate(table):
-            return eval(w1[1:], w2[1:])
-        return eval(w1, w2)
+        return eval(w1[1:], w2[1:])
 
 
 if __name__ == '__main__':
-    en_soundex = EnglishSoundex()
+    en_soundex = EnglishSoundex(delete_first_letter=True, cut_result=True, delete_zeros=True)
+    assert en_soundex.transform('Robert') == 'R196'
+    assert en_soundex.transform('Rubin') == 'R180'
+    assert en_soundex.transform('Rupert') == en_soundex.transform('Robert')
+    assert en_soundex.transform('Ashcraft') == 'A926'
+    assert en_soundex.transform('Ashcraft') == en_soundex.transform('Ashcroft')
+    assert en_soundex.transform('Tymczak') == 'T835'
+
     ru_soundex = RussianSoundex()
-    assert ru_soundex.transform('ёлочка') == 'J070530'
+    assert ru_soundex.transform('ёлочка') == 'JJ070530'
     assert ru_soundex.transform('ёлочка') == ru_soundex.transform('йолочка')
     assert ru_soundex.transform('девчонка') == ru_soundex.transform('девчёнка')
     assert ru_soundex.transform('шчастье') == ru_soundex.transform('счастье')
-    assert ru_soundex.transform('считать') == 'Ч0404'
-    assert ru_soundex.transform('щитать') == 'Щ0404'
+    assert ru_soundex.transform('агенство') == ru_soundex.transform('агентство')
+    assert ru_soundex.transform('ненасный') == ru_soundex.transform('ненастный')
+    assert ru_soundex.transform('сонце') == ru_soundex.transform('солнце')
+    assert ru_soundex.transform('серце') == ru_soundex.transform('сердце')
+    assert ru_soundex.transform('считать') == 'Ч50404'
+    assert ru_soundex.transform('щитать') == 'Щ50404'
