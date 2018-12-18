@@ -66,10 +66,10 @@ class RussianSoundex(Soundex):
         re.compile(r'(^|ъ|ь|' + r'|'.join(_vowels) + r')(е)', re.IGNORECASE): 'jэ',
         re.compile(r'(^|ъ|ь|' + r'|'.join(_vowels) + r')(ё)', re.IGNORECASE): 'jо',
         re.compile(r'й', re.IGNORECASE): 'j',
-        re.compile(r'ъ', re.IGNORECASE): '',
-        re.compile(r'ь', re.IGNORECASE): '\'',
+        re.compile(r'[ъь]', re.IGNORECASE): '',
         re.compile(r'([тсзжцчшщ])([жцчшщ])', re.IGNORECASE): r'\2',
         re.compile(r'([лнс])(т)([лнс])', re.IGNORECASE): r'\1\3',
+        re.compile(r'([дт]с)', re.IGNORECASE): 'ц',
         re.compile(r'(р)(д)(ц)', re.IGNORECASE): r'\1\3',
         re.compile(r'(л)(н)(ц)', re.IGNORECASE): r'\2\3'
     }
@@ -81,8 +81,8 @@ class RussianSoundex(Soundex):
 
 
 class SoundexSimilarity:
-    def __init__(self):
-        self.soundex_converter = Soundex()
+    def __init__(self, soundex):
+        self.soundex_converter = soundex
 
     def similarity(self, word1, word2):
         w1, w2 = self.soundex_converter.transform(word1), self.soundex_converter.transform(word2)
@@ -104,10 +104,18 @@ if __name__ == '__main__':
     assert ru_soundex.transform('кот') == ru_soundex.transform('код')
     assert ru_soundex.transform('медь') == ru_soundex.transform('меть')
     assert ru_soundex.transform('девчонка') == ru_soundex.transform('девчёнка')
+    assert ru_soundex.transform('детский') == ru_soundex.transform('децкий')
+    assert ru_soundex.transform('воротца') == ru_soundex.transform('вороца')
     assert ru_soundex.transform('шчастье') == ru_soundex.transform('счастье')
+    assert ru_soundex.transform('щастье') == 'Щ5064J0'
+    assert ru_soundex.transform('счастье') == 'Ч5064J0'
     assert ru_soundex.transform('агенство') == ru_soundex.transform('агентство')
     assert ru_soundex.transform('ненасный') == ru_soundex.transform('ненастный')
     assert ru_soundex.transform('сонце') == ru_soundex.transform('солнце')
     assert ru_soundex.transform('серце') == ru_soundex.transform('сердце')
-    assert ru_soundex.transform('считать') == 'Ч50404\''
-    assert ru_soundex.transform('щитать') == 'Щ50404\''
+    assert ru_soundex.transform('считать') == 'Ч50404'
+    assert ru_soundex.transform('щитать') == 'Щ50404'
+
+    similarity_checker = SoundexSimilarity(ru_soundex)
+    assert similarity_checker.similarity('щастье', 'счастье') == 0
+    assert similarity_checker.similarity('считать', 'щитать') == 0
