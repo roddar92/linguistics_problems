@@ -35,8 +35,8 @@ class Soundex(ABC):
     def _translate_vowels(self, word):
         return ''.join('0' if self._is_vowel(letter) else letter for letter in word)
 
-    def _remove_paired_sounds(self, seq, replace=''):
-        seq = self._vowels_regex.sub(replace, seq)
+    def _remove_vowels_and_paired_sounds(self, seq):
+        seq = self._vowels_regex.sub('', seq)
         seq = self._reduce_seq(seq)
         return seq
 
@@ -45,9 +45,9 @@ class Soundex(ABC):
         first, last = word[0], word
         last = last.translate(self._table)
         last = self._translate_vowels(last)
-        last = self._remove_paired_sounds(last, replace='0')
+        last = self._reduce_seq(last)
         if self.delete_zeros:
-            last = self._remove_paired_sounds(last)
+            last = self._remove_vowels_and_paired_sounds(last)
         if self.cut_result:
             last = last[:self.seq_cutted_len] if len(last) >= self.seq_cutted_len else last
             last += ('0' * (self.seq_cutted_len - len(last)))
@@ -88,6 +88,7 @@ class EnglishSoundex(Soundex):
 
 class RussianSoundex(Soundex):
     _vowels = 'аэиоуыеёюя'
+    _vowels_table = str.maketrans('аяоыиеёэюу', 'AAABBBBBCC')
     _table = str.maketrans('бпвфгкхдтжшчщзсцлмнр', '11223334455556667889')
     _ego_ogo_endings = re.compile(r'([ео])(г)(о$)', re.IGNORECASE)
 
@@ -111,7 +112,7 @@ class RussianSoundex(Soundex):
 
     def __init__(self, delete_first_letter=False, delete_first_coded_letter=False,
                  delete_zeros=False, cut_result=False, seq_cutted_len=4,
-                 use_morph_analysis=False):
+                 code_vowels=False, use_morph_analysis=False):
         """
         Initialization of Russian Soundex object
         :param delete_first_letter:
@@ -120,11 +121,20 @@ class RussianSoundex(Soundex):
         :param cut_result:
         :param seq_cutted_len:
         :param use_morph_analysis: use morphological grammems for phonemes analysis
+        :param code_vowels: group and code vowels as ABC letters
         """
         super(RussianSoundex, self).__init__(delete_first_letter, delete_first_coded_letter,
                                              delete_zeros, cut_result, seq_cutted_len)
+
+        self.code_vowels = code_vowels
         self.use_morph_analysis = use_morph_analysis
         self._moprh = pymorphy2.MorphAnalyzer()
+
+    def _translate_vowels(self, word):
+        if self.code_vowels:
+            return word.translate(self._vowels_table)
+        else:
+            return super(RussianSoundex, self)._translate_vowels(word)
 
     def _replace_ego_ogo_endings(self, word):
         return self._ego_ogo_endings.sub(r'\1в\3', word)
@@ -140,6 +150,9 @@ class RussianSoundex(Soundex):
             word = self._use_morph_for_phoneme_replace(word)
         for replace, result in self._replacement_map.items():
             word = replace.sub(result, word)
+        if self.code_vowels:
+            word = re.sub(r'и[еио]', 'и', word)
+            word = re.sub(r'[еи][ая]', 'я', word)
         return self._apply_soundex_algorithm(word)
 
 
@@ -201,11 +214,11 @@ if __name__ == '__main__':
     assert ru_soundex.transform('считать') == 'Ч50404'
     assert ru_soundex.transform('щитать') == 'Щ50404'
 
-    ru_soundex = RussianSoundex(use_morph_analysis=True)
-    assert ru_soundex.transform('зелёного') == 'З60708020'
-    assert ru_soundex.transform('никого') == 'Н803020'
-    assert ru_soundex.transform('ничего') == 'Н805020'
-    assert ru_soundex.transform('много') == 'М8030'
+    ru_soundex = RussianSoundex(use_morph_analysis=True, code_vowels=True)
+    assert ru_soundex.transform('зелёного') == 'З6B7B8A2A'
+    assert ru_soundex.transform('никого') == 'Н8B3A2A'
+    assert ru_soundex.transform('ничего') == 'Н8B5B2A'
+    assert ru_soundex.transform('много') == 'М8A3A'
 
     ru_soundex = RussianSoundex(delete_first_letter=True)
     similarity_checker = SoundexSimilarity(ru_soundex)
