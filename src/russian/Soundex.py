@@ -122,7 +122,7 @@ class RussianSoundex(Soundex):
         :param use_morph_analysis: use morphological grammems for phonemes analysis
         """
         super(RussianSoundex, self).__init__(delete_first_letter, delete_first_coded_letter,
-                         delete_zeros, cut_result, seq_cutted_len)
+                                             delete_zeros, cut_result, seq_cutted_len)
         self.use_morph_analysis = use_morph_analysis
         self._moprh = pymorphy2.MorphAnalyzer()
 
