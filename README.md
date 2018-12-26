@@ -22,6 +22,7 @@ Source code:
 - [Transliteration Russian <=> Latin (with spell-checker)](src/russian/NaiveTransliterator.py)
 - [Word decomposition](src/russian/WordDecompounder.py)
 - [Camel case segmentator](src/english/CamelCaseSplitter.py)
+- [Distance to anagram](src/english/Anagrams.py)
 - [Russian number2text converter](src/russian/TextNormalizer.py)
 
 #### Phonology
