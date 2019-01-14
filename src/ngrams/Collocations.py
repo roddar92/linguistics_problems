@@ -1,10 +1,10 @@
-import numpy as np
+import string
 
 from abc import ABC, abstractmethod
 from math import log2, sqrt
-from collections import defaultdict
-from sklearn.feature_extraction.text import CountVectorizer
+from collections import Counter
 
+from nltk import bigrams, word_tokenize
 from sortedcontainers import SortedList
 
 
@@ -54,7 +54,7 @@ class Dice(Metric):
 
 
 class LanguageModel:
-    def __init__(self, ngram_size=2):
+    def __init__(self, ngram_size=2, lowercase=False):
         """
             Initialization of N-gram model
             :param ngram_size: size of n-gram, optional
@@ -65,41 +65,30 @@ class LanguageModel:
 
         self.ngram_size = ngram_size
 
-        self.bigram_vectorizer = CountVectorizer(token_pattern='(\\S+)', ngram_range=(ngram_size, ngram_size))
-        self.onegram_vectorizer = CountVectorizer(token_pattern='(\\S+)',  ngram_range=(ngram_size - 1, ngram_size - 1))
-
-        self.unigram_counts = defaultdict(lambda: 0)
-        self.bigram_counts = defaultdict(lambda: 0)
+        self.unigram_counts = None
+        self.bigram_counts = None
 
         self.words_set_size = None
+        self.lowercase = lowercase
 
-    def fit(self, sentences):
+    def fit(self, text):
         """
-            Training of the model on text sentences
-            :param sentences: sentences list
+            Training of the model on texts
+            :param text: sentences list
         """
 
-        print("Fitting sentences")
+        if self.lowercase:
+            text = text.lower()
 
-        counts_matrix = self.bigram_vectorizer.fit_transform(sentences)
-        counts_context_matrix = self.onegram_vectorizer.fit_transform(sentences)
+        print("Tokenize sentences...")
+        tokens = word_tokenize(text)
 
-        self.words_set_size = len(
-            set([key for ngram in self.bigram_vectorizer.vocabulary_.keys() for key in ngram.split(" ")]))
+        self.words_set_size = len(set(tokens))
 
-        print("Summing...")
+        print("Collecting of ngram counters...")
 
-        sum_ngram = np.sum(counts_matrix, axis=0).A1
-        sum_context = np.sum(counts_context_matrix, axis=0).A1
-
-        print("shapes: ", sum_ngram.shape, sum_context.shape)
-        print("Iterating through ngrams...")
-
-        for one_gram, index in self.onegram_vectorizer.vocabulary_.items():
-            self.unigram_counts[one_gram] = sum_context[index]
-
-        for two_gram, index in self.bigram_vectorizer.vocabulary_.items():
-            self.bigram_counts[two_gram] = sum_ngram[index]
+        self.unigram_counts = Counter(tokens)
+        self.bigram_counts = Counter(bigrams(tokens))
 
         return self
     
@@ -114,22 +103,66 @@ class LanguageModel:
 
 
 class CollocationExtractor:
-    def __init__(self, lm):
+    def __init__(self, lm, exclude_punctuation=True, exclude_conj=True):
         self.language_model = lm
+        self.exclude_punctuation = exclude_punctuation
+        self.exclude_conj = exclude_conj
 
     def extract_collocations(self, metric_class):
         assert issubclass(metric_class, Metric)
         metric = metric_class()
-        collocations = SortedList()
+        collocations = SortedList(key=lambda x: -x[0])
         
-        unigrams = self.language_model.get_unigrams()
-        bigrams = self.language_model.get_bigrams()
+        unigram_counts = self.language_model.get_unigrams()
+        bigram_counts = self.language_model.get_bigrams()
 
-        for bigram, freq_bigram in bigrams.items():
-            first, last = bigram.split()
-            freq_first, freq_last = unigrams[first], unigrams[last]
+        for (first, last), freq_bigram in bigram_counts.items():
+
+            if self.exclude_punctuation:
+                if first in string.punctuation or last in string.punctuation:
+                    continue
+
+                if first == '--' or last == '--':
+                    continue
+
+            if self.exclude_conj:
+                if first in 'и а но' or last in 'и а но':
+                    continue
+
+            freq_first, freq_last = unigram_counts[first], unigram_counts[last]
             
             metric_val = metric.evaluate(freq_first, freq_last, freq_bigram, self.language_model.get_vocab_size())
-            collocations.add((metric_val, freq_first, freq_last, freq_bigram, bigram))
+            collocations.add((metric_val, freq_first, freq_last, freq_bigram, first, last))
             
         return collocations
+
+
+if __name__ == '__main__':
+    fname = "resources/corpus/Dostoevsky.txt"
+    with open(fname, 'r', encoding='utf-8') as fin:
+        data = fin.read()
+
+        model = LanguageModel(lowercase=True)
+        model.fit(data)
+
+        collocations_extractor = CollocationExtractor(lm=model)
+
+        print("Mutual Information results...")
+        collocations_list = collocations_extractor.extract_collocations(PMI)
+        for collocation in collocations_list[:100]:
+            print(collocation)
+
+        print("T-Score results...")
+        collocations_list = collocations_extractor.extract_collocations(TScore)
+        for collocation in collocations_list[:100]:
+            print(collocation)
+
+        print("Likelihood Ratio results...")
+        collocations_list = collocations_extractor.extract_collocations(LikelihoodRatio)
+        for collocation in collocations_list[:100]:
+            print(collocation)
+
+        print("Dice results...")
+        collocations_list = collocations_extractor.extract_collocations(Dice)
+        for collocation in collocations_list[:100]:
+            print(collocation)
