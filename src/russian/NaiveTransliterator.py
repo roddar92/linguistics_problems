@@ -7,20 +7,23 @@ import string
 
 
 class Transliterator:
+    SHCH_EXCEPTIONS = [
+        'бекешчаба',
+        'веснушчатость',
+        'вeснушчатый',
+        'кошчи',
+        'пушчонка',
+        'сиводушчатый',
+        'харишчандра',
+        'черешчатый'
+    ]
+
+    IOT_VOWELS = ['io', 'jo', 'yo']
+    IET_VOWELS = ['ie', 'ye', 'je']
+    IAT_VOWELS = ['ia', 'ya', 'ja']
+    IUT_VOWELS = ['iu', 'yu', 'ju']
 
     def __init__(self, need_spell=False):
-
-        self.SHCH_EXCEPTIONS = [
-            'бекешчаба',
-            'веснушчатость',
-            'вeснушчатый',
-            'кошчи',
-            'пушчонка',
-            'сиводушчатый',
-            'харишчандра',
-            'черешчатый'
-        ]
-
         self.RU_VOWELS = 'аeёиоуыэюя'
         self.AFFIXES = re.compile(
             r'(^|\s+)(pod|raz|iz|pred|ot|ob|bez|in|trans|(sver|dvu|tr([yj][ёo]|ё))k?h)$',
@@ -91,6 +94,18 @@ class Transliterator:
             'ye': 'ые'
         }
 
+        self.COMBINATED_E_PHONEMES = {
+            'io': 'ио',
+            'jo': 'йо',
+            'yo': 'йо'
+        }
+
+        for phoneme, val in list(self.COMBINATED_PHONEMES.items()):
+            self.COMBINATED_PHONEMES[phoneme.capitalize()] = val.capitalize()
+
+        for phoneme, val in list(self.COMBINATED_E_PHONEMES.items()):
+            self.COMBINATED_E_PHONEMES[phoneme.capitalize()] = val.capitalize()
+
         self.need_spell = need_spell
         self.tokenizer = None
         self.spell_checker = None
@@ -126,6 +141,12 @@ class Transliterator:
     def _has_s_affix(self, text, i):
         return text[i:i + 2] in ['ie', 'ye', 'je'] and self.E_AFFIX.search(text[:i])
 
+    def _is_of_word_start(self, elems, i):
+        return i == 0 or self._is_vowel(elems[-1])
+
+    def _is_solid_sign_possible(self, i, text):
+        return self._starts_with_affix(text[:i]) or self._has_s_affix(text, i)
+
     def _transliterate_ij_ending(self, text, elems, i):
         symbol = text[i]
         if symbol in 'i' and self._is_vowel(elems[-1]):
@@ -136,10 +157,13 @@ class Transliterator:
             return symbol
 
     def _tranliterate_vowels_sequence(self, text, answer, elems, i):
-        if i == 0 or self._is_vowel(elems[-1]) or not elems[-1].isalpha() or elems[-1] == 'ь':
+        if self._is_of_word_start(elems, i) or not elems[-1].isalpha() or elems[-1] == 'ь':
+            if self._is_of_word_start(elems, i) and text[i:i + 2].lower() in self.IOT_VOWELS and text[i + 2] in 'tda':
+                return self.COMBINATED_E_PHONEMES[text[i:i + 2]]
             return self.inverted_phonemes[text[i:i + 2]]
-        elif i > 0 and not self._is_vowel(text[i - 1]) and \
-                (self._starts_with_affix(text[:i]) or self._has_s_affix(text, i)):
+        elif (i > 0 or elems[-1].isalpha()) and text[i:i + 2].lower() in self.IOT_VOWELS:
+                return self.inverted_phonemes[text[i:i + 2]]
+        elif i > 0 and not self._is_vowel(elems[-1]) and self._is_solid_sign_possible(i, text):
             return 'ъ' + self.inverted_phonemes[text[i:i + 2]]
         else:
             return answer
@@ -168,9 +192,10 @@ class Transliterator:
             res = self._transliterate_ch_sequence(text, i)
         elif self.CH_END_REGEX.search(text[i:]):
             res = self._transliterate_ch_end_sequence(text, elems, i, is_upper)
-        elif text[i:i + 2].lower() in ['ia', 'ya', 'ja', 'ie', 'ye', 'je', 'yu', 'iu', 'ju']:
-            answer = self.COMBINATED_PHONEMES[text[i:i + 2]] \
-                if text[i:i + 2] in ['ie', 'ye', 'je'] else self.inverted_phonemes[text[i:i + 2]]
+        elif text[i:i + 2].lower() in self.IAT_VOWELS + self.IET_VOWELS + self.IUT_VOWELS + self.IOT_VOWELS:
+            answer = self.COMBINATED_PHONEMES[text[i:i + 2]] if text[i:i + 2].lower() in self.IET_VOWELS \
+                else self.COMBINATED_E_PHONEMES[text[i:i + 2]] if text[i:i + 2].lower() in self.IOT_VOWELS \
+                else self.inverted_phonemes[text[i:i + 2]]
             res = self._tranliterate_vowels_sequence(text, answer, elems, i)
         elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj'] and not text[i + 2].isalnum():
             res = self._transliterate_vowel_ending(text, elems, i)
@@ -254,6 +279,9 @@ if __name__ == '__main__':
     assert translit.inverse_transliterate('Tsarskoe Selo') == 'Царскоe Сeло'
     assert translit.inverse_transliterate('Sankt-Peterburg') == 'Санкт-Пeтeрбург'
     assert translit.inverse_transliterate('Aeti letnie dozhdi') == 'Эти лeтние дожди'
+    assert translit.inverse_transliterate('Jod i Ioann') == 'Йод и Иоанн'
+    assert translit.inverse_transliterate('Iony') == 'Ионы'
+    assert translit.inverse_transliterate('Mjod') == 'Мёд'
     assert translit.inverse_transliterate('Nash zelyoniy mir') == 'Наш зeлёный мир'
     assert translit.inverse_transliterate('Nevskiy prospekt') == 'Нeвский проспeкт'
     assert translit.inverse_transliterate('Nickolay Petrowich') == 'Николай Пeтрович'
