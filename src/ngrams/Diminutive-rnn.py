@@ -22,6 +22,7 @@ class DiminutiveGenerator:
             x = x - v
             if x <= 0:
                 return c
+        return dist[-1][0]
 
     @staticmethod
     def _normalize(counter):
@@ -95,8 +96,10 @@ class DiminutiveGenerator:
 
     def _generate_letter(self, history, ngram):
         history = history[-ngram:]
-        dist = self.language_model[history]
-        return self._choose_letter(dist)
+        if history in self.language_model:
+            dist = self.language_model[history]
+            return self._choose_letter(dist)
+        return ''
 
     def generate_diminutive(self, word, ngram=2):
         # find transition with max prob
@@ -122,6 +125,13 @@ class DiminutiveGenerator:
             return word
 
         # generate text from position to 'а' letter
+        max_hist_for_letter = [(tup, v) for tup, v in max_hist if tup[0] == word[index]]
+        if max_hist_for_letter:
+            max_hist = max_hist_for_letter
+
+        if not max_hist:
+            return word
+
         first_dim_letter = self._choose_letter(max_hist)[-1]
         result = word[:index] + first_dim_letter
         history = result[-ngram:]
