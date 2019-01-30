@@ -119,7 +119,7 @@ class DiminutiveGenerator:
                     max_hist = self.diminutive_transitions[ngram_hist]
 
         if prob == self.diminutive_model_default_prob:
-            return word
+            return word[2:].capitalize()
 
         # generate text from position to 'а' letter
         max_hist_for_letter = [(tup, v) for tup, v in max_hist if tup[0] == letter[0]]
@@ -127,7 +127,7 @@ class DiminutiveGenerator:
             max_hist = max_hist_for_letter
 
         if not max_hist:
-            return word
+            return word[2:].capitalize()
 
         first_dim_letter = self._choose_letter(max_hist)[-1]
         result = word[:index] + first_dim_letter
