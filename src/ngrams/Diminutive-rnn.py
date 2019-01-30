@@ -138,7 +138,7 @@ class DiminutiveGenerator:
             history = history[-ngram:] + c
             out.append(c)
 
-        return result.capitalize() + ''.join(out)
+        return result[2:].capitalize() + ''.join(out)
 
 
 if __name__ == '__main__':
@@ -150,4 +150,4 @@ if __name__ == '__main__':
 
     data = pd.read_csv(CORPUS_TEST)
     for name in data.Name:
-        print(gen.generate_diminutive(name)[2:])
+        print(gen.generate_diminutive(name))
