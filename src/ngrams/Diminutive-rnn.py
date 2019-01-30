@@ -104,7 +104,7 @@ class DiminutiveGenerator:
         letter, index, prob = '', 0, 0
         max_hist = None
         n_chars = self.start * ngram
-        word = n_chars + word
+        word = n_chars + word.lower()
         for i in range(ngram, len(word)):
             ch = word[i]
             ngram_hist = word[i - ngram:i]
@@ -138,7 +138,7 @@ class DiminutiveGenerator:
             history = history[-ngram:] + c
             out.append(c)
 
-        return result + ''.join(out)
+        return result.capitalize() + ''.join(out)
 
 
 if __name__ == '__main__':
