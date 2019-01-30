@@ -6,14 +6,16 @@ from random import random
 
 
 class DiminutiveGenerator:
+    _RU_VOWELS = 'аеиоуыэюя'
+
     def __init__(self):
         self.lang_model = defaultdict(Counter)
-        self.language_model = defaultdict(Counter)
+        self.language_endings_model = defaultdict(Counter)
         self.diminutive_transitions = defaultdict(Counter)
         self.start = '~'
 
-        self.language_model_default_prob = 1e999
-        self.diminutive_model_default_prob = 1e-999
+        self.language_model_default_prob = 9999
+        self.diminutive_model_default_prob = 0.0001
 
     @staticmethod
     def _choose_letter(dist):
@@ -60,14 +62,15 @@ class DiminutiveGenerator:
                     ch, dim_ch = real_name[i], diminutive[i]
                     if ch != dim_ch:
                         self.diminutive_transitions[n_chars][(ch, dim_ch)] += 1
-                        self.language_model[n_chars][ch] += 1
-                        self.language_model[n_chars][dim_ch] += 1
+                        self.language_endings_model[n_chars][dim_ch] += 1
                         n_chars = n_chars[1:] + diminutive[i]
                     else:
-                        self.language_model[n_chars][ch] += 1
                         n_chars = n_chars[1:] + real_name[i]
                 else:
-                    self.language_model[n_chars][diminutive[i]] += 1
+                    if i == len(real_name) and diminutive[i] and real_name.endswith(n_chars):
+                        ch, dim_ch = '$', diminutive[i]
+                        self.diminutive_transitions[n_chars][(ch, dim_ch)] += 1
+                    self.language_endings_model[n_chars][diminutive[i]] += 1
                     n_chars = n_chars[1:] + diminutive[i]
 
     def fit(self, path_to_sample_file, ngram=2):
@@ -85,7 +88,8 @@ class DiminutiveGenerator:
         self._train_lm(df.Name, ngram)
         # collect diminutive model
         self._train_diminutive_model(df.Name, df.Diminutive, ngram)
-        self.language_model = {hist: self._normalize(chars) for hist, chars in self.language_model.items()}
+        self.language_endings_model = {hist: self._normalize(chars)
+                                       for hist, chars in self.language_endings_model.items()}
         self.diminutive_transitions = {hist: self._normalize_transits(hist, chars)
                                        for hist, chars in self.diminutive_transitions.items()}
         self.lang_model = {hist: self._normalize(chars) for hist, chars in self.lang_model.items()}
@@ -94,10 +98,11 @@ class DiminutiveGenerator:
 
     def _generate_letter(self, history, ngram):
         history = history[-ngram:]
-        if history in self.language_model:
-            dist = self.language_model[history]
+        if history in self.language_endings_model:
+            dist = self.language_endings_model[history]
             return self._choose_letter(dist)
-        return ''
+        # todo fix the last return
+        return 'а'
 
     def generate_diminutive(self, word, ngram=2):
         # find transition with max prob
@@ -115,14 +120,19 @@ class DiminutiveGenerator:
                 if t[0] == ch and v > prob:
                     prob = v
                     index = i
-                    letter = t
+                    letter = t[0]
                     max_hist = self.diminutive_transitions[ngram_hist]
 
         if prob == self.diminutive_model_default_prob:
-            return word[2:].capitalize()
+            if word[-1] not in self._RU_VOWELS and word[-2:] in self.diminutive_transitions:
+                max_hist = self.diminutive_transitions[word[-2:]]
+                index = len(word)
+                letter = '$'
+            else:
+                return word[2:].capitalize()
 
         # generate text from position to 'а' letter
-        max_hist_for_letter = [(tup, v) for tup, v in max_hist if tup[0] == letter[0]]
+        max_hist_for_letter = [(tup, v) for tup, v in max_hist if tup[0] == letter]
         if max_hist_for_letter:
             max_hist = max_hist_for_letter
 
@@ -133,7 +143,7 @@ class DiminutiveGenerator:
         result = word[:index] + first_dim_letter
         history = result[-ngram:]
         out = []
-        while not history.endswith('а') and not history.endswith('я'):
+        while not history.endswith('а') and not history.endswith('я') and not history.endswith('ик'):
             c = self._generate_letter(history, ngram)
             history = history[-ngram:] + c
             out.append(c)
