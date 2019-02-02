@@ -52,6 +52,7 @@ Source code:
 - [N-gram dictionary (for spelling/for language modeling)](src/ngrams/NGramDictionaryManager.py)
 - [N-gram language model](src/ngrams/LanguageModel.py)
 - [Collocations](src/ngrams/Collocations.py)
+- [Russian diminutive names generator with RNN](src/ngrams/Diminutive-rnn.py)
 - [Simple spell-checker (based on n-grams and Damerau-Levenstein distance)](src/russian/SpellChecker.py)
 - Advanced spell-checker based on:
     - dictionary of words from good texts with 2-3-gram index;

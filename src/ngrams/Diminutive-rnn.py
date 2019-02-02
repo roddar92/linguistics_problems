@@ -2,7 +2,7 @@ import pandas as pd
 
 from collections import defaultdict, Counter
 from pathlib import Path
-from random import random
+from random import random, randint
 
 
 class DiminutiveGenerator:
@@ -98,11 +98,8 @@ class DiminutiveGenerator:
 
     def _generate_letter(self, history, ngram):
         history = history[-ngram:]
-        if history in self.language_endings_model:
-            dist = self.language_endings_model[history]
-            return self._choose_letter(dist)
-        # todo fix the last return
-        return 'а'
+        dist = self.language_endings_model[history]
+        return self._choose_letter(dist)
 
     def generate_diminutive(self, word, ngram=2):
         # find transition with max prob
@@ -128,6 +125,15 @@ class DiminutiveGenerator:
                 max_hist = self.diminutive_transitions[word[-2:]]
                 index = len(word)
                 letter = '$'
+            elif word[-1] in self._RU_VOWELS and word[-2:] not in self.diminutive_transitions:
+                histories_by_last_ch = [(h, d) for h, d in self.diminutive_transitions.items() if h.endswith(word[-2])]
+                if histories_by_last_ch:
+                    rand_ind = randint(0, len(histories_by_last_ch) - 1)
+                    max_hist = histories_by_last_ch[rand_ind][-1]
+                    index = len(word) - 1
+                    letter = '$'
+                else:
+                    return word[2:].capitalize()
             else:
                 return word[2:].capitalize()
 
