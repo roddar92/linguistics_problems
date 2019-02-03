@@ -31,9 +31,7 @@ class Transliterator:
         )
         self.E_AFFIX = re.compile(r'(^|\s+)[Ss]$', re.IGNORECASE)
         self.CH_START_REGEX = re.compile(r'(^|\s+)ch$', re.IGNORECASE)
-        self.CH_END_REGEX = re.compile(r'^ch($|\s+|' +
-                                       r'|'.join(['\\' + punct for punct in string.punctuation]) +
-                                       r')', re.IGNORECASE)
+        self.CH_END_REGEX = re.compile(r'^ch($|\s+|[' + string.punctuation + r']+)', re.IGNORECASE)
 
         self.PHONEMES = {
             'я': ['ya', 'ia', 'ja', 'â'],
@@ -144,8 +142,20 @@ class Transliterator:
     def _is_of_word_start(self, elems, i):
         return i == 0 or self._is_vowel(elems[-1])
 
+    def _iot_must_changed(self, text, i):
+        return text[i:i + 2].lower() in self.IOT_VOWELS and text[i + 2] in 'tdga'
+
     def _is_solid_sign_possible(self, i, text):
         return self._starts_with_affix(text[:i]) or self._has_s_affix(text, i)
+
+    def _is_iot_combination(self, text, i):
+        return text[i:i + 2].lower() in self.IAT_VOWELS + self.IET_VOWELS + self.IUT_VOWELS + self.IOT_VOWELS
+
+    def _is_vowel(self, character):
+        return character.lower() in self.RU_VOWELS
+
+    def _starts_with_affix(self, text):
+        return self.AFFIXES.search(text)
 
     def _transliterate_ij_ending(self, text, elems, i):
         symbol = text[i]
@@ -156,9 +166,9 @@ class Transliterator:
         else:
             return symbol
 
-    def _tranliterate_vowels_sequence(self, text, answer, elems, i):
+    def _transliterate_vowels_sequence(self, text, answer, elems, i):
         if self._is_of_word_start(elems, i) or not elems[-1].isalpha() or elems[-1] == 'ь':
-            if self._is_of_word_start(elems, i) and text[i:i + 2].lower() in self.IOT_VOWELS and text[i + 2] in 'tda':
+            if self._is_of_word_start(elems, i) and self._iot_must_changed(text, i):
                 return self.COMBINATED_E_PHONEMES[text[i:i + 2]]
             return self.inverted_phonemes[text[i:i + 2]]
         elif (i > 0 or elems[-1].isalpha()) and text[i:i + 2].lower() in self.IOT_VOWELS:
@@ -192,11 +202,11 @@ class Transliterator:
             res = self._transliterate_ch_sequence(text, i)
         elif self.CH_END_REGEX.search(text[i:]):
             res = self._transliterate_ch_end_sequence(text, elems, i, is_upper)
-        elif text[i:i + 2].lower() in self.IAT_VOWELS + self.IET_VOWELS + self.IUT_VOWELS + self.IOT_VOWELS:
+        elif self._is_iot_combination(text, i):
             answer = self.COMBINATED_PHONEMES[text[i:i + 2]] if text[i:i + 2].lower() in self.IET_VOWELS \
                 else self.COMBINATED_E_PHONEMES[text[i:i + 2]] if text[i:i + 2].lower() in self.IOT_VOWELS \
                 else self.inverted_phonemes[text[i:i + 2]]
-            res = self._tranliterate_vowels_sequence(text, answer, elems, i)
+            res = self._transliterate_vowels_sequence(text, answer, elems, i)
         elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj'] and not text[i + 2].isalnum():
             res = self._transliterate_vowel_ending(text, elems, i)
         elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj']:
@@ -205,12 +215,6 @@ class Transliterator:
         else:
             res = self.inverted_phonemes[text[i:i + 2]]
         return res, i
-
-    def _is_vowel(self, character):
-        return character.lower() in self.RU_VOWELS
-
-    def _starts_with_affix(self, text):
-        return self.AFFIXES.search(text)
 
     def simple_spell_euristic(self, word):
         if not self._is_shch_exceptions(word):
