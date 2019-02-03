@@ -110,7 +110,7 @@ class DiminutiveGenerator:
         for i in range(ngram, len(word)):
             ch = word[i]
             ngram_hist = word[i - ngram:i]
-            if ngram_hist not in self.diminutive_transitions or not self.diminutive_transitions[ngram_hist]:
+            if ngram_hist not in self.diminutive_transitions:
                 prob = self.diminutive_model_default_prob
                 continue
             for t, v in self.diminutive_transitions[ngram_hist]:
@@ -126,7 +126,9 @@ class DiminutiveGenerator:
                 index = len(word)
                 letter = '$'
             elif word[-1] in self._RU_VOWELS and word[-2:] not in self.diminutive_transitions:
-                histories_by_last_ch = [(h, d) for h, d in self.diminutive_transitions.items() if h.endswith(word[-2])]
+                histories_by_last_ch = [
+                    (h, d) for h, d in self.diminutive_transitions.items() if h.endswith(word[-2])
+                ]
                 if histories_by_last_ch:
                     rand_ind = randint(0, len(histories_by_last_ch) - 1)
                     max_hist = histories_by_last_ch[rand_ind][-1]
@@ -146,7 +148,7 @@ class DiminutiveGenerator:
             return word[2:].capitalize()
 
         first_dim_letter = self._choose_letter(max_hist)[-1]
-        result = word[:index] + first_dim_letter
+        result = word[2:index] + first_dim_letter
         history = result[-ngram:]
         out = []
         while not history.endswith('а') and not history.endswith('я') and not history.endswith('ик'):
@@ -154,7 +156,7 @@ class DiminutiveGenerator:
             history = history[-ngram:] + c
             out.append(c)
 
-        return result[2:].capitalize() + ''.join(out)
+        return result.capitalize() + ''.join(out)
 
 
 if __name__ == '__main__':
