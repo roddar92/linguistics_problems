@@ -102,8 +102,8 @@ class DiminutiveGenerator:
         return self._choose_letter(dist)
 
     def generate_diminutive(self, word, ngram=2):
-        # find transition with max prob
-        letter, index, prob = '', 0, 0
+        # find transition with max probability
+        letter, index, prob = '', 0, self.diminutive_model_default_prob
         max_hist = None
         n_chars = self.start * ngram
         word = n_chars + word.lower()
@@ -111,16 +111,16 @@ class DiminutiveGenerator:
             ch = word[i]
             ngram_hist = word[i - ngram:i]
             if ngram_hist not in self.diminutive_transitions:
-                prob = self.diminutive_model_default_prob
                 continue
             for t, v in self.diminutive_transitions[ngram_hist]:
-                if t[0] == ch and v > prob:
+                if t[0] == ch and v >= prob:
                     prob = v
                     index = i
                     letter = t[0]
                     max_hist = self.diminutive_transitions[ngram_hist]
 
-        if prob == self.diminutive_model_default_prob:
+        # process last name's symbols with default probability
+        if prob <= self.diminutive_model_default_prob:
             if word[-1] not in self._RU_VOWELS and word[-2:] in self.diminutive_transitions:
                 max_hist = self.diminutive_transitions[word[-2:]]
                 index = len(word)
@@ -147,6 +147,7 @@ class DiminutiveGenerator:
         if not max_hist:
             return word[2:].capitalize()
 
+        # generate a tail of the diminutive
         first_dim_letter = self._choose_letter(max_hist)[-1]
         result = word[2:index] + first_dim_letter
         history = result[-ngram:]
