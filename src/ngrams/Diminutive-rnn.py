@@ -125,7 +125,7 @@ class DiminutiveGenerator:
                 max_hist = self.diminutive_transitions[word[-2:]]
                 index = len(word)
                 letter = '$'
-            elif word[-1] in self._RU_VOWELS and word[-2:] not in self.diminutive_transitions:
+            elif word[-1] in self._RU_VOWELS and word[-3:-1] not in self.diminutive_transitions:
                 histories_by_last_ch = [
                     (h, d) for h, d in self.diminutive_transitions.items() if h.endswith(word[-2])
                 ]
