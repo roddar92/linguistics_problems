@@ -101,13 +101,17 @@ class DiminutiveGenerator:
         dist = self.lang_endings_model[history]
         return self._choose_letter(dist)
 
-    def generate_diminutive(self, word, ngram=2):
-        # check if word has 'ка' ending
+    def _normalize_k_suffix(self, word):
         if word.endswith('ка'):
             if word[-3] == 'ь':
                 word = word[:-3] + 'я'
             elif word[-3] not in self._RU_VOWELS:
                 word = word[:-2] + word[-1]
+        return word
+
+    def generate_diminutive(self, word, ngram=2):
+        # check if word has 'ка' ending
+        word = self._normalize_k_suffix(word)
 
         # find transition with max probability
         letter, index, prob = '', 0, self.diminutive_model_default_prob
