@@ -10,8 +10,8 @@ class DiminutiveGenerator:
 
     def __init__(self):
         self.lang_model = defaultdict(Counter)
-        self.language_endings_model = defaultdict(Counter)
-        self.diminutive_transitions = defaultdict(Counter)
+        self.lang_endings_model = defaultdict(Counter)
+        self.diminutive_transits = defaultdict(Counter)
         self.start = '~'
 
         self.language_model_default_prob = 9999
@@ -61,16 +61,16 @@ class DiminutiveGenerator:
                 if i < len(real_name):
                     ch, dim_ch = real_name[i], diminutive[i]
                     if ch != dim_ch:
-                        self.diminutive_transitions[n_chars][(ch, dim_ch)] += 1
-                        self.language_endings_model[n_chars][dim_ch] += 1
+                        self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
+                        self.lang_endings_model[n_chars][dim_ch] += 1
                         n_chars = n_chars[1:] + diminutive[i]
                     else:
                         n_chars = n_chars[1:] + real_name[i]
                 else:
                     if i == len(real_name) and diminutive[i] and real_name.endswith(n_chars):
                         ch, dim_ch = '$', diminutive[i]
-                        self.diminutive_transitions[n_chars][(ch, dim_ch)] += 1
-                    self.language_endings_model[n_chars][diminutive[i]] += 1
+                        self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
+                    self.lang_endings_model[n_chars][diminutive[i]] += 1
                     n_chars = n_chars[1:] + diminutive[i]
 
     def fit(self, path_to_sample_file, ngram=2):
@@ -88,17 +88,17 @@ class DiminutiveGenerator:
         self._train_lm(df.Name, ngram)
         # collect diminutive model
         self._train_diminutive_model(df.Name, df.Diminutive, ngram)
-        self.language_endings_model = {hist: self._normalize(chars)
-                                       for hist, chars in self.language_endings_model.items()}
-        self.diminutive_transitions = {hist: self._normalize_transits(hist, chars)
-                                       for hist, chars in self.diminutive_transitions.items()}
+        self.lang_endings_model = {hist: self._normalize(chars)
+                                   for hist, chars in self.lang_endings_model.items()}
+        self.diminutive_transits = {hist: self._normalize_transits(hist, chars)
+                                    for hist, chars in self.diminutive_transits.items()}
         self.lang_model = {hist: self._normalize(chars) for hist, chars in self.lang_model.items()}
 
         return self
 
     def _generate_letter(self, history, ngram):
         history = history[-ngram:]
-        dist = self.language_endings_model[history]
+        dist = self.lang_endings_model[history]
         return self._choose_letter(dist)
 
     def generate_diminutive(self, word, ngram=2):
@@ -110,24 +110,24 @@ class DiminutiveGenerator:
         for i in range(ngram, len(word)):
             ch = word[i]
             ngram_hist = word[i - ngram:i]
-            if ngram_hist not in self.diminutive_transitions:
+            if ngram_hist not in self.diminutive_transits:
                 continue
-            for t, v in self.diminutive_transitions[ngram_hist]:
+            for t, v in self.diminutive_transits[ngram_hist]:
                 if t[0] == ch and v >= prob:
                     prob = v
                     index = i
                     letter = t[0]
-                    max_hist = self.diminutive_transitions[ngram_hist]
+                    max_hist = self.diminutive_transits[ngram_hist]
 
         # process last name's symbols with default probability
         if prob <= self.diminutive_model_default_prob:
-            if word[-1] not in self._RU_VOWELS and word[-2:] in self.diminutive_transitions:
-                max_hist = self.diminutive_transitions[word[-2:]]
+            if word[-1] not in self._RU_VOWELS and word[-2:] in self.diminutive_transits:
+                max_hist = self.diminutive_transits[word[-2:]]
                 index = len(word)
                 letter = '$'
-            elif word[-1] in self._RU_VOWELS and word[-3:-1] not in self.diminutive_transitions:
+            elif word[-1] in self._RU_VOWELS and word[-3:-1] not in self.diminutive_transits:
                 histories_by_last_ch = [
-                    (h, d) for h, d in self.diminutive_transitions.items() if h.endswith(word[-2])
+                    (h, d) for h, d in self.diminutive_transits.items() if h.endswith(word[-2])
                 ]
                 if histories_by_last_ch:
                     rand_ind = randint(0, len(histories_by_last_ch) - 1)
