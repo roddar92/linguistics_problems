@@ -24,7 +24,8 @@ class DiminutiveGenerator:
             x = x - v
             if x <= 0:
                 return c
-        return dist[-1][0]
+        ind = randint(0, len(dist) - 1)
+        return dist[ind][0]
 
     @staticmethod
     def _normalize(counter):
@@ -32,11 +33,12 @@ class DiminutiveGenerator:
         return [(c, cnt / total) for c, cnt in counter.items()]
 
     def _normalize_transits(self, history, counter):
-        # print(history, counter)
-        # print(self.lang_model[history])
+
         def _get_prob(hist, char):
-            if not self.lang_model[hist] or not self.lang_model[hist][char]:
+            if hist not in self.lang_model:
                 return self.language_model_default_prob
+            elif self.lang_model[hist][char] <= 0:
+                return sum(v for k, v in counter.items() if k[0] == char)
             else:
                 return self.lang_model[history][char]
 
@@ -96,6 +98,22 @@ class DiminutiveGenerator:
 
         return self
 
+    def _find_max_transition(self, word, ngram):
+        letter, index, prob = '', 0, self.diminutive_model_default_prob
+        max_hist = None
+        for i in range(ngram, len(word)):
+            ch = word[i]
+            ngram_hist = word[i - ngram:i]
+            if ngram_hist not in self.diminutive_transits:
+                continue
+            for t, v in self.diminutive_transits[ngram_hist]:
+                if t[0] == ch and v >= prob:
+                    prob = v
+                    index = i
+                    letter = t[0]
+                    max_hist = self.diminutive_transits[ngram_hist]
+        return index, letter, max_hist, prob
+
     def _generate_letter(self, history, ngram):
         history = history[-ngram:]
         dist = self.lang_endings_model[history]
@@ -112,23 +130,11 @@ class DiminutiveGenerator:
     def generate_diminutive(self, word, ngram=2):
         # check if word has 'ка' ending
         word = self._normalize_k_suffix(word)
-
-        # find transition with max probability
-        letter, index, prob = '', 0, self.diminutive_model_default_prob
-        max_hist = None
         n_chars = self.start * ngram
         word = n_chars + word.lower()
-        for i in range(ngram, len(word)):
-            ch = word[i]
-            ngram_hist = word[i - ngram:i]
-            if ngram_hist not in self.diminutive_transits:
-                continue
-            for t, v in self.diminutive_transits[ngram_hist]:
-                if t[0] == ch and v >= prob:
-                    prob = v
-                    index = i
-                    letter = t[0]
-                    max_hist = self.diminutive_transits[ngram_hist]
+
+        # find transition with max probability
+        index, letter, max_hist, prob = self._find_max_transition(word, ngram)
 
         # process last name's symbols with default probability
         if prob <= self.diminutive_model_default_prob:
