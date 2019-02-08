@@ -6,43 +6,43 @@
 class Century(object):
 
     # Simple
-    ad = ur'(a.d.|ad|anno\sdomini)'
-    bc = ur'(b.c|a.c.|ac|bc)'
+    ad = r'(a.d.|ad|anno\sdomini)'
+    bc = r'(b.c|a.c.|ac|bc)'
 
     # Numbers
-    simple = ur'((first|one|1|I)|' \
-             ur'(second|two|2|II)|' \
-             ur'(third|three|3|III)|' \
-             ur'(four|4|IV)|' \
-             ur'(five|fifth|5|V)|' \
-             ur'(six|6|VI)|' \
-             ur'(seven|7|VII)|' \
-             ur'(eight|8|VIII)|' \
-             ur'(nine?|9|IX))(th)?'
+    simple = r'((first|one|1|I)|' \
+             r'(second|two|2|II)|' \
+             r'(third|three|3|III)|' \
+             r'(four|4|IV)|' \
+             r'(five|fifth|5|V)|' \
+             r'(six|6|VI)|' \
+             r'(seven|7|VII)|' \
+             r'(eight|8|VIII)|' \
+             r'(nine?|9|IX))(th)?'
 
-    dozen = ur'((ten|10|X)|' \
-            ur'(eleven|11|XI)|' \
-            ur'(twelve|12|XII)|' \
-            ur'(thirteen|13|XIII)|' \
-            ur'(fourteen|14|XIV)|' \
-            ur'(fifteen|15|XV)|' \
-            ur'(sixteen|16|XVI)|' \
-            ur'(seventeen|17|XVII)|' \
-            ur'(eighteen|18|XVIII)|' \
-            ur'(nineteen|19|XIX))(th)?'
+    dozen = r'((ten|10|X)|' \
+            r'(eleven|11|XI)|' \
+            r'(twelve|12|XII)|' \
+            r'(thirteen|13|XIII)|' \
+            r'(fourteen|14|XIV)|' \
+            r'(fifteen|15|XV)|' \
+            r'(sixteen|16|XVI)|' \
+            r'(seventeen|17|XVII)|' \
+            r'(eighteen|18|XVIII)|' \
+            r'(nineteen|19|XIX))(th)?'
 
-    dozens = ur'((twenty|20|XX)|' \
-             ur'(thirty|30)|' \
-             ur'(fourty|40)|' \
-             ur'(fifty|50)|' \
-             ur'(sixty|60)|' \
-             ur'(seventy|70)|' \
-             ur'(eighty|80)|' \
-             ur'(ninety|90))(th)?'
+    dozens = r'((twenty|20|XX)|' \
+             r'(thirty|30)|' \
+             r'(fourty|40)|' \
+             r'(fifty|50)|' \
+             r'(sixty|60)|' \
+             r'(seventy|70)|' \
+             r'(eighty|80)|' \
+             r'(ninety|90))(th)?'
 
-    complex_number = ur'(' + dozen + ur'|' + simple + ur')'
-    complex_dozen = ur'((' + dozens + ur'\s?' + simple + ur')|(' + complex_number + ur'))(th)?'
+    complex_number = r'(' + dozen + r'|' + simple + r')'
+    complex_dozen = r'((' + dozens + r'\s?' + simple + r')|(' + complex_number + r'))(th)?'
 
-    # hundred = simple + ur'\shundred' + ur'\s?(and\s)?' + complex_dozen
+    # hundred = simple + r'\shundred' + r'\s?(and\s)?' + complex_dozen
 
-    century = complex_dozen + ur'(\s(' + ad + ur'|' + bc + ur'))?'
+    century = complex_dozen + r'(\s(' + ad + r'|' + bc + r'))?'

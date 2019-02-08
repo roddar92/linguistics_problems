@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import re
 
-from rules import categories_rules as topics
-from rules import century_rules as centuries
-from rules import herou_rules as herous
+from .rules import categories_rules as topics
+from .rules import century_rules as centuries
+from .rules import herou_rules as herous
+
 
 class RulesParser(object):
 

@@ -6,7 +6,7 @@ from nltk.corpus import stopwords
 
 nltk.download('stopwords')
 
-from RulesParser import RulesParser
+from .RulesParser import RulesParser
 
 
 class Book(object):
