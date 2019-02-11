@@ -34,7 +34,7 @@ class DiminutiveGenerator:
 
     def _normalize_transits(self, history, counter):
 
-        def _get_prob(hist, char):
+        def get_prob_denot(hist, char):
             if hist not in self.lang_model:
                 return self.language_model_default_prob
             elif self.lang_model[hist][char] <= 0:
@@ -42,7 +42,7 @@ class DiminutiveGenerator:
             else:
                 return self.lang_model[history][char]
 
-        return [(c, (cnt / _get_prob(history, c[0]))) for c, cnt in counter.items()]
+        return [(c, (cnt / get_prob_denot(history, c[0]))) for c, cnt in counter.items()]
 
     def _train_lm(self, names, ngram):
         print('Collecting of letters\' probabilities in language model...')
