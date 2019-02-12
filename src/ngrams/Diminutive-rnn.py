@@ -128,6 +128,15 @@ class DiminutiveGenerator:
         return word
 
     def generate_diminutive(self, word, ngram=2):
+
+        def select_hists_by_char(hists, char):
+            selected_hists = []
+            for h, d in hists:
+                curr_transits = [(k, _) for k, _ in d if k[0] == char]
+                if curr_transits:
+                    selected_hists += [(h, curr_transits)]
+            return selected_hists
+
         # check if word has 'ка' ending
         word = self._normalize_k_suffix(word)
         n_chars = self.start * ngram
@@ -147,10 +156,14 @@ class DiminutiveGenerator:
                     (h, d) for h, d in self.diminutive_transits.items() if h.endswith(word[-2])
                 ]
                 if histories_by_last_ch:
+                    last = word[-1]
+                    hists_by_last_ch = select_hists_by_char(histories_by_last_ch, last)
+                    if hists_by_last_ch:
+                        histories_by_last_ch = hists_by_last_ch
                     rand_ind = randint(0, len(histories_by_last_ch) - 1)
                     max_hist = histories_by_last_ch[rand_ind][-1]
                     index = len(word) - 1
-                    letter = '$'
+                    letter = last
                 else:
                     return word[2:].capitalize()
             else:
