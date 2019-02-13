@@ -64,7 +64,6 @@ class DiminutiveGenerator:
                     ch, dim_ch = real_name[i], diminutive[i]
                     if ch != dim_ch:
                         self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
-                        self.lang_endings_model[n_chars][dim_ch] += 1
                         n_chars = n_chars[1:] + diminutive[i]
                     else:
                         n_chars = n_chars[1:] + real_name[i]
@@ -72,7 +71,8 @@ class DiminutiveGenerator:
                     if i == len(real_name) and diminutive[i] and real_name.endswith(n_chars):
                         ch, dim_ch = '$', diminutive[i]
                         self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
-                    self.lang_endings_model[n_chars][diminutive[i]] += 1
+                    else:
+                        self.lang_endings_model[n_chars][diminutive[i]] += 1
                     n_chars = n_chars[1:] + diminutive[i]
 
     def fit(self, path_to_sample_file, ngram=2):
@@ -182,7 +182,8 @@ class DiminutiveGenerator:
         result = word[2:index] + first_dim_letter
         history = result[-ngram:]
         out = []
-        while not history.endswith('а') and not history.endswith('я') and not history.endswith('ик'):
+        while not history.endswith('а') and not history.endswith('я') and \
+                not history.endswith('ик') and not history.endswith('ек'):
             c = self._generate_letter(history, ngram)
             history = history[-ngram:] + c
             out.append(c)
