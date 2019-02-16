@@ -182,10 +182,9 @@ class DiminutiveGenerator:
         result = word[2:index] + first_dim_letter
         history = result[-ngram:]
         out = []
-        while not history.endswith('а') and not history.endswith('я') and \
-                not history.endswith('ик') and not history.endswith('ек'):
+        while not history.endswith('а') and not history.endswith('я') and history not in 'ик ек ёк'.split():
             c = self._generate_letter(history, ngram)
-            history = history[-ngram:] + c
+            history = history[-ngram + 1:] + c
             out.append(c)
 
         return result.capitalize() + ''.join(out)
