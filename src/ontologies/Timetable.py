@@ -75,9 +75,10 @@ class Train(object):
 class RailwayTimetable(object):
     DEFAULT_ANSWER = "Don't know"
     TRAIN_NO = re.compile(r'[A-Z]\d+')
+    DEPARTURE = re.compile(r'(?P<hours>\d\d?)[\\.:-](?P<minutes>\d\d?)(?P<period>[ap][m])?', re.I)
     DETS = ['the', 'is', 'are', 'a', 'an']
     LOCATION_STOPWORDS = ['departs', 'departure', 'from', 'to', '-', 'with']
-    ROUTE_STOPWORDS = ['from', 'with']
+    ROUTE_STOPWORDS = ['from', 'to', 'with']
     TIME_STOPWORDS = ['at', 'on']
 
     def __init__(self):
@@ -129,7 +130,8 @@ class RailwayTimetable(object):
                          for train in self.timetable.values() if train.get_name() == train_desc]
 
             if len(set(locations)) >= 2:
-                return 'There are several terminus stations for \'' + train_desc + '\'. Please, type a train number!'
+                return 'There are several terminus stations for \'' + \
+                       train_desc + '\'. Please, type a train number!'
             elif len(set(locations)) == 1:
                 asked_terminus = locations[0]
 
@@ -175,8 +177,10 @@ class RailwayTimetable(object):
             else:
                 return asked_terminus
         else:
-            answer = set(
-                train.get_arrival_location() for train in self.timetable.values() if train.get_name() == train_desc)
+            answer = {
+                train.get_arrival_location()
+                for train in self.timetable.values() if train.get_name() == train_desc
+            }
 
             if len(answer) > 0:
                 return answer if len(answer) > 1 else answer.pop()
@@ -236,9 +240,7 @@ class RailwayTimetable(object):
                 if parts[i - 1] in ["departs", "departure"]:
                     i += 1
 
-                    time_parts = [m.groupdict() for m in
-                                  re.finditer(r'(?P<hours>\d\d?)[\.:-](?P<minutes>\d\d?)(?P<period>[AaPp][Mm])?\,?',
-                                              parts[i])][0]
+                    time_parts = [m.groupdict() for m in self.DEPARTURE.finditer(parts[i])][0]
 
                     hours = int(time_parts['hours'])
                     mins = int(time_parts['minutes'])
@@ -413,6 +415,8 @@ if __name__ == "__main__":
     pt.add_announcement("Dear passengers! Welcome to board of the train "
                         "K34 with route St.Petersburg - Veliky Novgorod "
                         "departs at 7:19 AM, track 3, left side.")
+    pt.add_announcement("Ladies and gentlemen! Welcome to board of the train K343 to Tula "
+                        "departs at 7:19 AM, track 9, right side.")
 
     # TEST CASES
     assert pt.request("Does train B757 depart to Moscow?") == "Yes"
