@@ -14,7 +14,7 @@ class DiminutiveGenerator:
         self.diminutive_transits = defaultdict(Counter)
         self.start = '~'
 
-        self.language_model_default_prob = 9999
+        self.language_model_default_denot = 9999
         self.diminutive_model_default_prob = 0.0001
 
     @staticmethod
@@ -36,7 +36,7 @@ class DiminutiveGenerator:
 
         def get_prob_denot(hist, char):
             if hist not in self.lang_model:
-                return self.language_model_default_prob
+                return self.language_model_default_denot
             elif self.lang_model[hist][char] <= 0:
                 return sum(v for k, v in counter.items() if k[0] == char)
             else:
@@ -47,7 +47,7 @@ class DiminutiveGenerator:
     def _train_lm(self, names, ngram):
         print('Collecting of letters\' probabilities in language model...')
         for real_name in names:
-            real_name = real_name.lower()
+            real_name = (real_name + '$').lower()
             n_chars = self.start * ngram
             for char in real_name:
                 self.lang_model[n_chars][char] += 1
@@ -59,7 +59,8 @@ class DiminutiveGenerator:
             real_name, diminutive = real_name.lower(), diminutive.lower()
             n_chars = self.start * ngram
             max_len = max(len(real_name), len(diminutive))
-            for i in range(max_len):
+            i = 0
+            while i < max_len:
                 if i < len(real_name):
                     ch, dim_ch = real_name[i], diminutive[i]
                     if ch != dim_ch:
@@ -67,6 +68,7 @@ class DiminutiveGenerator:
                         n_chars = n_chars[1:] + diminutive[i]
                     else:
                         n_chars = n_chars[1:] + real_name[i]
+                    i += 1
                 else:
                     if i == len(real_name) and diminutive[i] and real_name.endswith(n_chars):
                         ch, dim_ch = '$', diminutive[i]
@@ -74,6 +76,7 @@ class DiminutiveGenerator:
                     else:
                         self.lang_endings_model[n_chars][diminutive[i]] += 1
                     n_chars = n_chars[1:] + diminutive[i]
+                    i += 1
 
     def fit(self, path_to_sample_file, ngram=2):
         print('Get data from the file...')
