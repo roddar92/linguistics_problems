@@ -23,7 +23,7 @@ class LanguageModel(object):
         self.ngram_size = ngram_size
 
         self.bigram_vectorizer = CountVectorizer(token_pattern='(\\S+)', ngram_range=(ngram_size, ngram_size))
-        self.onegram_vectorizer = CountVectorizer(token_pattern='(\\S+)',  ngram_range=(ngram_size - 1, ngram_size - 1))
+        self.ugram_vectorizer = CountVectorizer(token_pattern='(\\S+)', ngram_range=(ngram_size - 1, ngram_size - 1))
 
         self.unigram_counts = defaultdict(lambda: 0)
         self.bigram_counts = defaultdict(lambda: 0)
@@ -43,7 +43,7 @@ class LanguageModel(object):
         print("Fitting sentences")
 
         counts_matrix = self.bigram_vectorizer.fit_transform(sentences)
-        counts_context_matrix = self.onegram_vectorizer.fit_transform(sentences)
+        counts_context_matrix = self.ugram_vectorizer.fit_transform(sentences)
 
         self.coeff = (self.d / len(self.bigram_vectorizer.vocabulary_))
 
@@ -58,7 +58,7 @@ class LanguageModel(object):
         print("shapes: ", sum_ngram.shape, sum_context.shape)
         print("Iterating through ngrams...")
 
-        for one_gram, index in self.onegram_vectorizer.vocabulary_.items():
+        for one_gram, index in self.ugram_vectorizer.vocabulary_.items():
             self.unigram_counts[one_gram] = sum_context[index]
 
         for two_gram, index in self.bigram_vectorizer.vocabulary_.items():
