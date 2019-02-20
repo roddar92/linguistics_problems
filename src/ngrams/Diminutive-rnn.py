@@ -171,9 +171,9 @@ class DiminutiveGenerator:
                     index = len(word) - 1
                     letter = last
                 else:
-                    return word[2:].capitalize()
+                    return word[ngram:].capitalize()
             else:
-                return word[2:].capitalize()
+                return word[ngram:].capitalize()
 
         # generate text from position to 'а' letter
         max_hist_for_letter = [(tup, v) for tup, v in max_hist if tup[0] == letter]
@@ -181,11 +181,11 @@ class DiminutiveGenerator:
             max_hist = max_hist_for_letter
 
         if not max_hist:
-            return word[2:].capitalize()
+            return word[ngram:].capitalize()
 
         # generate a tail of the diminutive
         first_dim_letter = self._choose_letter(max_hist)[-1]
-        result = word[2:index] + first_dim_letter
+        result = word[ngram:index] + first_dim_letter
         history = result[-ngram:]
         out = []
         while self.DIM_SUFFIX.search(history) is None:
