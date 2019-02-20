@@ -1,4 +1,5 @@
 import pandas as pd
+import re
 
 from collections import defaultdict, Counter
 from pathlib import Path
@@ -13,6 +14,7 @@ class DiminutiveGenerator:
         self.lang_endings_model = defaultdict(Counter)
         self.diminutive_transits = defaultdict(Counter)
         self.start = '~'
+        self.DIM_SUFFIX = re.compile(r'([иеё]к|[ая])$', re.I)
 
         self.language_model_default_denot = 9999
         self.diminutive_model_default_prob = 0.0001
@@ -42,7 +44,8 @@ class DiminutiveGenerator:
             else:
                 return self.lang_model[history][char]
 
-        return [(c, (cnt / get_prob_denot(history, c[0]))) for c, cnt in counter.items()]
+        return [(c, (cnt / get_prob_denot(history, c[0])))
+                for c, cnt in sorted(counter.items(), key=lambda x: x[0][-1])]
 
     def _train_lm(self, names, ngram):
         print('Collecting of letters\' probabilities in language model...')
@@ -185,7 +188,7 @@ class DiminutiveGenerator:
         result = word[2:index] + first_dim_letter
         history = result[-ngram:]
         out = []
-        while not history.endswith('а') and not history.endswith('я') and history not in 'ик ек ёк'.split():
+        while self.DIM_SUFFIX.search(history) is None:
             c = self._generate_letter(history, ngram)
             history = history[-ngram + 1:] + c
             out.append(c)
