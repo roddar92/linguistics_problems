@@ -100,6 +100,7 @@ class DiminutiveGenerator:
         self._train_lm(df.Name)
         # collect diminutive model
         self._train_diminutive_model(df.Name, df.Diminutive)
+        # normalize models
         self.lang_endings_model = {hist: self._normalize(chars)
                                    for hist, chars in self.lang_endings_model.items()}
         self.diminutive_transits = {hist: self._normalize_transits(hist, chars)
@@ -161,11 +162,13 @@ class DiminutiveGenerator:
 
         # process last name's symbols with default probability
         if prob <= self.diminutive_model_default_prob:
-            if word[-1] not in self._RU_VOWELS and word[-self.ngram:] in self.diminutive_transits:
-                max_hist = self.diminutive_transits[word[-self.ngram:]]
+            ngram = self.ngram - 1 if self.ngram > 2 else self.ngram
+
+            if word[-1] not in self._RU_VOWELS and word[-ngram:] in self.diminutive_transits:
+                max_hist = self.diminutive_transits[word[-ngram:]]
                 index = len(word)
                 letter = '$'
-            elif word[-1] in self._RU_VOWELS and word[-self.ngram-1:-1] not in self.diminutive_transits:
+            elif word[-1] in self._RU_VOWELS and word[-ngram-1:-1] not in self.diminutive_transits:
                 histories_by_last_ch = [
                     (h, d) for h, d in self.diminutive_transits.items() if h.endswith(word[-2])
                 ]
