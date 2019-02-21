@@ -26,8 +26,8 @@ class SecretLetter(object):
         self.secret_letter = random.choice(self.alphabet)
         print("Я загадал свою букву!")
 
-    def count_letter(self, word):
-        count_of_letter = list(word).count(self.secret_letter)
+    def _count_letter(self, word):
+        count_of_letter = word.count(self.secret_letter)
         if count_of_letter > 0:
             return self.d2w[count_of_letter] + "!"
         else:
@@ -42,7 +42,7 @@ class SecretLetter(object):
             else:
                 raise SecretLetterException("Пока не угадал.")
         elif self.ru_dict.check(word):
-            print(self.count_letter(word))
+            print(self._count_letter(word))
         else:
             raise SecretLetterException("Что-то я не понял твоего слова...")
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
 
         print("Отлично! :)\nГовори слово, а я буду подсчитывать, сколько раз в слове появилась моя буква."
               " Если ты говоришь букву, я скажу, отгадал или нет."
-              "Когда надоест, введи \"Конец\", \"Стоп\" или \"Хватит\""
+              " Когда надоест, введи \"Конец\", \"Стоп\" или \"Хватит\""
               if is_agree() else "Жаль... :( Тогда поиграем в следующий раз.")
 
         if is_agree():
