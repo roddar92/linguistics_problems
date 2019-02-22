@@ -8,6 +8,7 @@ from random import choice, random
 
 class DiminutiveGenerator:
     _RU_VOWELS = 'аеиоуыэюя'
+    _DIM_SUFFIX = re.compile(r'([иеё]к|[ая])$', re.I)
 
     def __init__(self, ngram=2):
         self.ngram = ngram
@@ -16,7 +17,6 @@ class DiminutiveGenerator:
         self.lang_endings_model = defaultdict(Counter)
         self.diminutive_transits = defaultdict(Counter)
         self.start = '~'
-        self.DIM_SUFFIX = re.compile(r'([иеё]к|[ая])$', re.I)
 
         self.language_model_default_denot = 9999
         self.diminutive_model_default_prob = 0.0001
@@ -198,7 +198,7 @@ class DiminutiveGenerator:
         result = word[self.ngram:index] + first_dim_letter
         history = result[-self.ngram:]
         out = []
-        while self.DIM_SUFFIX.search(history) is None:
+        while self._DIM_SUFFIX.search(history) is None:
             c = self._generate_letter(history)
             history = history[-self.ngram + 1:] + c
             out.append(c)
