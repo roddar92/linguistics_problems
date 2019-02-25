@@ -162,25 +162,25 @@ class DiminutiveGenerator:
 
         # process last name's symbols with default probability
         if prob <= self.diminutive_model_default_prob:
-            ngram = self.ngram - 1 if self.ngram > 2 else self.ngram
 
-            if word[-1] not in self._RU_VOWELS and word[-ngram:] in self.diminutive_transits:
-                max_hist = self.diminutive_transits[word[-ngram:]]
+            if word[-1] not in self._RU_VOWELS:
                 index = len(word)
                 letter = '$'
-            elif word[-1] in self._RU_VOWELS and word[-ngram-1:-1] not in self.diminutive_transits:
-                histories_by_last_ch = [
-                    (h, d) for h, d in self.diminutive_transits.items() if h.endswith(word[-2])
-                ]
-                if histories_by_last_ch:
-                    last = word[-1]
-                    hists_by_last_ch = select_hists_by_char(histories_by_last_ch, last)
-                    if hists_by_last_ch:
-                        histories_by_last_ch = hists_by_last_ch
-                    max_hist = choice(histories_by_last_ch)[-1]
-                    index = len(word) - 1
-                    letter = last
-                else:
+            else:
+                index = len(word) - 1
+                letter = word[-1]
+
+            ngram = self.ngram - 1
+            histories_by_last_ch = [
+                (h, d) for h, d in self.diminutive_transits.items() if h.endswith(word[index-ngram:index])
+            ]
+            if histories_by_last_ch:
+                last = letter
+                hists_by_last_ch = select_hists_by_char(histories_by_last_ch, last)
+                if hists_by_last_ch:
+                    histories_by_last_ch = hists_by_last_ch
+                max_hist = choice(histories_by_last_ch)[-1]
+                if not max_hist:
                     return word[self.ngram:].capitalize()
             else:
                 return word[self.ngram:].capitalize()
