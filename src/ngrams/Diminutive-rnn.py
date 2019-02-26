@@ -23,9 +23,6 @@ class DiminutiveGenerator:
 
     @staticmethod
     def _choose_letter(dist):
-        if not dist:
-            return 'ка'
-
         x = random()
         for c, v in dist:
             x = x - v
@@ -110,7 +107,8 @@ class DiminutiveGenerator:
         return self
 
     def _find_max_transition(self, word):
-        letter, index, prob = '', 0, self.diminutive_model_default_prob
+        letter, index = '', 0
+        prob = self.diminutive_model_default_prob
         max_hist = None
         for i in range(self.ngram, len(word)):
             ch = word[i]
@@ -132,6 +130,10 @@ class DiminutiveGenerator:
             dist = self.lang_endings_model[choice(hists)] if hists else None
         else:
             dist = self.lang_endings_model[history]
+
+        if not dist:
+            return 'ка'
+
         return self._choose_letter(dist)
 
     def _normalize_k_suffix(self, word):
