@@ -84,14 +84,10 @@ class DiminutiveGenerator:
 
     def fit(self, path_to_sample_file):
         print('Get data from the file...')
-        names, diminutives = [], []
         with Path(path_to_sample_file).open() as fin:
-            for line in fin:
-                real_name, diminutive = line.split()
-                names += [real_name]
-                diminutives += [diminutive]
+            names = ((line.split() for line in fin.readlines()))
 
-        df = pd.DataFrame({'Name': names, 'Diminutive': diminutives})
+        df = pd.DataFrame(names, columns=['Name', 'Diminutive'])
 
         # collect language model
         self._train_lm(df.Name)
@@ -102,17 +98,16 @@ class DiminutiveGenerator:
                                    for hist, chars in self.lang_endings_model.items()}
         self.diminutive_transits = {hist: self._normalize_transits(hist, chars)
                                     for hist, chars in self.diminutive_transits.items()}
-        self.lang_model = {hist: self._normalize(chars) for hist, chars in self.lang_model.items()}
+        # self.lang_model = {hist: self._normalize(chars) for hist, chars in self.lang_model.items()}
 
         return self
 
     def _find_max_transition(self, word):
+        max_hist = None
         letter, index = '', 0
         prob = self.diminutive_model_default_prob
-        max_hist = None
         for i in range(self.ngram, len(word)):
-            ch = word[i]
-            ngram_hist = word[i - self.ngram:i]
+            ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
                 continue
             for t, v in self.diminutive_transits[ngram_hist]:
