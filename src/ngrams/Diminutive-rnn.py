@@ -69,9 +69,10 @@ class DiminutiveGenerator:
                     ch, dim_ch = real_name[i], diminutive[i]
                     if ch != dim_ch:
                         self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
-                        n_chars = n_chars[1:] + diminutive[i]
+                        next_char = diminutive[i]
                     else:
-                        n_chars = n_chars[1:] + real_name[i]
+                        next_char = real_name[i]
+                    n_chars = n_chars[1:] + next_char
                     i += 1
                 else:
                     if i == len(real_name) and diminutive[i] and real_name.endswith(n_chars):
@@ -160,12 +161,8 @@ class DiminutiveGenerator:
         # process last name's symbols with default probability
         if prob <= self.diminutive_model_default_prob:
 
-            if word[-1] not in self._RU_VOWELS:
-                index = len(word)
-                letter = '$'
-            else:
-                index = len(word) - 1
-                letter = word[-1]
+            index = len(word) - (0 if word[-1] not in self._RU_VOWELS else 1)
+            letter = '$' if word[-1] not in self._RU_VOWELS else word[-1]
 
             ngram = self.ngram - 1
             histories_by_last_ch = [
