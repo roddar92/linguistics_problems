@@ -107,6 +107,7 @@ class DiminutiveGenerator:
         max_hist = None
         letter, index = '', 0
         prob = self.diminutive_model_default_prob
+        # todo make a choice from dim_transits with the same max probability
         for i in range(self.ngram, len(word)):
             ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
@@ -121,7 +122,7 @@ class DiminutiveGenerator:
 
     def _generate_letter(self, history):
         history = history[-self.ngram:]
-        if history not in self.lang_endings_model and self.ngram > 2:
+        if history not in self.lang_endings_model:
             hists = [hist for hist in self.lang_endings_model if history.endswith(hist[1:])]
             dist = self.lang_endings_model[choice(hists)] if hists else None
         else:
