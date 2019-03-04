@@ -45,6 +45,8 @@ class DiminutiveGenerator:
             else:
                 return self.lang_model[history][char]
 
+            # return sum(v for k, v in counter.items() if k[0] == char)
+
         return [(c, (cnt / get_prob_denot(history, c[0])))
                 for c, cnt in sorted(counter.items(), key=lambda x: x[0][-1])]
 
