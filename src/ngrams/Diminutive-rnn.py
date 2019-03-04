@@ -18,7 +18,7 @@ class DiminutiveGenerator:
         self.diminutive_transits = defaultdict(Counter)
         self.start = '~'
 
-        self.language_model_default_denot = 9999
+        self.language_model_default_prob = 0.0001
         self.diminutive_model_default_prob = 0.0001
 
     @staticmethod
@@ -35,19 +35,12 @@ class DiminutiveGenerator:
         total = float(sum(counter.values()))
         return [(c, cnt / total) for c, cnt in counter.items()]
 
-    def _normalize_transits(self, history, counter):
+    @staticmethod
+    def _normalize_transits(counter):
+        def get_prob_denot(char):
+            return sum(v for k, v in counter.items() if k[0] == char)
 
-        def get_prob_denot(hist, char):
-            if hist not in self.lang_model:
-                return self.language_model_default_denot
-            elif self.lang_model[hist][char] <= 0:
-                return sum(v for k, v in counter.items() if k[0] == char)
-            else:
-                return self.lang_model[history][char]
-
-            # return sum(v for k, v in counter.items() if k[0] == char)
-
-        return [(c, (cnt / get_prob_denot(history, c[0])))
+        return [(c, (cnt / get_prob_denot(c[0])))
                 for c, cnt in sorted(counter.items(), key=lambda x: x[0][-1])]
 
     def _train_lm(self, names):
@@ -99,24 +92,35 @@ class DiminutiveGenerator:
         # normalize models
         self.lang_endings_model = {hist: self._normalize(chars)
                                    for hist, chars in self.lang_endings_model.items()}
-        self.diminutive_transits = {hist: self._normalize_transits(hist, chars)
+        self.diminutive_transits = {hist: self._normalize_transits(chars)
                                     for hist, chars in self.diminutive_transits.items()}
-        # self.lang_model = {hist: self._normalize(chars) for hist, chars in self.lang_model.items()}
+        self.lang_model = {hist: self._normalize(chars) for hist, chars in self.lang_model.items()}
 
         return self
 
     def _find_max_transition(self, word):
+        # find the max production of Transit_Prob(history, char) * Lang_Prob(history, char) and extremal arguments
+        def get_prob(hist, char):
+            if hist not in self.lang_model:
+                return self.language_model_default_prob
+            else:
+                lang_hists = self.lang_model[hist]
+                for c, p in lang_hists:
+                    if c == char:
+                        return p
+                return self.language_model_default_prob
+
         max_hist = None
         letter, index = '', 0
         prob = self.diminutive_model_default_prob
-        # todo make a choice from dim_transits with the same max probability
         for i in range(self.ngram, len(word)):
             ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
                 continue
             for t, v in self.diminutive_transits[ngram_hist]:
-                if t[0] == ch and v >= prob:
-                    prob = v
+                prod = get_prob(ngram_hist, ch)
+                if t[0] == ch and v * prod >= prob:
+                    prob = v * prod
                     index = i
                     letter = t[0]
                     max_hist = self.diminutive_transits[ngram_hist]
