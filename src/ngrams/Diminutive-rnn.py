@@ -87,8 +87,10 @@ class DiminutiveGenerator:
 
         # collect language model
         self._train_lm(df.Name)
+
         # collect diminutive model
         self._train_diminutive_model(df.Name, df.Diminutive)
+
         # normalize models
         self.lang_endings_model = {hist: self._normalize(chars)
                                    for hist, chars in self.lang_endings_model.items()}
@@ -100,6 +102,7 @@ class DiminutiveGenerator:
 
     def _find_max_transition(self, word):
         # find the max production of Transit_Prob(history, char) * Lang_Prob(history, char) and extremal arguments
+
         def get_prob(hist, char):
             if hist not in self.lang_model:
                 return self.language_model_default_prob
@@ -138,6 +141,14 @@ class DiminutiveGenerator:
             return 'ка'
 
         return self._choose_letter(dist)
+
+    def _generate_diminutive_tail(self, history):
+        out = []
+        while self._DIM_SUFFIX.search(history) is None:
+            c = self._generate_letter(history)
+            history = history[-self.ngram + 1:] + c
+            out.append(c)
+        return out
 
     def _normalize_k_suffix(self, word):
         if word.endswith('ка'):
@@ -198,11 +209,7 @@ class DiminutiveGenerator:
         first_dim_letter = self._choose_letter(max_hist)[-1]
         result = word[self.ngram:index] + first_dim_letter
         history = result[-self.ngram:]
-        out = []
-        while self._DIM_SUFFIX.search(history) is None:
-            c = self._generate_letter(history)
-            history = history[-self.ngram + 1:] + c
-            out.append(c)
+        out = self._generate_diminutive_tail(history)
 
         return result.capitalize() + ''.join(out)
 
