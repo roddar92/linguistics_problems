@@ -31,19 +31,22 @@ def digits_count(seq):
     return len([j.isdigit() for j in seq])
 
 
+def has_affixes(seq):
+    return seq[0] in 'kodpsvn' or seq[:2] in ['za', 'iz'] or seq[:3] in ['bez', 'bes']
+
+
 def get_word_shape(seq):
     return ''.join([
-        'X' if re.search('[A-ZЁ]', s) else 'x' if re.search('[a-zё]', s) else 'd' if re.search('\d', s) else s
+        'X' if re.search('[A-ZЁ]', s) else
+        'x' if re.search('[a-zё]', s) else
+        'd' if re.search('\d', s) else
+        'p' if s in string.punctuation else s
         for s in seq
     ])
 
 
 def get_short_word_shape(seq):
     return re.sub("(\w)(\1)+", "\1", get_word_shape(seq))
-
-
-def is_punctuation(seq):
-    return all([j in string.punctuation for j in seq])
 
 
 def features(sequence, i):
@@ -75,59 +78,44 @@ def features(sequence, i):
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
-
-    if seq.istitle():
-        yield "title"
-
-    if seq.isupper():
-        yield "upper"
-
-    if is_punctuation(seq):
-        yield "is_punct"
-
-    if '-' in seq:
-        yield "has_dash"
-
     yield "digits_count=" + str(digits_count(seq))
-
-    # only alpha or digit
-    if seq.isalpha():
-        yield "alpha"
-
-    # only digits
-    if real_num_pattern.search(seq) or seq.isdigit():
-        yield "num"
 
     # currency
     if currency_pattern.search(seq):
         yield "currency"
 
+    if has_affixes(seq):
+        yield "starts_with_affixes"
+
     # contains -'its'
-    if 'its' in seq or re.search(r'\w+(tel|nik)', seq):
+    if 'its' in seq or re.search(r'\w+(tel|nik)', seq, re.I):
         yield "with_tel_its"
 
     # contains letter + 'к' suffix
-    if re.search(r'\w+[bjlmnpstvz]k', seq):
+    if re.search(r'\w+[bjlmnpstvz]k', seq, re.I):
         yield "with_k_suffix"
 
     # contains letter + 'в' suffix
-    if re.search(r'\w+(st|z|o)v', seq):
+    if re.search(r'\w+(st|z|o)v', seq, re.I):
         yield "with_v_suffix"
 
-    if re.search(r'\w+[eio]k', seq):
+    if re.search(r'\w+[eio]k', seq, re.I):
         yield "with_eiok_suffix"
 
-    if re.search(r'\w+stn', seq):
+    if re.search(r'\w+stn', seq, re.I):
         yield "with_stn_suffix"
 
-    if re.search(r'\w+[dk]r', seq):
+    if re.search(r'\w+[dk]r', seq, re.I):
         yield "with_dr_suffix"
 
-    if re.search(r'\w+(sh|jj)k', seq):
+    if re.search(r'\w+(sh|jj)k', seq, re.I):
         yield "with_shk_suffix"
 
-    if re.search(r'\w+[ln]`k', seq):
+    if re.search(r'\w+[ln]`k', seq, re.I):
         yield "with_lnk_suffix"
+
+    if re.search(r'l[aeio]?$', seq, re.I):
+        yield "ends_with_l"
 
     # contains 'нн'
     if 'nn' in seq:
@@ -138,16 +126,25 @@ def features(sequence, i):
         yield "with_chk"
 
     # contains letter + 'н' suffix
-    if re.search(r'\w+[jlmrstvz]n', seq):
+    if re.search(r'\w+[jlmrstvz]n', seq, re.I):
         yield "with_n_suffix"
 
     # contains suffixes 'ющ', 'ящ', 'ищ', 'вш'
-    if re.search(r'\w+((y[au]|i)s?ch|vsh)', seq) or seq.endswith('v'):
+    if re.search(r'\w+((y[au]|i)s?ch|vsh)', seq, re.I) or seq.endswith('v'):
         yield "with_part_sch_suffixes"
 
     # ends with 'ся'
     if seq.endswith("sya") or seq.endswith('s\''):
         yield "ends_with_sya"
+
+    if seq.endswith('j') and len(seq) > 1 and is_vowel(seq[-2]):
+        yield "ends_with_j"
+
+    if seq.endswith('t') and len(seq) > 1 and is_vowel(seq[-2]):
+        yield "ends_with_t"
+
+    if seq.endswith('\''):
+        yield "ends_with_apo"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[1]
@@ -156,18 +153,12 @@ def features(sequence, i):
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[1]
-        # previous word is title
-        yield "prev_title=" + str(prev.istitle())
-
-    if i > 0:
-        prev = sequence[i - 1].split("\t")[1]
         # last letters of the previous word
         yield "prev_last_letters=" + (prev[-3:] if len(prev) > 3 else prev)
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[1]
-        # previous word is alnum
-        yield "prev_is_alnum=" + str(prev.isalnum())
+        yield "prev_short_word_shape=" + get_short_word_shape(prev)
 
     if i < len(sequence) - 1:
         next = sequence[i + 1].split("\t")[1]
@@ -176,23 +167,17 @@ def features(sequence, i):
 
     if i < len(sequence) - 1:
         next = sequence[i + 1].split("\t")[1]
-        # next word is title
-        yield "next_title=" + str(next.istitle())
-
-    if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[1]
         # last letters of the next word
         yield "next_last_letters=" + (next[-3:] if len(next) > 3 else next)
 
     if i < len(sequence) - 1:
         next = sequence[i + 1].split("\t")[1]
-        # next word is alnum
-        yield "next_is_alnum=" + str(next.isalnum())
+        yield "next_short_word_shape=" + get_short_word_shape(next)
 
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("../resources/train.data", "r"), features)
 
-clf = StructuredPerceptron(decode="viterbi", lr_exponent=.05, max_iter=50)
+clf = StructuredPerceptron(decode="viterbi", lr_exponent=.05, max_iter=30)
 
 print("Fitting model " + str(clf))
 clf.fit(X_train, y_train, lengths_train)
