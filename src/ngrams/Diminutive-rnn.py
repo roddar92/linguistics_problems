@@ -153,9 +153,9 @@ class DiminutiveGenerator:
     def _normalize_k_suffix(self, word):
         if word.endswith('ка'):
             if word[-3] == 'ь':
-                word = word[:-3] + 'я'
+                return word[:-3] + 'я'
             elif word[-3] not in self._RU_VOWELS:
-                word = word[:-2] + word[-1]
+                return word[:-2] + word[-1]
         return word
 
     def generate_diminutive(self, word):
@@ -168,8 +168,10 @@ class DiminutiveGenerator:
                     selected_hists += [(h, curr_transits)]
             return selected_hists
 
-        # check if word has 'ка' ending
+        # check if word has 'ка' ending and normalize name
         word = self._normalize_k_suffix(word)
+
+        # fill name with ngram start
         n_chars = self.start * self.ngram
         word = n_chars + word.lower()
 
@@ -197,7 +199,7 @@ class DiminutiveGenerator:
             else:
                 return word[self.ngram:].capitalize()
 
-        # generate text from position to 'а' letter
+        # select transits with first character which equal the letter of a name
         max_hist_for_letter = [(tup, v) for tup, v in max_hist if tup[0] == letter]
         if max_hist_for_letter:
             max_hist = max_hist_for_letter
@@ -205,7 +207,7 @@ class DiminutiveGenerator:
         if not max_hist:
             return word[self.ngram:].capitalize()
 
-        # generate a tail of the diminutive
+        # generate a tail of the diminutive (to 'a' character)
         first_dim_letter = self._choose_letter(max_hist)[-1]
         result = word[self.ngram:index] + first_dim_letter
         history = result[-self.ngram:]
