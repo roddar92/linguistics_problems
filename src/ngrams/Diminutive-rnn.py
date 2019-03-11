@@ -56,19 +56,20 @@ class DiminutiveGenerator:
         print('Collecting of letters\' probabilities in diminutive model...')
         for real_name, diminutive in zip(names, diminutives):
             real_name, diminutive = real_name.lower(), diminutive.lower()
+            transit_flag = False
             n_chars = self.start * self.ngram
             max_len = max(len(real_name), len(diminutive))
             i = 0
             while i < max_len:
-                if i < len(real_name):
+                if i < len(real_name) and not transit_flag:
                     ch, dim_ch = real_name[i], diminutive[i]
                     if ch != dim_ch:
+                        transit_flag = True
                         self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
                         next_char = diminutive[i]
                     else:
                         next_char = real_name[i]
                     n_chars = n_chars[1:] + next_char
-                    i += 1
                 else:
                     if i == len(real_name) and diminutive[i] and real_name.endswith(n_chars):
                         ch, dim_ch = '$', diminutive[i]
@@ -76,7 +77,7 @@ class DiminutiveGenerator:
                     else:
                         self.lang_endings_model[n_chars][diminutive[i]] += 1
                     n_chars = n_chars[1:] + diminutive[i]
-                    i += 1
+                i += 1
 
     def fit(self, path_to_sample_file):
         print('Get data from the file...')
