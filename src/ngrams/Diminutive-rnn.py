@@ -59,8 +59,7 @@ class DiminutiveGenerator:
             transit_flag = False
             n_chars = self.start * self.ngram
             max_len = max(len(real_name), len(diminutive))
-            i = 0
-            while i < max_len:
+            for i in range(max_len):
                 if i < len(real_name) and not transit_flag:
                     ch, dim_ch = real_name[i], diminutive[i]
                     if ch != dim_ch:
@@ -77,7 +76,6 @@ class DiminutiveGenerator:
                     else:
                         self.lang_endings_model[n_chars][diminutive[i]] += 1
                     n_chars = n_chars[1:] + diminutive[i]
-                i += 1
 
     def fit(self, path_to_sample_file):
         print('Get data from the file...')
