@@ -65,6 +65,7 @@ class Person(object):
 
 class CompanyOntologyHelper(object):
     DEFAULT_ANSWER = "Don't know"
+    _AGE = re.compile(r'\d+')
 
     def __init__(self):
         self.people = {}
@@ -117,14 +118,14 @@ class CompanyOntologyHelper(object):
     def add_fact(self, statement):
         statement = statement[:-1]
         elements = statement.split()
-        if len(elements) <= 3:
-            who, _, info = elements
-            if re.match(r'[0-9]+', info):
+        if len(elements) <= 3 or tuple(elements[1:3]) == ('is', 'a') or tuple(elements[1:3]) == ('is', 'an'):
+            who, *_, info = elements
+            if self._AGE.match(info):
                 self.add_age(who, int(info))  # Emilia is 24
             else:
-                self.add_position(who, info)  # Emilia is designer
+                self.add_position(who, info)  # Emilia is a designer
         else:
-            who, _, whose, rel = elements  # Emilia is Fred's employee, Fred is Emilia's boss
+            who, *_, whose, rel = elements  # Emilia is Fred's employee, Fred is Emilia's boss
             assert whose.endswith('\'s')
             self.add_relation(who, whose[:-2], rel)
             self.check_relations()
@@ -193,7 +194,7 @@ class CompanyOntologyHelper(object):
         if position == Person.POS_UNKNOWN:
             return self.__class__.DEFAULT_ANSWER
 
-        return position[0].upper() + position[1:]
+        return position.capitalize()
 
     def relation_request(self, whose_name, rel_type):
         if whose_name not in self.people:
@@ -204,9 +205,9 @@ class CompanyOntologyHelper(object):
         if rel_type == 'boss':
             return whose.boss.get_name()
         elif rel_type in ['employee', 'employees']:
-            answer = [person.get_name() for person in whose.get_employees()]
+            answer = sorted([person.get_name() for person in whose.get_employees()])
         elif rel_type in ['college', 'colleges']:
-            answer = [person.get_name() for person in whose.get_colleges()]
+            answer = sorted([person.get_name() for person in whose.get_colleges()])
         else:
             return self.__class__.DEFAULT_ANSWER
 
@@ -215,7 +216,7 @@ class CompanyOntologyHelper(object):
     def request(self, question):
         req_parts = question.strip().split()
         if req_parts[0] == 'Is':
-            if re.match(r'[0-9]+', req_parts[2][:-1]):
+            if self._AGE.match(req_parts[2][:-1]):
                 return self.is_age_request(req_parts[1], req_parts[2][:-1])
             elif req_parts[2] == 'a':
                 if req_parts[3].endswith('\'s'):
@@ -244,8 +245,8 @@ if __name__ == "__main__":
     coh.add_fact("Alice is Peter's college.")
     coh.add_fact("Alice is 24.")
     coh.add_fact("Bob is programmer.")
-    coh.add_fact("Alice is linguist.")
-    coh.add_fact("Laura is linguist.")
+    coh.add_fact("Alice is a linguist.")
+    coh.add_fact("Laura is an linguist.")
     coh.add_fact("Laura is Paul's employee.")
     coh.add_fact("Susan is Frank's college.")
     coh.add_fact("Dalida is Susan's employee.")
