@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 class Patronymer(object):
     @staticmethod
-    def is_vowel(symbol):
+    def _is_vowel(symbol):
         return symbol in "аеиоуыэя"
 
     @staticmethod
-    def is_unusually_names_with_ending_y(name):
+    def _is_unusually_names_with_ending_y(name):
         return name in ["Акакий", "Георгий", "Дмитрий", "Димитрий", "Лукий"]
 
     @staticmethod
-    def is_names_with_emphasis_endings(name):
+    def _is_names_with_emphasis_endings(name):
         return name in ["Илья", "Кузьма", "Лука", "Фома"]
 
     def get_patro(self, name, feminine=False):
@@ -26,32 +26,40 @@ class Patronymer(object):
             name = "Михайл"
 
         if feminine:
-            if self.is_vowel(name[-1]):
+            if self._is_vowel(name[-1]):
                 suffix = "ична"
             else:
                 suffix = "на"
         else:
             suffix = "ич"
 
-        if self.is_vowel(name[-1]):
-            if self.is_names_with_emphasis_endings(name):
-                return name[:-1] + "ин" + suffix if feminine else name[:-1] + suffix
+        base_of_name, whose_suffix = "", ""
+        if self._is_vowel(name[-1]):
+            base_of_name = name[:-1]
+            if self._is_names_with_emphasis_endings(name):
+                if feminine:
+                    whose_suffix = "ин"
             elif name[-1] == "а" and name[-2] in "лмн":
+                whose_suffix = "ов"
                 if feminine:
                     suffix = "на"
-                return name[:-1] + "ов" + suffix
-            else:
-                return name[:-1] + suffix
+            return base_of_name + whose_suffix + suffix
         elif name.endswith("й"):
             if name[-2] == "и":
-                return name[:-1] + "ев" + suffix if self.is_unusually_names_with_ending_y(name) \
-                    else name[:-2] + "ьев" + suffix
+                whose_suffix = "ьев"
+                if self._is_unusually_names_with_ending_y(name):
+                    whose_suffix = whose_suffix[1:]
+                base_of_name = name[:-1] if self._is_unusually_names_with_ending_y(name) else name[:-2]
             else:
-                return name[:-1] + "ев" + suffix
+                whose_suffix = "ев"
+                base_of_name = name[:-1]
         elif name.endswith("ь"):
-            return name[:-1] + "ев" + suffix if name[-2] == "р" else name + "ев" + suffix
+            whose_suffix = "ев"
+            base_of_name = name[:-1] if name[-2] == "р" else name
         else:
-            return name + "лев" + suffix if name == "Яков" else name + "ов" + suffix
+            whose_suffix = "лев" if name == "Яков" else "ов"
+            base_of_name = name
+        return base_of_name + whose_suffix + suffix
 
 
 if __name__ == "__main__":
