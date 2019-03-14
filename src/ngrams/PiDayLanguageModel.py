@@ -29,7 +29,7 @@ class PIDayLanguageModel:
 
         return self
 
-    def generate_text(self, word='', n_words=15):
+    def generate_text(self, word='', n_words=5):
         def generate_word(prev_word, l):
             subseq = [t for t in self.lm[prev_word] if len(t) == l]
             if not subseq:
@@ -44,13 +44,13 @@ class PIDayLanguageModel:
             if w:
                 out += [w.capitalize()]
 
-        for i in range(n_words):
-            d = int(self.str_pi[i])
+        for _, digit in zip(range(n_words), self.str_pi):
+            d = int(digit)
             w = generate_word(out[-1], d)
-            if w in punctuation:
+            while w in punctuation or w in '... -- \'\''.split():
                 out += [w]
                 w = generate_word(out[-1], d)
-            out += [w if out[-1].capitalize() == '.' else w]
+            out += [w.capitalize() if out[-1] == '.' or out[-1] == '...' else w]
         return " ".join(out)
 
 
@@ -58,4 +58,4 @@ if __name__ == '__main__':
     fname = "resources/corpus/Dostoevsky.txt"
     model = PIDayLanguageModel()
     model.train(fname)
-    print(model.generate_text())
+    print(model.generate_text(n_words=15))
