@@ -53,6 +53,8 @@ Source code:
 - [N-gram language model](src/ngrams/LanguageModel.py)
 - [Collocations](src/ngrams/Collocations.py)
 - [Russian diminutive names generator with RNN](src/ngrams/Diminutive-rnn.py)
+- [Russian character RNN (non-smoothing)](src/ngrams/CharLevelLanguageModel.py)
+- [Russian joking language model (PI Day)](src/ngrams/PiDayLanguageModel.py)
 - [Simple spell-checker (based on n-grams and Damerau-Levenstein distance)](src/russian/SpellChecker.py)
 - Advanced spell-checker based on:
     - dictionary of words from good texts with 2-3-gram index;
