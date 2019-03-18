@@ -123,8 +123,7 @@ class DiminutiveGenerator:
                 prod = get_prob(ngram_hist, ch)
                 if t[0] == ch and v * prod >= prob:
                     prob = v * prod
-                    index = i
-                    letter = t[0]
+                    index, letter = i, t[0]
                     max_hist = self.diminutive_transits[ngram_hist]
         return index, letter, max_hist, prob
 
