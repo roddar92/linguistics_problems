@@ -56,14 +56,14 @@ class DiminutiveGenerator:
         print('Collecting of letters\' probabilities in diminutive model...')
         for real_name, diminutive in zip(names, diminutives):
             real_name, diminutive = real_name.lower(), diminutive.lower()
-            transit_flag = False
+            stay_within_name = True
             n_chars = self.start * self.ngram
             max_len = max(len(real_name), len(diminutive))
             for i in range(max_len):
-                if i < len(real_name) and not transit_flag:
+                if i < len(real_name) and stay_within_name:
                     ch, dim_ch = real_name[i], diminutive[i]
                     if ch != dim_ch:
-                        transit_flag = True
+                        stay_within_name = False
                         self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
                         next_char = diminutive[i]
                     else:
