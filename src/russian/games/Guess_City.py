@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
+from collections import defaultdict
 
 
 class GuessCityGameException(Exception):
@@ -9,7 +10,7 @@ class GuessCityGameException(Exception):
 
 class GuessCity(object):
     def __init__(self):
-        self.allowed_cities = set()
+        self.allowed_cities = defaultdict(list)
         self.guessed_cities = set()
         self.asked_cities = set()
         self.city_name = "Unknown"
@@ -19,9 +20,10 @@ class GuessCity(object):
         self.ind = 1
 
         with open("../resources/ru_cities.txt", "r", encoding='utf-8') as f:
-            self.allowed_cities = [
-                line.strip() for line in f
-            ]
+            for city in f:
+                city = city.strip()
+                if city:
+                    self.allowed_cities[city[0]] += [city]
 
     @staticmethod
     def get_city_name(city_name):
@@ -86,7 +88,7 @@ class GuessCity(object):
         return city_name in self.guessed_cities
 
     def _is_city_exists(self, city_name):
-        return city_name in self.allowed_cities
+        return city_name in self.allowed_cities[city_name[0]]
 
     def check_city(self, city_name):
         if self._was_city_asked(city_name):
@@ -97,7 +99,8 @@ class GuessCity(object):
             raise GuessCityGameException("This city was not exists!")
 
     def move(self):
-        city_names = [word for word in self.allowed_cities if word not in self.guessed_cities]
+        random_letter = random.choice(list(self.allowed_cities.keys()))
+        city_names = [word for word in self.allowed_cities[random_letter] if word not in self.guessed_cities]
         self.city_name = self.get_city_name(random.choice(city_names))
         print("My guessed city is {}...".format(self.city_name[0]))
 
