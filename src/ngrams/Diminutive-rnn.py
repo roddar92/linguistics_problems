@@ -122,8 +122,7 @@ class DiminutiveGenerator:
             for t, v in self.diminutive_transits[ngram_hist]:
                 prod = get_prob(ngram_hist, ch)
                 if t[0] == ch and v * prod >= prob:
-                    prob = v * prod
-                    index, letter = i, t[0]
+                    prob, index, letter = v * prod, i, t[0]
                     max_hist = self.diminutive_transits[ngram_hist]
         return index, letter, max_hist, prob
 
@@ -184,7 +183,7 @@ class DiminutiveGenerator:
 
             ngram = self.ngram - 1
             histories_by_last_ch = [
-                (h, d) for h, d in self.diminutive_transits.items() if h.endswith(word[index-ngram:index])
+                (h, _) for h, _ in self.diminutive_transits.items() if h.endswith(word[index-ngram:index])
             ]
             if histories_by_last_ch:
                 last = letter
@@ -192,13 +191,11 @@ class DiminutiveGenerator:
                 if hists_by_last_ch:
                     histories_by_last_ch = hists_by_last_ch
                 max_hist = choice(histories_by_last_ch)[-1]
-                if not max_hist:
-                    return word[self.ngram:].capitalize()
             else:
                 return word[self.ngram:].capitalize()
 
         # select transits with first character which equal the letter of a name
-        max_hist_for_letter = [(tup, v) for tup, v in max_hist if tup[0] == letter]
+        max_hist_for_letter = [(tup, _) for tup, _ in max_hist if tup[0] == letter]
         if max_hist_for_letter:
             max_hist = max_hist_for_letter
 
@@ -209,9 +206,9 @@ class DiminutiveGenerator:
         first_dim_letter = self._choose_letter(max_hist)[-1]
         result = word[self.ngram:index] + first_dim_letter
         history = result[-self.ngram:]
-        out = self._generate_diminutive_tail(history)
+        tail = self._generate_diminutive_tail(history)
 
-        return result.capitalize() + ''.join(out)
+        return result.capitalize() + ''.join(tail)
 
 
 if __name__ == '__main__':
