@@ -106,8 +106,7 @@ class DiminutiveGenerator:
             if hist not in self.lang_model:
                 return self.language_model_default_prob
             else:
-                lang_hists = self.lang_model[hist]
-                for c, p in lang_hists:
+                for c, p in self.lang_model[hist]:
                     if c == char:
                         return p
                 return self.language_model_default_prob
@@ -140,12 +139,12 @@ class DiminutiveGenerator:
         return self._choose_letter(dist)
 
     def _generate_diminutive_tail(self, history):
-        out = []
+        tail = []
         while self._DIM_SUFFIX.search(history) is None:
             c = self._generate_letter(history)
             history = history[-self.ngram + 1:] + c
-            out.append(c)
-        return out
+            tail.append(c)
+        return tail
 
     def _normalize_k_suffix(self, word):
         if word.endswith('ка'):
