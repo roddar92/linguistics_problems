@@ -103,10 +103,15 @@ class LanguageModel:
 
 
 class CollocationExtractor:
-    def __init__(self, lm, exclude_punctuation=True, exclude_conj=True):
+    CONJ_RU = set('и а да но'.split())
+    PROPOSITIONS_RU = set('с со на из за в к ко по про о у об обо под над от до'.split())
+    PUNCT = set(string.punctuation) | {'--', '...'}
+
+    def __init__(self, lm, exclude_punctuation=True, exclude_conj=True, exclude_props=True):
         self.language_model = lm
         self.exclude_punctuation = exclude_punctuation
         self.exclude_conj = exclude_conj
+        self.exclude_props = exclude_props
 
     def extract_collocations(self, metric_class):
         assert issubclass(metric_class, Metric)
@@ -119,20 +124,24 @@ class CollocationExtractor:
         for (first, last), freq_bigram in bigram_counts.items():
 
             if self.exclude_punctuation:
-                if first in string.punctuation or last in string.punctuation:
-                    continue
-
-                if first == '--' or last == '--':
+                if first in self.PUNCT or last in self.PUNCT:
                     continue
 
             if self.exclude_conj:
-                if first in 'и а но' or last in 'и а но':
+                if first in self.CONJ_RU or last in self.CONJ_RU:
+                    continue
+
+            if self.exclude_props:
+                if first in self.PROPOSITIONS_RU or last in self.PROPOSITIONS_RU:
                     continue
 
             freq_first, freq_last = unigram_counts[first], unigram_counts[last]
             
-            metric_val = metric.evaluate(freq_first, freq_last, freq_bigram, self.language_model.get_vocab_size())
-            collocations.add((metric_val, freq_first, freq_last, freq_bigram, first, last))
+            metric_val = metric.evaluate(freq_first, freq_last, freq_bigram,
+                                         self.language_model.get_vocab_size())
+            collocations.add((metric_val, freq_first,
+                              freq_last, freq_bigram,
+                              first, last))
             
         return collocations
 
