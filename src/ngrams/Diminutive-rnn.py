@@ -10,16 +10,16 @@ class DiminutiveGenerator:
     _RU_VOWELS = 'аеиоуыэюя'
     _DIM_SUFFIX = re.compile(r'([иеё]к|[ая])$', re.I)
 
+    LANGUAGE_DEFAULT_PROB = 0.0001
+    DIMINUTIVE_DEFAULT_PROB = 0.0001
+
     def __init__(self, ngram=2):
         self.ngram = ngram
+        self.start = '~'
 
         self.lang_model = defaultdict(Counter)
         self.lang_endings_model = defaultdict(Counter)
         self.diminutive_transits = defaultdict(Counter)
-        self.start = '~'
-
-        self.language_model_default_prob = 0.0001
-        self.diminutive_model_default_prob = 0.0001
 
     @staticmethod
     def _choose_letter(dist):
@@ -104,16 +104,16 @@ class DiminutiveGenerator:
 
         def get_prob(hist, char):
             if hist not in self.lang_model:
-                return self.language_model_default_prob
+                return self.LANGUAGE_DEFAULT_PROB
             else:
                 for c, p in self.lang_model[hist]:
                     if c == char:
                         return p
-                return self.language_model_default_prob
+                return self.LANGUAGE_DEFAULT_PROB
 
         max_hist = None
         letter, index = '', 0
-        prob = self.diminutive_model_default_prob
+        prob = self.DIMINUTIVE_DEFAULT_PROB
         for i in range(self.ngram, len(word)):
             ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
@@ -175,7 +175,7 @@ class DiminutiveGenerator:
         index, letter, max_hist, prob = self._find_max_transition(word)
 
         # process last name's symbols with default probability
-        if prob <= self.diminutive_model_default_prob:
+        if prob <= self.DIMINUTIVE_DEFAULT_PROB:
 
             index = len(word) - (0 if word[-1] not in self._RU_VOWELS else 1)
             letter = '$' if word[-1] not in self._RU_VOWELS else word[-1]
@@ -204,8 +204,7 @@ class DiminutiveGenerator:
         # generate a tail of the diminutive (to 'a' character)
         first_dim_letter = self._choose_letter(max_hist)[-1]
         result = word[self.ngram:index] + first_dim_letter
-        history = result[-self.ngram:]
-        tail = self._generate_diminutive_tail(history)
+        tail = self._generate_diminutive_tail(result[-self.ngram:])
 
         return result.capitalize() + ''.join(tail)
 
