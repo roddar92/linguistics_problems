@@ -9,13 +9,13 @@ from random import choice, random
 class DiminutiveGenerator:
     _RU_VOWELS = 'аеиоуыэюя'
     _DIM_SUFFIX = re.compile(r'([иеё]к|[ая])$', re.I)
+    _START = '~'
 
     LANGUAGE_DEFAULT_PROB = 0.0001
     DIMINUTIVE_DEFAULT_PROB = 0.0001
 
     def __init__(self, ngram=2):
         self.ngram = ngram
-        self.start = '~'
 
         self.lang_model = defaultdict(Counter)
         self.lang_endings_model = defaultdict(Counter)
@@ -46,8 +46,8 @@ class DiminutiveGenerator:
     def _train_lm(self, names):
         print('Collecting of letters\' probabilities in language model...')
         for real_name in names:
-            real_name = (real_name + '$').lower()
-            n_chars = self.start * self.ngram
+            real_name = real_name.lower() + '$'
+            n_chars = self._START * self.ngram
             for char in real_name:
                 self.lang_model[n_chars][char] += 1
                 n_chars = n_chars[1:] + char
@@ -57,7 +57,7 @@ class DiminutiveGenerator:
         for real_name, diminutive in zip(names, diminutives):
             real_name, diminutive = real_name.lower(), diminutive.lower()
             stay_within_name = True
-            n_chars = self.start * self.ngram
+            n_chars = self._START * self.ngram
             max_len = max(len(real_name), len(diminutive))
             for i in range(max_len):
                 if i < len(real_name) and stay_within_name:
@@ -168,7 +168,7 @@ class DiminutiveGenerator:
         word = self._normalize_k_suffix(word)
 
         # fill name with ngram start
-        n_chars = self.start * self.ngram
+        n_chars = self._START * self.ngram
         word = n_chars + word.lower()
 
         # find transition with max probability
@@ -185,8 +185,7 @@ class DiminutiveGenerator:
                 (h, _) for h, _ in self.diminutive_transits.items() if h.endswith(word[index-ngram:index])
             ]
             if histories_by_last_ch:
-                last = letter
-                hists_by_last_ch = select_hists_by_char(histories_by_last_ch, last)
+                hists_by_last_ch = select_hists_by_char(histories_by_last_ch, letter)
                 if hists_by_last_ch:
                     histories_by_last_ch = hists_by_last_ch
                 max_hist = choice(histories_by_last_ch)[-1]
