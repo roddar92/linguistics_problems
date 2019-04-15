@@ -80,7 +80,7 @@ class DiminutiveGenerator:
     def fit(self, path_to_sample_file):
         print('Get data from the file...')
         with Path(path_to_sample_file).open() as fin:
-            names = ((line.split() for line in fin.readlines()))
+            names = (line.split() for line in fin.readlines())
 
         df = pd.DataFrame(names, columns=['Name', 'Diminutive'])
 
