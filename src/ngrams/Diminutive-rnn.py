@@ -126,7 +126,6 @@ class DiminutiveGenerator:
         return index, letter, max_hist, prob
 
     def _generate_letter(self, history):
-        history = history[-self.ngram:]
         if history not in self.lang_endings_model:
             hists = [hist for hist in self.lang_endings_model if history.endswith(hist[1:])]
             dist = self.lang_endings_model[choice(hists)] if hists else None
