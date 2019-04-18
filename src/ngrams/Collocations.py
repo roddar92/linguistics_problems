@@ -16,8 +16,18 @@ class Metric(ABC):
 
 class PMI(Metric):
     def evaluate(self, freq_w1, freq_w2, freq_w12, vocab_size):
-        bigram_prob = freq_w12 / freq_w1
-        return log2(bigram_prob * (vocab_size * freq_w2))
+        p_w1 = freq_w1 / vocab_size
+        p_w2 = freq_w2 / vocab_size
+        p_w12 = freq_w12 / vocab_size
+        return log2(p_w12 / (p_w1 * p_w2))
+
+
+class MD(Metric):
+    def evaluate(self, freq_w1, freq_w2, freq_w12, vocab_size):
+        p_w1 = freq_w1 / vocab_size
+        p_w2 = freq_w2 / vocab_size
+        p_w12 = freq_w12 / vocab_size
+        return log2((p_w12 ** 2) / (p_w1 * p_w2))
 
 
 class TScore(Metric):
@@ -26,7 +36,8 @@ class TScore(Metric):
         p_w2 = freq_w2 / vocab_size
         p_w12 = freq_w12 / vocab_size
         diff = p_w12 - p_w1 * p_w2
-        return diff / sqrt(p_w12 / vocab_size)
+        s = p_w12 * (1 - p_w12)
+        return diff / sqrt(s / vocab_size)
 
 
 class LikelihoodRatio(Metric):
@@ -45,12 +56,17 @@ class LikelihoodRatio(Metric):
         return first_L + second_L - (third_L + fourth_L)
 
 
-class Dice(Metric):
+class Ratio(Metric):
     def evaluate(self, freq_w1, freq_w2, freq_w12, vocab_size):
         p_w1 = freq_w1 / vocab_size
         p_w2 = freq_w2 / vocab_size
         p_w12 = freq_w12 / vocab_size
         return p_w12 / (p_w1 * p_w2)
+
+
+class Dice(Metric):
+    def evaluate(self, freq_w1, freq_w2, freq_w12, vocab_size):
+        return (2 * freq_w12) / (freq_w1 + freq_w2)
 
 
 class LanguageModel:
@@ -161,6 +177,11 @@ if __name__ == '__main__':
         for collocation in collocations_list[:100]:
             print(collocation)
 
+        print("Mutual Dependence results...")
+        collocations_list = collocations_extractor.extract_collocations(MD)
+        for collocation in collocations_list[:100]:
+            print(collocation)
+
         print("T-Score results...")
         collocations_list = collocations_extractor.extract_collocations(TScore)
         for collocation in collocations_list[:100]:
@@ -168,6 +189,11 @@ if __name__ == '__main__':
 
         print("Likelihood Ratio results...")
         collocations_list = collocations_extractor.extract_collocations(LikelihoodRatio)
+        for collocation in collocations_list[:100]:
+            print(collocation)
+
+        print("Ratio results...")
+        collocations_list = collocations_extractor.extract_collocations(Ratio)
         for collocation in collocations_list[:100]:
             print(collocation)
 
