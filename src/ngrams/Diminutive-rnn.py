@@ -7,6 +7,7 @@ from random import choice, random
 
 
 class DiminutiveGenerator:
+    _KA_ENDING = 'ка'
     _RU_VOWELS = 'аеиоуыэюя'
     _DIM_SUFFIX = re.compile(r'([иеё]к|[ая])$', re.I)
     _START = '~'
@@ -15,11 +16,20 @@ class DiminutiveGenerator:
     DIMINUTIVE_DEFAULT_PROB = 0.0001
 
     def __init__(self, ngram=2):
+        if ngram < 2:
+            raise Exception('Ngram parameter should be greater or equal 2 characters!')
+
         self.ngram = ngram
 
         self.lang_model = defaultdict(Counter)
         self.lang_endings_model = defaultdict(Counter)
         self.diminutive_transits = defaultdict(Counter)
+
+    @staticmethod
+    def _read_diminutive_samples(path_to_sample_file):
+        with Path(path_to_sample_file).open() as fin:
+            names = (line.split() for line in fin.readlines())
+        return pd.DataFrame(names, columns=['Name', 'Diminutive'])
 
     @staticmethod
     def _choose_letter(dist):
@@ -70,7 +80,7 @@ class DiminutiveGenerator:
                         next_char = real_name[i]
                     n_chars = n_chars[1:] + next_char
                 else:
-                    if i == len(real_name) and diminutive[i] and real_name.endswith(n_chars):
+                    if i == len(real_name) and real_name.endswith(n_chars) and i < len(diminutive):
                         ch, dim_ch = '$', diminutive[i]
                         self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
                     elif i < len(diminutive):
@@ -81,10 +91,7 @@ class DiminutiveGenerator:
 
     def fit(self, path_to_sample_file):
         print('Get data from the file...')
-        with Path(path_to_sample_file).open() as fin:
-            names = (line.split() for line in fin.readlines())
-
-        df = pd.DataFrame(names, columns=['Name', 'Diminutive'])
+        df = self._read_diminutive_samples(path_to_sample_file)
 
         # collect language model
         self._train_lm(df.Name)
@@ -135,7 +142,7 @@ class DiminutiveGenerator:
             dist = self.lang_endings_model[history]
 
         if not dist:
-            return 'ка'
+            return self._KA_ENDING
 
         return self._choose_letter(dist)
 
@@ -148,7 +155,7 @@ class DiminutiveGenerator:
         return tail
 
     def _normalize_k_suffix(self, word):
-        if word.endswith('ка'):
+        if word.endswith(self._KA_ENDING):
             if word[-3] == 'ь':
                 return word[:-3] + 'я'
             elif word[-3] not in self._RU_VOWELS:
