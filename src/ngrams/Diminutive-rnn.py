@@ -123,7 +123,8 @@ class DiminutiveGenerator:
         max_hist = None
         letter, index = '', 0
         prob = self.DIMINUTIVE_DEFAULT_PROB
-        for i in range(self.ngram, len(word)):
+        start = len(word) // 2 + self.ngram
+        for i in range(start, len(word)):
             ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
                 continue
