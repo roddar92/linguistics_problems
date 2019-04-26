@@ -129,7 +129,7 @@ class DiminutiveGenerator:
             if ngram_hist not in self.diminutive_transits:
                 continue
             for t, v in self.diminutive_transits[ngram_hist]:
-                prod = v/ get_prob(ngram_hist, ch)
+                prod = v / get_prob(ngram_hist, ch)
                 if t[0] == ch and prod >= prob:
                     prob, index, letter = prod, i, t[0]
                     max_hist = self.diminutive_transits[ngram_hist]
