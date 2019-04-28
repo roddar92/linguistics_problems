@@ -109,7 +109,7 @@ class DiminutiveGenerator:
         return self
 
     def _find_max_transition(self, word):
-        # find the max probability of Transit_Prob(history, char) / Lang_Prob(history, char) and extremal arguments
+        # find the max Prob(Transit_Prob(history, char) | Lang_Prob(history, char)) and extremal arguments
 
         def get_prob(hist, char):
             if hist not in self.lang_model:
@@ -157,7 +157,7 @@ class DiminutiveGenerator:
 
     def _normalize_k_suffix(self, word):
         if word.endswith(self._KA_ENDING):
-            if word[-3] == 'ь':
+            if word[-3] in 'йь':
                 return word[:-3] + 'я'
             elif word[-3] not in self._RU_VOWELS:
                 return word[:-2] + word[-1]
