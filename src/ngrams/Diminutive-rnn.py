@@ -109,7 +109,7 @@ class DiminutiveGenerator:
         return self
 
     def _find_max_transition(self, word):
-        # find the max Prob(Transit_Prob(history, char) | Lang_Prob(history, char)) and extremal arguments
+        # find the max Prob(Transit(history, char) | Lang(history, char)) and extremal arguments
 
         def get_prob(hist, char):
             if hist not in self.lang_model:
