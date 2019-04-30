@@ -108,7 +108,7 @@ class DiminutiveGenerator:
         return self
 
     def _find_max_transition(self, word):
-        # find the max Prob(Transit(history, char) | Lang(history, char)) and extremal arguments
+        # find the max prob Lang(history, char) * Transit(history, char) and extremal arguments
 
         def get_lm_prob(hist, char):
             if hist not in self.lang_model:
@@ -127,10 +127,11 @@ class DiminutiveGenerator:
             ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
                 continue
+            lm_prob = get_lm_prob(ngram_hist, ch)
             for t, p in self.diminutive_transits[ngram_hist]:
-                # cond_prob = p / get_lm_prob(ngram_hist, ch)
-                if t[0] == ch and p >= prob:
-                    prob, index, letter = p, i, t[0]
+                cond_prob = p * lm_prob
+                if t[0] == ch and cond_prob >= prob:
+                    prob, index, letter = cond_prob, i, t[0]
                     max_hist = self.diminutive_transits[ngram_hist]
         return index, letter, max_hist, prob
 
