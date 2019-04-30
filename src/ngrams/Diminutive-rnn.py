@@ -38,7 +38,6 @@ class DiminutiveGenerator:
             x = x - v
             if x <= 0:
                 return c
-        return choice(dist)[0]
 
     @staticmethod
     def _normalize(counter):
@@ -80,7 +79,7 @@ class DiminutiveGenerator:
                         next_char = real_name[i]
                     n_chars = n_chars[1:] + next_char
                 else:
-                    if i == len(real_name) and real_name.endswith(n_chars) and i < len(diminutive):
+                    if i == len(real_name) and real_name.endswith(n_chars):
                         ch, dim_ch = '$', diminutive[i]
                         self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
                     elif i < len(diminutive):
@@ -111,13 +110,13 @@ class DiminutiveGenerator:
     def _find_max_transition(self, word):
         # find the max Prob(Transit(history, char) | Lang(history, char)) and extremal arguments
 
-        def get_prob(hist, char):
+        def get_lm_prob(hist, char):
             if hist not in self.lang_model:
                 return self.LANGUAGE_DEFAULT_PROB
             else:
-                for c, p in self.lang_model[hist]:
+                for c, v in self.lang_model[hist]:
                     if c == char:
-                        return p
+                        return v
                 return self.LANGUAGE_DEFAULT_PROB
 
         max_hist = None
@@ -128,10 +127,10 @@ class DiminutiveGenerator:
             ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
                 continue
-            for t, v in self.diminutive_transits[ngram_hist]:
-                prod = v / get_prob(ngram_hist, ch)
-                if t[0] == ch and prod >= prob:
-                    prob, index, letter = prod, i, t[0]
+            for t, p in self.diminutive_transits[ngram_hist]:
+                cond_prob = p / get_lm_prob(ngram_hist, ch)
+                if t[0] == ch and cond_prob >= prob:
+                    prob, index, letter = cond_prob, i, t[0]
                     max_hist = self.diminutive_transits[ngram_hist]
         return index, letter, max_hist, prob
 
