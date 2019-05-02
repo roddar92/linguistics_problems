@@ -123,7 +123,6 @@ class DiminutiveGenerator:
         letter, index = '', 0
         prob = self.DIMINUTIVE_DEFAULT_PROB
         start = len(word) // 2 + self.ngram
-        word += '$'
 
         for i in range(start, len(word)):
             ch, ngram_hist = word[i], word[i - self.ngram:i]
