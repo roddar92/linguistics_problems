@@ -123,6 +123,8 @@ class DiminutiveGenerator:
         letter, index = '', 0
         prob = self.DIMINUTIVE_DEFAULT_PROB
         start = len(word) // 2 + self.ngram
+        word += '$'
+
         for i in range(start, len(word)):
             ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
@@ -186,7 +188,7 @@ class DiminutiveGenerator:
         # process last name's symbols with default probability
         if prob <= self.DIMINUTIVE_DEFAULT_PROB:
 
-            index = len(word) - (0 if word[-1] not in self._RU_VOWELS else 1)
+            index = len(word) - (0 if word[-1] not in self._RU_VOWELS else 2 if word[-2] == 'х' else 1)
             letter = '$' if word[-1] not in self._RU_VOWELS else word[-1]
 
             ngram = self.ngram - 1
