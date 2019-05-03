@@ -187,7 +187,7 @@ class DiminutiveGenerator:
         # process last name's symbols with default probability
         if prob <= self.DIMINUTIVE_DEFAULT_PROB:
 
-            index = len(word) - (0 if word[-1] not in self._RU_VOWELS else 2 if word[-2] == 'х' else 1)
+            index = len(word) - (0 if word[-1] not in self._RU_VOWELS else 2 if word.endswith('ха') else 1)
             letter = '$' if word[-1] not in self._RU_VOWELS else word[-1]
 
             ngram = self.ngram - 1
