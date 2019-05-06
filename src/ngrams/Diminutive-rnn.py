@@ -23,6 +23,7 @@ class DiminutiveGenerator:
 
         self.lang_model = defaultdict(Counter)
         self.lang_endings_model = defaultdict(Counter)
+        self.lang_endings_context = defaultdict(Counter)
         self.diminutive_transits = defaultdict(Counter)
 
     @staticmethod
@@ -84,6 +85,7 @@ class DiminutiveGenerator:
                         self.diminutive_transits[n_chars][(ch, dim_ch)] += 1
                     elif i < len(diminutive):
                         self.lang_endings_model[n_chars][diminutive[i]] += 1
+                        self.lang_endings_context[n_chars[1:]][diminutive[i]] += 1
                     else:
                         break
                     n_chars = n_chars[1:] + diminutive[i]
@@ -101,6 +103,8 @@ class DiminutiveGenerator:
         # normalize models
         self.lang_endings_model = {hist: self._normalize(chars)
                                    for hist, chars in self.lang_endings_model.items()}
+        self.lang_endings_context = {hist: self._normalize(chars)
+                                     for hist, chars in self.lang_endings_context.items()}
         self.diminutive_transits = {hist: self._normalize_transits(chars)
                                     for hist, chars in self.diminutive_transits.items()}
         self.lang_model = {hist: self._normalize(chars) for hist, chars in self.lang_model.items()}
@@ -138,8 +142,7 @@ class DiminutiveGenerator:
 
     def _generate_letter(self, history):
         if history not in self.lang_endings_model:
-            hists = [hist for hist in self.lang_endings_model if history.endswith(hist[1:])]
-            dist = self.lang_endings_model[choice(hists)] if hists else None
+            dist = self.lang_endings_context[history] if history in self.lang_endings_context else None
         else:
             dist = self.lang_endings_model[history]
 
@@ -222,7 +225,7 @@ if __name__ == '__main__':
     CORPUS_TRAIN = 'resources/diminutive/train_diminutives.tsv'
     CORPUS_TEST = 'resources/diminutive/test_diminutives.tsv'
 
-    gen = DiminutiveGenerator(ngram=2)
+    gen = DiminutiveGenerator(ngram=3)
     gen.fit(CORPUS_TRAIN)
 
     data = pd.read_csv(CORPUS_TEST)
