@@ -225,7 +225,7 @@ if __name__ == '__main__':
     CORPUS_TRAIN = 'resources/diminutive/train_diminutives.tsv'
     CORPUS_TEST = 'resources/diminutive/test_diminutives.tsv'
 
-    gen = DiminutiveGenerator(ngram=3)
+    gen = DiminutiveGenerator(ngram=2)
     gen.fit(CORPUS_TRAIN)
 
     data = pd.read_csv(CORPUS_TEST)
