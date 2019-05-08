@@ -1,5 +1,4 @@
 import pandas as pd
-import re
 
 from collections import defaultdict, Counter
 from pathlib import Path
@@ -9,7 +8,7 @@ from random import choice, random
 class DiminutiveGenerator:
     _KA_ENDING = 'ка'
     _RU_VOWELS = 'аеиоуыэюя'
-    _DIM_SUFFIX = re.compile(r'([иеё]к|[ая])$', re.I)
+    _DIM_ENDING = '$'
     _START = '~'
 
     LANGUAGE_DEFAULT_PROB = 0.0001
@@ -56,7 +55,7 @@ class DiminutiveGenerator:
     def _train_lm(self, names):
         print('Collecting of letters\' probabilities in language model...')
         for real_name in names:
-            real_name = real_name.lower() + '$'
+            real_name = f'{real_name.lower()}$'
             n_chars = self._START * self.ngram
             for char in real_name:
                 self.lang_model[n_chars][char] += 1
@@ -65,7 +64,7 @@ class DiminutiveGenerator:
     def _train_diminutive_model(self, names, diminutives):
         print('Collecting of letters\' probabilities in diminutive model...')
         for real_name, diminutive in zip(names, diminutives):
-            real_name, diminutive = real_name.lower(), diminutive.lower()
+            real_name, diminutive = real_name.lower(), f'{diminutive.lower()}$'
             stay_within_name = True
             n_chars = self._START * self.ngram
             max_len = max(len(real_name), len(diminutive))
@@ -153,8 +152,11 @@ class DiminutiveGenerator:
 
     def _generate_diminutive_tail(self, history):
         tail = []
-        while self._DIM_SUFFIX.search(history) is None:
+        while True:
             c = self._generate_letter(history)
+            if c in (self._DIM_ENDING, self._KA_ENDING):
+                break
+
             history = history[-self.ngram + 1:] + c
             tail.append(c)
         return tail
