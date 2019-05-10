@@ -110,17 +110,17 @@ class DiminutiveGenerator:
 
         return self
 
+    def _get_lm_prob(self, hist, char):
+        if hist not in self.lang_model:
+            return self.LANGUAGE_DEFAULT_PROB
+        else:
+            for c, v in self.lang_model[hist]:
+                if c == char:
+                    return v
+            return self.LANGUAGE_DEFAULT_PROB
+
     def _find_max_transition(self, word):
         # find the max prob Lang(history, char) * Transit(history, char) and extremal arguments
-
-        def get_lm_prob(hist, char):
-            if hist not in self.lang_model:
-                return self.LANGUAGE_DEFAULT_PROB
-            else:
-                for c, v in self.lang_model[hist]:
-                    if c == char:
-                        return v
-                return self.LANGUAGE_DEFAULT_PROB
 
         max_hist = None
         letter, index = '', 0
@@ -131,7 +131,7 @@ class DiminutiveGenerator:
             ch, ngram_hist = word[i], word[i - self.ngram:i]
             if ngram_hist not in self.diminutive_transits:
                 continue
-            lm_prob = get_lm_prob(ngram_hist, ch)
+            lm_prob = self._get_lm_prob(ngram_hist, ch)
             for t, p in self.diminutive_transits[ngram_hist]:
                 cond_prob = p * lm_prob
                 if t[0] == ch and cond_prob >= prob:
@@ -154,11 +154,14 @@ class DiminutiveGenerator:
         tail = []
         while True:
             c = self._generate_letter(history)
-            if c in (self._DIM_ENDING, self._KA_ENDING):
+            if c == self._DIM_ENDING:
                 break
 
             history = history[-self.ngram + 1:] + c
             tail.append(c)
+
+            if c == self._KA_ENDING:
+                break
         return tail
 
     def _normalize_k_suffix(self, word):
