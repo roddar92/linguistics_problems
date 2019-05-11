@@ -175,6 +175,10 @@ class DiminutiveGenerator:
     def generate_diminutive(self, word):
 
         def select_hists_by_char(hists, char):
+            selected_hists = [(hist, _) for hist, _ in hists if word.endswith(hist)]
+            if selected_hists:
+                return selected_hists
+
             selected_hists = []
             for h, d in hists:
                 curr_transits = [(k, _) for k, _ in d if k[0] == char]
