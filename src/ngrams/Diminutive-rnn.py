@@ -141,7 +141,8 @@ class DiminutiveGenerator:
 
     def _generate_letter(self, history):
         if history not in self.lang_endings_model:
-            dist = self.lang_endings_context[history] if history in self.lang_endings_context else None
+            last_hist = history[1:]
+            dist = self.lang_endings_context[last_hist] if last_hist in self.lang_endings_context else None
         else:
             dist = self.lang_endings_model[history]
 
@@ -202,7 +203,6 @@ class DiminutiveGenerator:
 
         # process last name's symbols with default probability
         if prob <= self.DIMINUTIVE_DEFAULT_PROB:
-
             index = len(word) - (0 if word[-1] not in self._RU_VOWELS else 2 if word.endswith('ха') else 1)
             letter = '$' if word[-1] not in self._RU_VOWELS else word[-1]
 
@@ -238,7 +238,7 @@ if __name__ == '__main__':
     CORPUS_TRAIN = 'resources/diminutive/train_diminutives.tsv'
     CORPUS_TEST = 'resources/diminutive/test_diminutives.tsv'
 
-    gen = DiminutiveGenerator(ngram=2)
+    gen = DiminutiveGenerator(ngram=3)
     gen.fit(CORPUS_TRAIN)
 
     data = pd.read_csv(CORPUS_TEST)
