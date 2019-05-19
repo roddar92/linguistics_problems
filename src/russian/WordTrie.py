@@ -1,3 +1,6 @@
+from time import time
+
+
 class TrieNode:
     _DEFAULT_NODE_LABEL = '__NODE__'
 
@@ -70,6 +73,42 @@ class Trie:
         return node.get_leaf_label()
 
 
+class PhraseTrie:
+    _DEFAULT_LABEL = '__default__'
+    _ROOT = '__root__'
+
+    def __init__(self):
+        self.root = {self._ROOT: {}}
+
+    def add_phrase(self, phrase, label=_DEFAULT_LABEL):
+        node = self.root
+        i, prev_word = 0, self._ROOT
+        for i, word in enumerate(phrase):
+            word = word.lower()
+            children = node.get(prev_word, None)
+            if word in children.keys():
+                node = children
+            else:
+                new_node = {word: {'label': label} if i == len(phrase) - 1 else {}}
+                node[prev_word].update(new_node)
+                node = new_node
+            prev_word = word
+
+    def get_label_for_phrase(self, phrase):
+        node = self.root
+        prev_word = self._ROOT
+        for word in phrase:
+            word = word.lower()
+            children = node.get(prev_word, None)
+            if not children or word not in children.keys():
+                return ''
+
+            node = children
+            prev_word = word
+
+        return node[prev_word]['label']
+
+
 if __name__ == '__main__':
     phrase_trie = Trie()
     phrase_trie.add(['Мама', 'мыла', 'раму'], 'X')
@@ -77,6 +116,24 @@ if __name__ == '__main__':
     phrase_trie.add(['Мама', 'подарила', 'мне', 'куклу'], 'Z')
     phrase_trie.add(['Во', 'поле', 'снежок', 'расстаял'], 'Y')
     phrase_trie.add(['у', 'Васи', 'сегодня', 'день', 'рождения'], 'Z')
+    phrase_trie.add(['я', 'помню', 'чудное', 'мгновенье'], 'P')
+    phrase_trie.add(['я', 'помню', 'чудное', 'мгновенье', 'передо', 'мной', 'явилась', 'ты'], 'A')
 
+    start = time()
     assert phrase_trie.search(['Мама', 'мыла', 'раму']) == 'X'
     assert phrase_trie.search(['Мама', 'мыла', 'рамку']) == ''
+    print(f'Elapsed {(time() - start)/1000} sec')
+
+    phrase_trie = PhraseTrie()
+    phrase_trie.add_phrase(['Мама', 'мыла', 'раму'], 'X')
+    phrase_trie.add_phrase(['Во', 'поле', 'берёзонька', 'стояла'], 'Y')
+    phrase_trie.add_phrase(['Мама', 'подарила', 'мне', 'куклу'], 'Z')
+    phrase_trie.add_phrase(['Во', 'поле', 'снежок', 'расстаял'], 'Y')
+    phrase_trie.add_phrase(['у', 'Васи', 'сегодня', 'день', 'рождения'], 'Z')
+    phrase_trie.add_phrase(['я', 'помню', 'чудное', 'мгновенье'], 'P')
+    phrase_trie.add_phrase(['я', 'помню', 'чудное', 'мгновенье', 'передо', 'мной', 'явилась', 'ты'], 'A')
+
+    start = time()
+    assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'раму']) == 'X'
+    assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'рамку']) == ''
+    print(f'Elapsed {(time() - start)/1000} sec')
