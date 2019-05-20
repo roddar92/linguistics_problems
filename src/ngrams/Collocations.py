@@ -1,3 +1,4 @@
+import re
 import string
 
 from abc import ABC, abstractmethod
@@ -20,6 +21,12 @@ class PMI(Metric):
         p_w2 = freq_w2 / vocab_size
         p_w12 = freq_w12 / vocab_size
         return log2(p_w12 / (p_w1 * p_w2))
+
+
+class LFMD(Metric):
+    def evaluate(self, freq_w1, freq_w2, freq_w12, vocab_size):
+        p_w12 = freq_w12 / vocab_size
+        return MD().evaluate(freq_w1, freq_w2, freq_w12, vocab_size) + log2(p_w12)
 
 
 class MD(Metric):
@@ -119,9 +126,10 @@ class LanguageModel:
 
 
 class CollocationExtractor:
-    CONJ_RU = set('и а да но'.split())
-    PROPOSITIONS_RU = set('с со на из за в к ко по про о у об обо под над от до'.split())
+    CONJ_RU = set('и а да но если б бы'.split())
+    PROPOSITIONS_RU = set('с со на из за в во к ко по про о у об обо под над от до'.split())
     PUNCT = set(string.punctuation) | {'--', '...'}
+    INITIALS = re.compile(r'^[а-яa-z]\.$', re.I)
 
     def __init__(self, lm, exclude_punctuation=True, exclude_conj=True, exclude_props=True):
         self.language_model = lm
@@ -140,7 +148,8 @@ class CollocationExtractor:
         for (first, last), freq_bigram in bigram_counts.items():
 
             if self.exclude_punctuation:
-                if first in self.PUNCT or last in self.PUNCT:
+                if first in self.PUNCT or last in self.PUNCT or \
+                        self.INITIALS.match(first) or self.INITIALS.match(last):
                     continue
 
             if self.exclude_conj:
@@ -179,6 +188,11 @@ if __name__ == '__main__':
 
         print("Mutual Dependence results...")
         collocations_list = collocations_extractor.extract_collocations(MD)
+        for collocation in collocations_list[:100]:
+            print(collocation)
+
+        print("Log-Frequency biased MD results...")
+        collocations_list = collocations_extractor.extract_collocations(LFMD)
         for collocation in collocations_list[:100]:
             print(collocation)
 
