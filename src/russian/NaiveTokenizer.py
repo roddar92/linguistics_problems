@@ -163,19 +163,16 @@ class NaiveTokenizer(object):
                     self.DIGIT.search(excpected_token) or \
                     self.ABBR_WITH_POINTS.search(excpected_token) or self.EMJOI.search(excpected_token):
                 if self.URL.search(excpected_token):
-                    start, end = self.URL.search(excpected_token).start(), self.URL.search(excpected_token).end()
+                    matched_pattern = self.URL.search(excpected_token)
                 elif self.ABBR_WITH_POINTS.search(excpected_token):
-                    start, end = self.ABBR_WITH_POINTS.search(excpected_token).start(), \
-                                 self.ABBR_WITH_POINTS.search(excpected_token).end()
+                    matched_pattern = self.ABBR_WITH_POINTS.search(excpected_token)
                 elif self.EMJOI.search(excpected_token):
-                    start, end = self.EMJOI.search(excpected_token).start(), \
-                                 self.EMJOI.search(excpected_token).end()
+                    matched_pattern = self.EMJOI.search(excpected_token)
                 elif not isnumalpha(excpected_token):
-                    start, end = self.DIGIT.search(excpected_token).start(), \
-                                 self.DIGIT.search(excpected_token).end()
+                    matched_pattern = self.DIGIT.search(excpected_token)
                 else:
-                    start, end = self.NUMALPHA.search(excpected_token).start(), \
-                                 self.NUMALPHA.search(excpected_token).end()
+                    matched_pattern = self.NUMALPHA.search(excpected_token)
+                start, end = matched_pattern.start(), matched_pattern.end()
                 first, middile, last = excpected_token[:start], excpected_token[start:end], excpected_token[end:]
                 if first:
                     for tok in get_sequence(first):
