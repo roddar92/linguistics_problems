@@ -2,15 +2,23 @@
 class Patronymer(object):
     @staticmethod
     def _is_vowel(symbol):
-        return symbol in "аеиоуыэя"
+        return symbol in "аеиоуыэюя"
 
     @staticmethod
-    def _is_unusually_names_with_ending_y(name):
-        return name in ["Акакий", "Георгий", "Дмитрий", "Димитрий", "Лукий"]
+    def _is_except_consonant(letter):
+        return letter in "жцчшщ"
+
+    @staticmethod
+    def _is_consonant_before_iy(letter):
+        return letter in "кхц"
 
     @staticmethod
     def _is_names_with_emphasis_endings(name):
         return name in ["Илья", "Кузьма", "Лука", "Фома"]
+
+    def _is_double_consonants(self, letter_group):
+        letter_group = letter_group.lower()
+        return letter_group != "нт" and not self._is_vowel(letter_group[0]) and not self._is_vowel(letter_group[-1])
 
     def get_patro(self, name, feminine=False):
         if name == "Пётр":
@@ -43,19 +51,23 @@ class Patronymer(object):
                 whose_suffix = "ов"
                 if feminine:
                     suffix = "на"
-            return base_of_name + whose_suffix + suffix
+        elif self._is_except_consonant(name[-1]):
+            whose_suffix = "ев"
+            base_of_name = name
         elif name.endswith("й"):
             if name[-2] == "и":
-                whose_suffix = "ьев"
-                if self._is_unusually_names_with_ending_y(name):
-                    whose_suffix = whose_suffix[1:]
-                base_of_name = name[:-1] if self._is_unusually_names_with_ending_y(name) else name[:-2]
+                if self._is_consonant_before_iy(name[-3]) or self._is_double_consonants(name[-4:-2]):
+                    whose_suffix = "ев"
+                    base_of_name = name[:-1]
+                else:
+                    whose_suffix = "ьев"
+                    base_of_name = name[:-2]
             else:
                 whose_suffix = "ев"
                 base_of_name = name[:-1]
         elif name.endswith("ь"):
             whose_suffix = "ев"
-            base_of_name = name[:-1] if name[-2] == "р" else name
+            base_of_name = name[:-1]
         else:
             whose_suffix = "лев" if name == "Яков" else "ов"
             base_of_name = name
@@ -85,13 +97,14 @@ if __name__ == "__main__":
     assert p.get_patro("Фома") == "Фомич"
     assert p.get_patro("Фока") == "Фокич"
     assert p.get_patro("Никита") == "Никитич"
+    assert p.get_patro("Жорж") == "Жоржевич"
     assert p.get_patro("Фока", True) == "Фокична"
     assert p.get_patro("Фёдор", True) == "Фёдоровна"
     assert p.get_patro("Фома", True) == "Фоминична"
     assert p.get_patro("Егор") == "Егорович"
     assert p.get_patro("Фрол") == "Фролович"
     assert p.get_patro("Фаддей") == "Фаддеевич"
-    assert p.get_patro("Эмиль") == "Эмильевич"
+    assert p.get_patro("Эмиль") == "Эмилевич"
     assert p.get_patro("Игорь") == "Игоревич"
     assert p.get_patro("Лазарь") == "Лазаревич"
     assert p.get_patro("Яков") == "Яковлевич"
