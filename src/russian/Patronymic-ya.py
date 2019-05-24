@@ -13,6 +13,14 @@ class Patronymer(object):
         return letter in "кхц"
 
     @staticmethod
+    def _is_ends_with_ail(name):
+        return name.endswith("аил") or name.endswith("уил")
+
+    @staticmethod
+    def _is_ends_with_iil(name):
+        return name.endswith("иил")
+
+    @staticmethod
     def _is_names_with_emphasis_endings(name):
         return name in ["Илья", "Кузьма", "Лука", "Фома"]
 
@@ -30,11 +38,8 @@ class Patronymer(object):
         if name == "Лев":
             name = name.replace("е", "ь")
 
-        if name == "Михаил":
-            name = "Михайл"
-
         if feminine:
-            if self._is_vowel(name[-1]):
+            if self._is_vowel(name[-1]) and name[-2:] not in "ея ия".split():
                 suffix = "ична"
             else:
                 suffix = "на"
@@ -42,20 +47,8 @@ class Patronymer(object):
             suffix = "ич"
 
         base_of_name, whose_suffix = "", ""
-        if self._is_vowel(name[-1]):
-            base_of_name = name[:-1]
-            if self._is_names_with_emphasis_endings(name):
-                if feminine:
-                    whose_suffix = "ин"
-            elif name[-1] == "а" and name[-2] in "лмн":
-                whose_suffix = "ов"
-                if feminine:
-                    suffix = "на"
-        elif self._is_except_consonant(name[-1]):
-            whose_suffix = "ев"
-            base_of_name = name
-        elif name.endswith("й"):
-            if name[-2] == "и":
+        if name.endswith("й") or name[-2:] in "ея ия".split():
+            if name[-2:] == "ий":
                 if self._is_consonant_before_iy(name[-3]) or self._is_double_consonants(name[-4:-2]):
                     whose_suffix = "ев"
                     base_of_name = name[:-1]
@@ -65,9 +58,30 @@ class Patronymer(object):
             else:
                 whose_suffix = "ев"
                 base_of_name = name[:-1]
+        elif self._is_vowel(name[-1]):
+            base_of_name = name[:-1]
+            if self._is_names_with_emphasis_endings(name):
+                if feminine:
+                    whose_suffix = "ин"
+            elif name[-1] == "а" and name[-2] in "лмн":
+                whose_suffix = "ов"
+                if feminine:
+                    suffix = "на"
+            elif name[-1] in "еиу":
+                whose_suffix = "ев"
+        elif self._is_except_consonant(name[-1]):
+            whose_suffix = "ев"
+            base_of_name = name
         elif name.endswith("ь"):
             whose_suffix = "ев"
             base_of_name = name[:-1]
+        elif self._is_ends_with_iil(name):
+            whose_suffix = "ов"
+            base_of_name = name[:-2] + name[-1]
+        elif self._is_ends_with_ail(name):
+            whose_suffix = "ов"
+            base_of_name = name[:-2] if name.endswith("аил") else name[:-3] + "о"
+            base_of_name += "йл"
         else:
             whose_suffix = "лев" if name == "Яков" else "ов"
             base_of_name = name
@@ -133,3 +147,5 @@ if __name__ == "__main__":
     assert p.get_patro("Данила", True) == "Даниловна"
     assert p.get_patro("Всеволод", True) == "Всеволодовна"
     assert p.get_patro("Гаврила", True) == "Гавриловна"
+    assert p.get_patro("Даниил", True) == "Даниловна"
+    assert p.get_patro("Менея", True) == "Менеевна"
