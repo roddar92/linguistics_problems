@@ -14,16 +14,16 @@ class RussianCaser(object):
                        "метро кенгуру пальто панно паспарту пенсне пианино рококо " \
                        "табло табу такси тире фламинго фортепиано фото хачапури шимпанзе шоссе эскимо эссе".split()
 
-    """ Return word in Russian dative case
-        :param word is Russian lemma
-        :param gen is gender of word, if gen is None then first word of non-defined gender, otherwise male of female
-        :return word in Russian dative case
-    """
-
     def find_last_vowel_index(self, word):
         return [i for i in range(len(word)) if self.is_vowel(word[i])][-1]
 
     def dative_single(self, word, gen=None):
+        """
+        Return word in Russian dative case
+        :param word is Russian lemma
+        :param gen is gender of word, if gen is None then first word of non-defined gender, otherwise male of female
+        :return word in Russian dative case
+        """
         if self.is_without_ending(word):
             return word
         else:
@@ -66,13 +66,14 @@ class RussianCaser(object):
                     return word[:-1] + 'ю'
                 return word[:-1] + 'у'
 
-    """ Return word in Russian dative case
-            :param word is Russian lemma
-            :return word in Russian dative case
-
-            !!! Method architecture has refactored due to incorrectly working with plural form !!!
-        """
     def dative_plural(self, word):
+        """
+        Return word in Russian dative case
+        :param word is Russian lemma
+        :return word in Russian dative case
+
+        !!! Method architecture has refactored due to incorrectly working with plural form !!!
+        """
         if self.is_without_ending(word):
             return word
         else:
