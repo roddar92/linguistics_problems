@@ -13,14 +13,14 @@ class Diminutiver(object):
         return symbol in "бвдзлмнпрст"
 
     def get_diminutive(self, name):
-        if name[-2:] == "ка":
+        if name.endswith("ка"):
             if not self.is_vowel(name[-3]):
-                name = name[:-3] + "я" if name[-3] == "ь" else name[:-2] + "а"
+                name = name[:-3] + "я" if name[-3] in "йь" else name[:-2] + "а"
             else:
                 return name[:-1] + "уся"
-        elif name[-2:] == "ия":
+        elif name.endswith("ия"):
             name = name[:-2] + "я"
-        elif name[-2:] == "ль":
+        elif name.endswith("ль"):
             name = name[:-1] + "я"
 
         suffix = ""
@@ -47,7 +47,7 @@ class Diminutiver(object):
                 suffix = "юшк" if name[-3] not in "лмн" else "юш"
             elif name[-2] == "л":
                 suffix = "ечк" if not self.is_vowel(name[0].lower()) else "еньк"
-            elif name[-2] in "мн":
+            elif name[-2] in "аемн":
                 suffix = "ечк"
             else:
                 suffix = "еньк"
@@ -94,3 +94,4 @@ if __name__ == "__main__":
     assert diminutiver.get_diminutive("Илья") == "Ильюша"
     assert diminutiver.get_diminutive("Игорь") == "Игорёк"
     assert diminutiver.get_diminutive("Рустам") == "Рустамчик"
+    assert diminutiver.get_diminutive("Майка") == "Маечка"
