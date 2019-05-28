@@ -36,7 +36,7 @@ class Patronymer(object):
             name = name.replace("е", "")
 
         if name == "Лев":
-            name = name.replace("е", "ь")
+            name = "Львов"
 
         if feminine:
             if self._is_vowel(name[-1]) and name[-2:] not in "ея ия".split():
@@ -48,13 +48,10 @@ class Patronymer(object):
 
         base_of_name, whose_suffix = "", ""
         if name.endswith("й") or name[-2:] in "ея ия".split():
-            if name[-2:] == "ий":
-                if self._is_consonant_before_iy(name[-3]) or self._is_double_consonants(name[-4:-2]):
-                    whose_suffix = "ев"
-                    base_of_name = name[:-1]
-                else:
-                    whose_suffix = "ьев"
-                    base_of_name = name[:-2]
+            if name[-2:] == "ий" and \
+                    not (self._is_consonant_before_iy(name[-3]) or self._is_double_consonants(name[-4:-2])):
+                whose_suffix = "ьев"
+                base_of_name = name[:-2]
             else:
                 whose_suffix = "ев"
                 base_of_name = name[:-1]
@@ -82,8 +79,11 @@ class Patronymer(object):
             whose_suffix = "ов"
             base_of_name = name[:-2] if name.endswith("аил") else name[:-3] + "о"
             base_of_name += "йл"
+        elif name.endswith("ов"):
+            whose_suffix = "лев" if name == "Яков" else ""
+            base_of_name = name
         else:
-            whose_suffix = "лев" if name == "Яков" else "ов"
+            whose_suffix = "ов"
             base_of_name = name
         return base_of_name + whose_suffix + suffix
 
@@ -149,3 +149,5 @@ if __name__ == "__main__":
     assert p.get_patro("Гаврила", True) == "Гавриловна"
     assert p.get_patro("Даниил", True) == "Даниловна"
     assert p.get_patro("Менея", True) == "Менеевна"
+    assert p.get_patro("Менея", True) == "Менеевна"
+    assert p.get_patro("Пров", True) == "Провна"
