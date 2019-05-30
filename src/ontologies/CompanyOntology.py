@@ -38,7 +38,7 @@ class Person(object):
         elif rel_type == 'employee':
             self.add_boss(other)
             other.add_employee(self)
-        elif rel_type == 'college':
+        elif rel_type == 'colleague':
             self.add_college(other)
             other.add_college(self)
         else:
@@ -169,7 +169,7 @@ class CompanyOntologyHelper(object):
             answer = whose in who.get_employees() or whose.boss == who
         elif asked_rel_type == 'employee':
             answer = who in whose.get_employees() or who.boss == whose
-        elif asked_rel_type == 'college':
+        elif asked_rel_type == 'colleague':
             answer = who in whose.get_colleges() or whose in who.get_colleges()
         else:
             return self.__class__.DEFAULT_ANSWER
@@ -206,7 +206,7 @@ class CompanyOntologyHelper(object):
             return whose.boss.get_name()
         elif rel_type in ['employee', 'employees']:
             answer = sorted([person.get_name() for person in whose.get_employees()])
-        elif rel_type in ['college', 'colleges']:
+        elif rel_type in ['colleague', 'colleagues']:
             answer = sorted([person.get_name() for person in whose.get_colleges()])
         else:
             return self.__class__.DEFAULT_ANSWER
@@ -240,26 +240,26 @@ class CompanyOntologyHelper(object):
 # TODO CHECK TESTS!!!
 if __name__ == "__main__":
     coh = CompanyOntologyHelper()
-    coh.add_fact("Peter is Paul's college.")
+    coh.add_fact("Peter is Paul's colleague.")
     coh.add_fact("Bob is Peter's boss.")
-    coh.add_fact("Alice is Peter's college.")
+    coh.add_fact("Alice is Peter's colleague.")
     coh.add_fact("Alice is 24.")
     coh.add_fact("Bob is programmer.")
     coh.add_fact("Alice is a linguist.")
     coh.add_fact("Laura is an linguist.")
     coh.add_fact("Laura is Paul's employee.")
-    coh.add_fact("Susan is Frank's college.")
+    coh.add_fact("Susan is Frank's colleague.")
     coh.add_fact("Dalida is Susan's employee.")
     coh.add_fact("Dalida is PR.")
     coh.add_fact("Susan is 27.")
     coh.add_fact("Frank is Andy's boss.")
     coh.add_fact("Andy is programmer.")
     assert coh.request("Is Susan a programmer?") == "No"
-    assert coh.request("Is Susan a Frank's college?") == "Yes"
-    assert coh.request("Is Peter a Frank's college?") == "No"
+    assert coh.request("Is Susan a Frank's colleague?") == "Yes"
+    assert coh.request("Is Peter a Frank's colleague?") == "No"
     assert coh.request("Who is Alice's boss?") == "Bob"
-    assert coh.request("Who is Alice's colleges?") == "Paul, Peter"
-    assert coh.request("Who is Willy's colleges?") == "Don't know"
+    assert coh.request("Who is Alice's colleagues?") == "Paul, Peter"
+    assert coh.request("Who is Willy's colleagues?") == "Don't know"
     assert coh.request("How old is Alice?") == "24"
     assert coh.request("How old is Frank?") == "Don't know"
     assert coh.request("What position has Laura got?") == "Linguist"
