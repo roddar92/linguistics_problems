@@ -159,11 +159,11 @@ class DiminutiveGenerator:
             if c == self._DIM_ENDING:
                 break
 
-            history = history[-self.ngram + 1:] + c
             tail.append(c)
-
             if c == self._KA_ENDING:
                 break
+
+            history = history[-self.ngram + 1:] + c
         return tail
 
     def _normalize_k_suffix(self, word):
