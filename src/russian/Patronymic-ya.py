@@ -4,6 +4,9 @@ class Patronymer(object):
     def _is_vowel(symbol):
         return symbol in "аеиоуыэюя"
 
+    def _syllables_count(self, name):
+        return len(list(filter(lambda l: self._is_vowel(l), name.lower())))
+
     @staticmethod
     def _is_except_consonant(letter):
         return letter in "жцчшщ"
@@ -22,7 +25,7 @@ class Patronymer(object):
 
     @staticmethod
     def _is_names_with_emphasis_endings(name):
-        return name in ["Илья", "Кузьма", "Лука", "Фома"]
+        return name in ["Фока"]
 
     def _is_double_consonants(self, letter_group):
         letter_group = letter_group.lower()
@@ -39,7 +42,7 @@ class Patronymer(object):
             name = "Львов"
 
         if feminine:
-            if self._is_vowel(name[-1]) and name[-2:] not in "ея ия".split():
+            if name[-1] in "ая" and name[-2:] not in "ея ия".split():
                 suffix = "ична"
             else:
                 suffix = "на"
@@ -57,15 +60,20 @@ class Patronymer(object):
                 base_of_name = name[:-1]
         elif self._is_vowel(name[-1]):
             base_of_name = name[:-1]
-            if self._is_names_with_emphasis_endings(name):
+            if name[-1] in "ая" and self._syllables_count(name) <= 2 and \
+                    not self._is_names_with_emphasis_endings(name) and not (0 <= name.find("а") <= len(name) - 2):
                 if feminine:
                     whose_suffix = "ин"
             elif name[-1] == "а" and name[-2] in "лмн":
                 whose_suffix = "ов"
                 if feminine:
                     suffix = "на"
-            elif name[-1] in "еиу":
+            elif name[-1] in "ео":
+                whose_suffix = "в"
+                base_of_name += name[-1]
+            elif name[-1] == "и":
                 whose_suffix = "ев"
+                base_of_name += name[-1]
         elif self._is_except_consonant(name[-1]):
             whose_suffix = "ев"
             base_of_name = name
@@ -149,5 +157,7 @@ if __name__ == "__main__":
     assert p.get_patro("Гаврила", True) == "Гавриловна"
     assert p.get_patro("Даниил", True) == "Даниловна"
     assert p.get_patro("Менея", True) == "Менеевна"
-    assert p.get_patro("Менея", True) == "Менеевна"
     assert p.get_patro("Пров", True) == "Провна"
+    assert p.get_patro("Вилли", True) == "Виллиевна"
+    assert p.get_patro("Вяйне") == "Вяйневич"
+    assert p.get_patro("Василько") == "Василькович"
