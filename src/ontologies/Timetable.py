@@ -130,8 +130,7 @@ class RailwayTimetable(object):
                          for train in self.timetable.values() if train.get_name() == train_desc]
 
             if len(set(locations)) >= 2:
-                return 'There are several terminus stations for \'' + \
-                       train_desc + '\'. Please, type a train number!'
+                return f'There are several terminus stations for {train_desc}. Please, type a train number!'
             elif len(set(locations)) == 1:
                 asked_terminus = locations[0]
 
