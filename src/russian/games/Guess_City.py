@@ -102,11 +102,11 @@ class GuessCity(object):
         random_letter = random.choice(list(self.allowed_cities.keys()))
         city_names = [word for word in self.allowed_cities[random_letter] if word not in self.guessed_cities]
         self.city_name = self.get_city_name(random.choice(city_names))
-        print("My guessed city is {}...".format(self.city_name[0]))
+        print(f"My guessed city is {self.city_name[0]}...")
 
     def shift_letter(self, index):
         if index == len(self.city_name):
-            print("The guessed city was {}. This game was over :(".format(self.city_name))
+            print(f"The guessed city was {self.city_name}. This game was over :(")
         else:
             print(self.city_name[:index] + "...")
 
@@ -120,7 +120,7 @@ class GuessCity(object):
         else:
             self.make_city_asked(city)
             self.attempts += 1
-            print("No... It isn't {} :( Try to guess my city again!".format(self.get_city_name(city)))
+            print(f"No... It isn't {self.get_city_name(city)} :( Try to guess my city again!")
 
 
 if __name__ == "__main__":
@@ -136,7 +136,7 @@ if __name__ == "__main__":
         try:
             gc.check_city(s)
             if gc.get_city_name(s) == gc.get_guessed_city():
-                print("Yes! The guessed city was {}!".format(gc.get_guessed_city()))
+                print(f"Yes! The guessed city was {gc.get_guessed_city()}!")
                 gc.print_final_text()
                 gc.reset_current_params()
                 s = gc.choose_city()
