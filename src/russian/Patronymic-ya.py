@@ -25,7 +25,7 @@ class Patronymer(object):
 
     @staticmethod
     def _is_names_with_emphasis_endings(name):
-        return name in ["Фока"]
+        return name in ["Фока", "Мина"]
 
     def _is_double_consonants(self, letter_group):
         letter_group = letter_group.lower()
@@ -161,3 +161,4 @@ if __name__ == "__main__":
     assert p.get_patro("Вилли", True) == "Виллиевна"
     assert p.get_patro("Вяйне") == "Вяйневич"
     assert p.get_patro("Василько") == "Василькович"
+    assert p.get_patro("Мина") == "Минович"
