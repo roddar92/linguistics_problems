@@ -91,9 +91,8 @@ class Game(object):
         elif not self._check_rules(city):
             previous_city = self._get_last_city()
             correct_letter_index = self._find_index_of_right_letter(previous_city)
-            raise CitiesGameException("Этот город не начинается с буквы \'{}\'!".format(
-                previous_city[correct_letter_index].upper()
-            ))
+            l = previous_city[correct_letter_index].upper()
+            raise CitiesGameException(f"Этот город не начинается с буквы \'{l}\'!")
         else:
             self._make_city_used(city)
 
