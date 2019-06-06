@@ -138,10 +138,9 @@ class Number2TextConverter:
             a_str = _change_last_word(a_str)
             b_str = _change_last_word(b_str)
 
-            result = '{} {} {} {}'.format(
-                ' '.join(a_str), self._inflect_word(b_point, 'целая'),
-                ' '.join(b_str), self._inflect_word(int(a_point), rem)
-            )
+            first, second = ' '.join(a_str), ' '.join(b_str)
+            n_word, rem_word = self._inflect_word(b_point, 'целая'), self._inflect_word(int(a_point), rem)
+            result = f'{first} {n_word} {second} {rem_word}'
             return result
 
         if type(number) == str and self._ROMAN_REGEX.match(number):
@@ -273,6 +272,23 @@ class TextNormalizer:
         'см': 'сантиметр',
         'дм': 'дециметр',
         'км': 'километр'
+    }
+
+    PREP_CASE_DICT = {
+        'в': ['accs', 'loct', 'loc2'],
+        'над': ['ablt'],
+        'с': ['ablt', 'gent'],
+        'к': ['datv'],
+        'кроме': ['gent'],
+        'от': ['gent'],
+        'о': ['loct', 'accs'],
+        'об': ['loct', 'accs'],
+        'обо': ['loct', 'accs'],
+        'до': ['gent'],
+        'у': ['gent', 'gen2'],
+        'при': ['loct'],
+        'про': ['accs'],
+        'по': ['datv', 'loct']
     }
 
     def __init__(self):
