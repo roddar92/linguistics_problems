@@ -140,6 +140,22 @@ class DiminutiveGenerator:
                     max_hist = self.diminutive_transits[ngram_hist]
         return index, letter, max_hist, prob
 
+    def _find_default_transition(self, word):
+        index = len(word) - (0 if word[-1] not in self._LAST_LETTER else 2 if word.endswith('ха') else 1)
+        letter = '$' if word[-1] not in self._LAST_LETTER else word[-1]
+
+        ngram = self.ngram - 1
+        histories_by_last_ch = [
+            (h, _) for h, _ in self.diminutive_transits.items() if h.endswith(word[index - ngram:index])
+        ]
+        if histories_by_last_ch:
+            hists_by_last_ch = self._select_hists_by_char(word, histories_by_last_ch, letter)
+            if hists_by_last_ch:
+                histories_by_last_ch = hists_by_last_ch
+            return index, letter, choice(histories_by_last_ch)[-1]
+        else:
+            return None
+
     def _generate_letter(self, history):
         if history not in self.lang_endings_model:
             last_hist = history[1:]
@@ -204,20 +220,11 @@ class DiminutiveGenerator:
 
         # process last name's symbols with default probability
         if prob <= self.DIMINUTIVE_DEFAULT_PROB:
-            index = len(word) - (0 if word[-1] not in self._LAST_LETTER else 2 if word.endswith('ха') else 1)
-            letter = '$' if word[-1] not in self._LAST_LETTER else word[-1]
-
-            ngram = self.ngram - 1
-            histories_by_last_ch = [
-                (h, _) for h, _ in self.diminutive_transits.items() if h.endswith(word[index-ngram:index])
-            ]
-            if histories_by_last_ch:
-                hists_by_last_ch = self._select_hists_by_char(word, histories_by_last_ch, letter)
-                if hists_by_last_ch:
-                    histories_by_last_ch = hists_by_last_ch
-                max_hist = choice(histories_by_last_ch)[-1]
-            else:
+            default_params = self._find_default_transition(word)
+            if not default_params:
                 return word[self.ngram:].capitalize()
+
+            index, letter, max_hist = default_params
 
         # select transits with first character which equal the letter of a name
         max_hist_for_letter = [(tup, _) for tup, _ in max_hist if tup[0] == letter]
