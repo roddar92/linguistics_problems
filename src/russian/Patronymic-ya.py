@@ -38,7 +38,7 @@ class Patronymer(object):
             name = name.replace("ё", "е")
 
         if name == "Павел":
-            name = name.replace("е", "")
+            name = "Павлов"
 
         if name == "Лев":
             name = "Львов"
