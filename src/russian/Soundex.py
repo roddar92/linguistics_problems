@@ -163,14 +163,18 @@ class RussianSoundex(Soundex):
 
 
 class SoundexSimilarity:
-    def __init__(self, soundex, metrics=editdistance.eval):
+    METRICS = {
+        'levenstein': editdistance.eval
+    }
+
+    def __init__(self, soundex, metrics='levenstein'):
         """
         Init a similarity object
         :param soundex: an object of Soundex class
         :param metrics: similarity function, optional, default is Levenstein distance
         """
         self.soundex_converter = soundex
-        self.metrics = metrics
+        self.metrics = self.METRICS.get(metrics, None)
 
     def similarity(self, word1, word2):
         """
