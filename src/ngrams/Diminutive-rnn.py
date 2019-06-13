@@ -27,7 +27,7 @@ class DiminutiveGenerator:
         self.diminutive_transits = defaultdict(Counter)
 
     @staticmethod
-    def read_diminutive_samples(path_to_sample_file, columns):
+    def read_samples(path_to_sample_file, columns):
         with Path(path_to_sample_file).open() as fin:
             names = (line.split() for line in fin.readlines())
         return pd.DataFrame(names, columns=columns)
@@ -92,7 +92,7 @@ class DiminutiveGenerator:
 
     def fit(self, path_to_sample_file):
         print('Get data from the file...')
-        df = self.read_diminutive_samples(path_to_sample_file, columns=['Name', 'Diminutive'])
+        df = self.read_samples(path_to_sample_file, columns=['Name', 'Diminutive'])
 
         # collect language model
         self._train_lm(df.Name)
@@ -249,6 +249,6 @@ if __name__ == '__main__':
     gen = DiminutiveGenerator(ngram=3)
     gen.fit(CORPUS_TRAIN)
 
-    data = DiminutiveGenerator.read_diminutive_samples(CORPUS_TEST, columns=['Name'])
+    data = DiminutiveGenerator.read_samples(CORPUS_TEST, columns=['Name'])
     for name in data.Name:
         print(gen.generate_diminutive(name))
