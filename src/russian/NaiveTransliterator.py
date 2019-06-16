@@ -23,6 +23,11 @@ class Transliterator:
     IAT_VOWELS = ['ia', 'ya', 'ja']
     IUT_VOWELS = ['iu', 'yu', 'ju']
 
+    CH_AFTER_SEQ = {
+        'ro': 'х',
+        'ri': 'к'
+    }
+
     def __init__(self, need_spell=False):
         self.RU_VOWELS = 'аeёиоуыэюя'
         self.AFFIXES = re.compile(
@@ -180,10 +185,9 @@ class Transliterator:
             return answer
 
     def _transliterate_ch_sequence(self, text, i):
-        if text[i + 2:].startswith('ro'):
-            return 'х' if text[i:i + 2].islower() else 'Х'
-        elif text[i + 2:].startswith('ri'):
-            return 'к' if text[i:i + 2].islower() else 'К'
+        if i + 4 < len(text) and text[i + 2:i + 4] in self.CH_AFTER_SEQ:
+            letter = self.CH_AFTER_SEQ[text[i + 2:i + 4]]
+            return letter.upper() if text[i:i + 2].istitle() else letter
         else:
             return self.inverted_phonemes[text[i:i + 2]]
 
