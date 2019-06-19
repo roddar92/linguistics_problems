@@ -80,6 +80,9 @@ class PhraseTrie:
     def __init__(self):
         self.root = {self._ROOT: {}}
 
+    def __contains__(self, item):
+        return self.get_label_for_phrase(item.split())
+
     def add_phrase(self, phrase, label=_DEFAULT_LABEL):
         node = self.root
         i, prev_word = 0, self._ROOT
@@ -136,4 +139,6 @@ if __name__ == '__main__':
     start = time()
     assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'раму']) == 'X'
     assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'рамку']) == ''
+    assert 'Мама мыла раму' in phrase_trie
+    assert 'Мама мыла рамку' not in phrase_trie
     print(f'Elapsed {(time() - start)/1000} sec')
