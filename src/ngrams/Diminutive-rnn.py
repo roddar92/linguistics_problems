@@ -158,8 +158,7 @@ class DiminutiveGenerator:
 
     def _generate_letter(self, history):
         if history not in self.lang_endings_model:
-            last_hist = history[1:]
-            dist = self.lang_endings_context[last_hist] if last_hist in self.lang_endings_context else None
+            dist = self.lang_endings_context.get(history[1:], None)
         else:
             dist = self.lang_endings_model[history]
 
@@ -180,7 +179,7 @@ class DiminutiveGenerator:
                 break
 
             history = history[-self.ngram + 1:] + c
-        return tail
+        return ''.join(tail)
 
     def _normalize_k_suffix(self, word):
         if word.endswith(self._KA_ENDING):
@@ -239,7 +238,7 @@ class DiminutiveGenerator:
         result = word[self.ngram:index] + first_dim_letter
         tail = self._generate_diminutive_tail(result[-self.ngram:])
 
-        return result.capitalize() + ''.join(tail)
+        return result.capitalize() + tail
 
 
 if __name__ == '__main__':
