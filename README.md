@@ -50,6 +50,7 @@ Source code:
 
 #### N-grams applications
 - [N-gram dictionary (for spelling/for language modeling)](src/ngrams/NGramDictionaryManager.py)
+- [Simple English word filler](src/ngrams/WordFiller.py)
 - [N-gram language model](src/ngrams/LanguageModel.py)
 - [Collocations](src/ngrams/Collocations.py)
 - [Russian diminutive names generator with RNN](src/ngrams/Diminutive-rnn.py)
