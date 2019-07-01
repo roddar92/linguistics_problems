@@ -3,13 +3,12 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from collections import defaultdict
+from collections import defaultdict, Counter
 from nltk import bigrams, word_tokenize
-from sklearn.feature_extraction.text import CountVectorizer
 
 
 class WordFiller:
-    START = '~'
+    START, END = '^', '^'
 
     def __init__(self, ngram, weights, alpha=1.0):
         if ngram < 2:
@@ -25,31 +24,25 @@ class WordFiller:
         self.unigram_counts = defaultdict(lambda: 0)
         self.bigram_counts = defaultdict(lambda: 0)
 
-        self.bigram_vectorizer = CountVectorizer(token_pattern='(\\S+)', ngram_range=(ngram - 1, ngram - 1))
-        self.ugram_vectorizer = CountVectorizer(token_pattern='(\\S+)', ngram_range=(ngram - 2, ngram - 2))
-
         self.dict_list = None
 
-    def fit(self, sentences):
-        counts_context_matrix = self.ugram_vectorizer.fit_transform(sentences)
+    def fit(self, path_to_train_file):
+        with Path(path_to_train_file).open('r') as fin:
+            print("Iterating through ngrams...")
+            n = 0
+            while True:
+                sentence = fin.readline()
+                if not sentence:
+                    break
 
-        self.vocab_size = len(
-            set([key for ngram in self.ugram_vectorizer.vocabulary_.keys() for key in ngram.split(" ")]))
+                sent = f'{self.START} {sentence} {self.END}'.split()
+                self.unigram_counts.update(Counter(sent))
+                self.bigram_counts.update(Counter(' '.join([sent[i], sent[i+1]]) for i in range(len(sent) - 1)))
+                n += 1
+                if n % 100000 == 0:
+                    print(f"Processed {n} lines")
 
-        sentences = [f'{self.START} {sent} {self.START}' for sent in sentences]
-        counts_bi_matrix = self.bigram_vectorizer.fit_transform(sentences)
-
-        sum_bi_ngram = np.sum(counts_bi_matrix, axis=0).A1
-        sum_context = np.sum(counts_context_matrix, axis=0).A1
-
-        print("shapes: ", sum_bi_ngram.shape, sum_context.shape)
-        print("Iterating through ngrams...")
-
-        for one_gram, index in self.ugram_vectorizer.vocabulary_.items():
-            self.unigram_counts[one_gram] = sum_context[index]
-
-        for two_gram, index in self.bigram_vectorizer.vocabulary_.items():
-            self.bigram_counts[two_gram] = sum_bi_ngram[index]
+        self.vocab_size = len(self.unigram_counts)
 
         self.dict_list = [self.bigram_counts, self.unigram_counts]
         return self
@@ -72,8 +65,8 @@ class WordFiller:
 
         return np.log2(prob)
 
-    def __calc_phrase_prob(self, *trigrams):
-        return sum(self.__calculate_prob(trigram) for trigram in trigrams)
+    def __calc_phrase_prob(self, *ngrams):
+        return sum(self.__calculate_prob(ngram) for ngram in ngrams)
 
     def _fill_word(self, ngram, ngram_prob):
         fst_w, sec_w = ngram.split()
@@ -98,10 +91,10 @@ class WordFiller:
         return candidates
 
     def fill_text(self, sentence):
-        def bigrams_2_text(bigrams):
-            return [x[-1] for x in bigrams[:-1]]
+        def bigrams_2_text(l):
+            return [x[-1] for x in l[:-1]]
 
-        sent = f'{self.START} {sentence} {self.START}'
+        sent = f'{self.START} {sentence} {self.END}'
         sent_bigrams = list(bigrams(word_tokenize(sent)))
 
         min_prob, min_ind = 1.0, -1
@@ -121,24 +114,16 @@ class WordFiller:
 
 if __name__ == '__main__':
 
-    print("Read train data...")
-    with Path("resources/word_filler/train_v2.txt").open('r') as fin:
-        data = (line for line in fin.readlines())
-
-    df_train = pd.DataFrame(data, columns=['text'])
-
-    print("Read test data...")
-    df_test = pd.read_csv("resources/word_filler/test_v2.txt")
-
-    print("Read: ", df_train.shape, df_test.shape)
-
     weights_values = [.7, .3]
     basic_lm = WordFiller(ngram=2, weights=weights_values)
-    sentences_train = df_train["text"].tolist()
-    sentences_train = [sentence for sentence in sentences_train]
-    basic_lm.fit(sentences=sentences_train)
+
+    print("Obtain data...")
+    basic_lm.fit(path_to_train_file="resources/word_filler/train_v2.txt")
 
     print("Trained")
+
+    df_test = pd.read_csv("resources/word_filler/test_v2.txt")
+    print("Read test data, shape: ", df_test.shape)
 
     res = pd.DataFrame()
     for _, row in df_test.iterrows():
