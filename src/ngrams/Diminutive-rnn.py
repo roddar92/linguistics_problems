@@ -226,7 +226,7 @@ class DiminutiveGenerator:
             index, letter, max_hist = default_params
 
         # select transits with first character which equal the letter of a name
-        max_hist_for_letter = [(tup, _) for tup, _ in max_hist if tup[0] == letter]
+        max_hist_for_letter = [(tr, _) for tr, _ in max_hist if tr[0] == letter]
         if max_hist_for_letter:
             max_hist = max_hist_for_letter
 
