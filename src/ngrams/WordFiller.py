@@ -68,13 +68,15 @@ class WordFiller:
     def __calc_phrase_prob(self, *ngrams):
         return sum(self.__calculate_prob(ngram) for ngram in ngrams)
 
-    def _fill_word(self, ngram, ngram_prob):
+    def _fill_word(self, ngram):
         fst_w, sec_w = ngram.split()
 
         candidates = self.__collect_candidates(fst_w, sec_w)
-        best_ngrams = candidates[0]
+        if not candidates:
+            return ngram,
 
-        return best_ngrams[0] if best_ngrams[-1] > ngram_prob else (ngram,)
+        best_ngrams = candidates[0]
+        return best_ngrams[0]
 
     def __collect_candidates(self, first, second):
         candidates = []
@@ -104,7 +106,7 @@ class WordFiller:
                 min_prob = prob
                 min_ind = i
 
-        ngrams_new = self._fill_word(sent_bigrams[min_ind], min_prob)
+        ngrams_new = self._fill_word(sent_bigrams[min_ind])
         if sent_bigrams[min_ind] != ngrams_new:
             sent_bigrams.pop(min_ind)
             sent_bigrams[min_ind:min_ind] = list(ngrams_new)
