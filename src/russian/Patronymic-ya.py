@@ -30,8 +30,8 @@ class Patronymer(object):
     def _is_double_consonants(self, letter_group):
         letter_group = letter_group.lower()
         return letter_group != "нт" and \
-               not self._is_vowel(letter_group[0]) and \
-               not self._is_vowel(letter_group[-1])
+            not self._is_vowel(letter_group[0]) and \
+            not self._is_vowel(letter_group[-1])
 
     def get_patro(self, name, feminine=False):
         if name == "Пётр":
@@ -80,24 +80,19 @@ class Patronymer(object):
             elif name[-1] == "и":
                 whose_suffix = "ев"
                 base_of_name += name[-1]
-        elif self._is_except_consonant(name[-1]):
+        elif self._is_except_consonant(name[-1]) or name.endswith("ь"):
             whose_suffix = "ев"
-            base_of_name = name
-        elif name.endswith("ь"):
-            whose_suffix = "ев"
-            base_of_name = name[:-1]
-        elif self._is_ends_with_iil(name):
-            whose_suffix = "ов"
-            base_of_name = name[:-2] + name[-1]
-        elif self._is_ends_with_ail(name):
-            whose_suffix = "ов"
-            base_of_name = name[:-2] if name.endswith("аил") else name[:-3] + "о"
-            base_of_name += "йл"
-        elif name.endswith("ов") or name.endswith("ев"):
-            base_of_name = name
+            base_of_name = name if self._is_except_consonant(name[-1]) else name[:-1]
         else:
-            whose_suffix = "ов"
-            base_of_name = name
+            if not (name.endswith("ов") or name.endswith("ев")):
+                whose_suffix = "ов"
+            if self._is_ends_with_iil(name):
+                base_of_name = name[:-2] + name[-1]
+            elif self._is_ends_with_ail(name):
+                base_of_name = name[:-2] if name.endswith("аил") else name[:-3] + "о"
+                base_of_name += "йл"
+            else:
+                base_of_name = name
         return base_of_name + whose_suffix + suffix
 
 
