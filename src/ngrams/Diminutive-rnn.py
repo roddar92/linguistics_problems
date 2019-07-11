@@ -45,10 +45,12 @@ class DiminutiveGenerator:
         total = float(sum(counter.values()))
         return [(c, cnt / total) for c, cnt in counter.items()]
 
-    @staticmethod
-    def _normalize_transits(counter):
+    def _normalize_transits(self, history, counter):
         def get_prob_denot(char):
-            return sum(v for k, v in counter.items() if k[0] == char)
+            if history in self.lang_model and self.lang_model[history][char] > 0:
+                return self.lang_model[history][char]
+            else:
+                return sum(v for k, v in counter.items() if k[0] == char)
 
         return [(c, (cnt / get_prob_denot(c[0])))
                 for c, cnt in sorted(counter.items(), key=lambda x: x[0][-1])]
@@ -105,7 +107,7 @@ class DiminutiveGenerator:
                                    for hist, chars in self.lang_endings_model.items()}
         self.lang_endings_context = {hist: self._normalize(chars)
                                      for hist, chars in self.lang_endings_context.items()}
-        self.diminutive_transits = {hist: self._normalize_transits(chars)
+        self.diminutive_transits = {hist: self._normalize_transits(hist, chars)
                                     for hist, chars in self.diminutive_transits.items()}
         self.lang_model = {hist: self._normalize(chars) for hist, chars in self.lang_model.items()}
 
@@ -234,7 +236,8 @@ class DiminutiveGenerator:
             return word[self.ngram:].capitalize()
 
         # generate a tail of the diminutive (to 'a' character)
-        first_dim_letter = self._choose_letter(max_hist)[-1]
+        dim_letter = self._choose_letter(max_hist)
+        first_dim_letter = max_hist[0][0][-1] if not dim_letter else dim_letter[-1]
         result = word[self.ngram:index] + first_dim_letter
         tail = self._generate_diminutive_tail(result[-self.ngram:])
 
