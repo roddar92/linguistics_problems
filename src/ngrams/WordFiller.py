@@ -94,7 +94,7 @@ class WordFiller:
 
     def fill_text(self, sentence):
         def bigrams_2_text(l):
-            return [x[-1] for x in l[:-1]]
+            return (x[-1] for x in l[:-1])
 
         sent = f'{self.START} {sentence} {self.END}'
         sent_bigrams = list(bigrams(word_tokenize(sent)))
