@@ -47,10 +47,7 @@ class DiminutiveGenerator:
 
     def _normalize_transits(self, history, counter):
         def get_prob_denot(char):
-            if history in self.lang_model and self.lang_model[history][char] > 0:
-                return self.lang_model[history][char]
-            else:
-                return sum(v for k, v in counter.items() if k[0] == char)
+            return self.lang_model[history][char]
 
         return [(c, (cnt / get_prob_denot(c[0])))
                 for c, cnt in sorted(counter.items(), key=lambda x: x[0][-1])]
