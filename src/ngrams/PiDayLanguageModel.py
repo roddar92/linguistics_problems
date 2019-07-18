@@ -29,7 +29,7 @@ class PIDayLanguageModel:
 
         return self
 
-    def generate_text(self, word='', n_words=5):
+    def tokens_stream(self, word='', n_words=5):
         def generate_word(prev_word, l):
             subseq = [t for t in self.lm[prev_word] if len(t) == l]
             if not subseq:
@@ -38,20 +38,23 @@ class PIDayLanguageModel:
             return res_word
 
         print('Generating of an example of PI text...')
-        out = []
+        prev_word = None
         if not word:
             w = choice([t for t in self.lm[''] if len(t) == 3])
             if w:
-                out += [w.capitalize()]
+                yield w.capitalize(); prev_word = w.capitalize()
 
         for _, digit in zip(range(n_words), self.str_pi):
             d = int(digit)
-            w = generate_word(out[-1], d)
-            while w in punctuation or w in '... -- \'\''.split():
-                out += [w]
-                w = generate_word(out[-1], d)
-            out += [w.capitalize() if out[-1] == '.' or out[-1] == '...' else w]
-        return " ".join(out)
+            w = generate_word(prev_word, d)
+            while w in punctuation or w in '... -- \'\' `` `'.split():
+                yield w; prev_word = w
+                w = generate_word(prev_word, d)
+            t = w.capitalize() if prev_word == '.' or prev_word == '...' else w
+            yield t; prev_word = t
+
+    def generate_text(self, word='', n_words=5):
+        return " ".join(self.tokens_stream(word=word, n_words=n_words))
 
 
 if __name__ == '__main__':
