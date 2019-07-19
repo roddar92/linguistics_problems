@@ -167,18 +167,16 @@ class DiminutiveGenerator:
         return self._choose_letter(dist)
 
     def _generate_diminutive_tail(self, history):
-        tail = []
         while True:
             c = self._generate_letter(history)
             if c == self._DIM_ENDING:
                 break
 
-            tail.append(c)
+            yield c
             if c == self._KA_ENDING:
                 break
 
             history = history[-self.ngram + 1:] + c
-        return ''.join(tail)
 
     def _normalize_k_suffix(self, word):
         if word.endswith(self._KA_ENDING):
@@ -236,7 +234,7 @@ class DiminutiveGenerator:
         dim_letter = self._choose_letter(max_hist)
         first_dim_letter = max_hist[0][0][-1] if not dim_letter else dim_letter[-1]
         result = word[self.ngram:index] + first_dim_letter
-        tail = self._generate_diminutive_tail(result[-self.ngram:])
+        tail = ''.join(self._generate_diminutive_tail(result[-self.ngram:]))
 
         return result.capitalize() + tail
 
