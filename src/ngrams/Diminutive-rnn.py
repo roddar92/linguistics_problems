@@ -196,7 +196,7 @@ class DiminutiveGenerator:
                     candidates += [(h, curr_transits)]
             return candidates
 
-        selected_hists = [(hist, _) for hist, _ in hists if word.endswith(hist)]
+        selected_hists = ((hist, _) for hist, _ in hists if word.endswith(hist))
         if selected_hists:
             return select_by_char(selected_hists)
 
