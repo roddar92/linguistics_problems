@@ -148,7 +148,7 @@ class DiminutiveGenerator:
             (h, _) for h, _ in self.diminutive_transits.items() if h.endswith(word[index - ngram:index])
         ]
         if histories_by_last_ch:
-            hists_by_last_ch = self._select_hists_by_char(word, histories_by_last_ch, letter)
+            hists_by_last_ch = self._select_hists_by_char(histories_by_last_ch, letter)
             if hists_by_last_ch:
                 histories_by_last_ch = hists_by_last_ch
             return index, letter, choice(histories_by_last_ch)[-1]
@@ -187,7 +187,7 @@ class DiminutiveGenerator:
         return word
 
     @staticmethod
-    def _select_hists_by_char(word, hists, char):
+    def _select_hists_by_char(hists, char):
         def select_by_char(histories):
             candidates = []
             for h, d in histories:
@@ -195,10 +195,6 @@ class DiminutiveGenerator:
                 if curr_transits:
                     candidates += [(h, curr_transits)]
             return candidates
-
-        selected_hists = ((hist, _) for hist, _ in hists if word.endswith(hist))
-        if selected_hists:
-            return select_by_char(selected_hists)
 
         return select_by_char(hists)
 
