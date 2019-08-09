@@ -4,6 +4,22 @@ from collections import namedtuple
 
 
 class NaiveTokenizer(object):
+    emjoi_pattern = r'([\=\:\;8BX][\-\~\^oc]?[PD3\<\>\}\{\]\[\)\(\/]+)'
+
+    CURRENCY = '$€£¢¥₽'
+    OTHER_PUNCT = '#%^~±°'
+    PUNCT = string.punctuation
+    DIGIT = re.compile(r'((\d)+([.,](\d)+)?)')
+    ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
+    NUMALPHA = re.compile(r'([/.\w-]+)')
+    EMJOI = re.compile(r'(' + emjoi_pattern + r')+')
+    EOS = '.?!'
+    INS = ',:;'
+    QUOTES = '\"\'\`'
+    LQUOTES = '«“‘'
+    RQUOTES = '»”’'
+    LBRACKETS = '<([{'
+    RBRACKETS = '>)]}'
 
     def __init__(self):
         with open('../russian/resources/tokenizer/abbreviations.txt', 'r', encoding='utf-8') as inf:
@@ -32,23 +48,7 @@ class NaiveTokenizer(object):
         url += r'(?:(\/\S+[^\.\,\s]))?'
         url += r')'
 
-        emjoi_pattern = r'([\=\:\;8BX][\-\~\^oc]?[PD3\<\>\}\{\]\[\)\(\/]+)'
-
         self.URL = re.compile(url, re.IGNORECASE)
-        self.CURRENCY = '$€£¢¥₽'
-        self.OTHER_PUNCT = '#%^~±°'
-        self.PUNCT = string.punctuation
-        self.DIGIT = re.compile(r'((\d)+([.,](\d)+)?)')
-        self.ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
-        self.NUMALPHA = re.compile(r'([/.\w-]+)')
-        self.EMJOI = re.compile(r'(' + emjoi_pattern + r')+')
-        self.EOS = '.?!'
-        self.INS = ',:;'
-        self.QUOTES = '\"\'\`'
-        self.LQUOTES = '«“‘'
-        self.RQUOTES = '»”’'
-        self.LBRACKETS = '<([{'
-        self.RBRACKETS = '>)]}'
 
     def tokenize(self, text):
 
