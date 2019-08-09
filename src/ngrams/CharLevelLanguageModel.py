@@ -11,14 +11,12 @@ class CharLevelLanguageModel:
 
     def train(self, path_to_corpus_file):
         print('Get data from the file...')
-        path_to_corpus = Path(path_to_corpus_file).open()
-
-        print('Collecting of letters\' probabilities...')
-        n_chars = self.start * self.ngram
-        for char in path_to_corpus.read():
-            self.lm[n_chars][char] += 1
-            n_chars = n_chars[1:] + char
-        path_to_corpus.close()
+        with Path(path_to_corpus_file).open() as f:
+            print('Collecting of letters\' probabilities...')
+            n_chars = self.start * self.ngram
+            for char in f.read():
+                self.lm[n_chars][char] += 1
+                n_chars = n_chars[1:] + char
         self.lm = {hist: self._normalize(chars) for hist, chars in self.lm.items()}
 
         return self
@@ -38,7 +36,7 @@ class CharLevelLanguageModel:
                 return c
 
     def generate_text(self, n_letters=1000):
-        print('Genrating of an example of text...')
+        print('Generating of an example of text...')
         history = self.start * self.ngram
         out = []
         for i in range(n_letters):
@@ -49,7 +47,7 @@ class CharLevelLanguageModel:
 
 
 if __name__ == '__main__':
-    fname = "resources/corpus/Dostoevsky.txt"
+    fname = 'resources/corpus/Dostoevsky.txt'
     model = CharLevelLanguageModel(ngram=15)
     model.train(fname)
     print(model.generate_text())
