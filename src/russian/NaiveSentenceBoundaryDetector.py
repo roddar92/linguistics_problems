@@ -3,10 +3,11 @@ from src.russian.NaiveTokenizer import NaiveTokenizer
 
 
 class NaiveSentenceBoundaryDetector(object):
+    EOS = '.?!'
+    MULTI_PUNCT = re.compile(r'([.?!]){2,}')
+    ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
+
     def __init__(self):
-        self.EOS = '.?!'
-        self.MULTI_PUNCT = re.compile(r'([.?!]){2,}')
-        self.ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
         self.tokenizer = NaiveTokenizer()
 
     def is_eos(self, previous_token):
