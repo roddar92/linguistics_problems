@@ -179,7 +179,7 @@ class DiminutiveGenerator:
             history = history[-self.ngram + 1:] + c
 
     def _normalize_k_suffix(self, word):
-        if word.endswith(self._KA_ENDING):
+        if len(word) > 3 and word.endswith(self._KA_ENDING):
             if word[-3] in 'йь':
                 return word[:-3] + 'я'
             elif word[-3] not in self._RU_VOWELS:
