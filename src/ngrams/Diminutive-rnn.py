@@ -229,10 +229,10 @@ class DiminutiveGenerator:
         # generate a tail of the diminutive (to 'a' character)
         dim_letter = self._choose_letter(max_hist)
         first_dim_letter = max(max_hist, key=lambda x: x[-1])[0][-1] if not dim_letter else dim_letter[-1]
-        result = word[self.ngram:index] + first_dim_letter
+        result = word[:index] + first_dim_letter
         tail = ''.join(self._generate_diminutive_tail(result[-self.ngram:]))
 
-        return result.capitalize() + tail
+        return result[self.ngram:].capitalize() + tail
 
 
 if __name__ == '__main__':
