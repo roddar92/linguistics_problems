@@ -81,9 +81,9 @@ def features(sequence, i):
     if currency_pattern.search(seq):
         yield "currency"
 
-    # ends with -'in'
-    if seq.endswith("in"):
-        yield "ends_with_in"
+    # ends with -'in' or -'un' or -'en'
+    if seq.endswith("in") or seq.endswith("un") or seq.endswith("en"):
+        yield "ends_with_in_or_en_un"
 
     # ends with -'ssa'
     if seq.endswith("ssa") or seq.endswith("ssä"):
@@ -100,6 +100,15 @@ def features(sequence, i):
     # ends with -'lla'
     if seq.endswith("lla") or seq.endswith("llä"):
         yield "ends_with_lla"
+        
+    # ends with -'katu' or -'tie' or -'järvi' or -'joki' or -'saari' or -'mäki' or -'vuori'
+    if seq.endswith("katu") or seq.endswith("tie") or \
+        seq.endswith("järvi") or seq.endswith("joki") or \
+        seq.endswith("mäki") or seq.endswith("vuori") or \
+        seq.endswith("lahti") or seq.endswith("linna") or \
+        seq.endswith("vaara") or seq.endswith("koski") or \
+        seq.endswith("niemi") or seq.endswith("ranta"):
+        yield "ends_with_geo"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[1]
