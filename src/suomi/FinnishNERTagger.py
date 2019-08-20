@@ -23,6 +23,7 @@ FI_GEO_DESCRIPTORS = [
     "kylä", "katu", "tie", "järvi", "joki", "mäki", "vuori", "salmi",
     "vaara", "lahti", "linna", "koski", "niemi", "ranta", "suu", "maa"
 ]
+FI_ORG_DESCRIPTORS = ["Oy"]
 FI_VOWELS = "aeäöiouy"
 
 
@@ -112,9 +113,13 @@ def features(sequence, i):
     if seq.endswith("lla") or seq.endswith("llä"):
         yield "ends_with_lla"
         
-    # ends with -'katu' or -'tie' or -'järvi' or -'joki' or -'saari' or -'mäki' or -'vuori'
+    # ends with -'katu' or -'tie' or -'järvi' or -'joki' or -'saari' or -'mäki' or -'vuori' etc.
     if any(seq.endswith(geo_descr) for geo_descr in FI_GEO_DESCRIPTORS):
         yield "ends_with_geo"
+        
+    # is organization descriptor
+    if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
+        yield "org_descriptor"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[1]
