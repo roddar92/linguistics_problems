@@ -21,7 +21,7 @@ currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
 
 FI_GEO_DESCRIPTORS = [
     "kylä", "katu", "tie", "järvi", "joki", "mäki", "vuori", "salmi",
-    "vaara", "lahti", "linna", "koski", "niemi", "ranta", "suu"
+    "vaara", "lahti", "linna", "koski", "niemi", "ranta", "suu", "maa"
 ]
 FI_VOWELS = "aeäöiouy"
 
