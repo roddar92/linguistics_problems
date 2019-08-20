@@ -19,8 +19,15 @@ real_num_pattern = re.compile('\d+([\.\,\:\/]\d)+')
 currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
 
 
+FI_GEO_DESCRIPTORS = [
+    "kylä", "katu", "tie", "järvi", "joki", "mäki", "vuori", "salmi",
+    "vaara", "lahti", "linna", "koski", "niemi", "ranta", "suu"
+]
+FI_VOWELS = "aeäöiouy"
+
+
 def is_vowel(symbol):
-    return symbol in 'aeäöiouy'
+    return symbol in FI_VOWELS
 
 
 def get_word_len(seq):
@@ -81,9 +88,13 @@ def features(sequence, i):
     if currency_pattern.search(seq):
         yield "currency"
 
-    # ends with -'in' or -'un' or -'en'
-    if seq.endswith("in") or seq.endswith("un") or seq.endswith("en"):
-        yield "ends_with_in_or_en_un"
+    # ends with -'n' and a vowel behind 'n'
+    if any(seq.endswith(f"{l}n") for l in FI_VOWELS) and not seq.endswith("nen"):
+        yield "ends_with_vowel_n"
+        
+    # ends with -'nen'
+    if seq.endswith("nen"):
+        yield "ends_with_vowel_nen"
 
     # ends with -'ssa'
     if seq.endswith("ssa") or seq.endswith("ssä"):
@@ -102,12 +113,7 @@ def features(sequence, i):
         yield "ends_with_lla"
         
     # ends with -'katu' or -'tie' or -'järvi' or -'joki' or -'saari' or -'mäki' or -'vuori'
-    if seq.endswith("katu") or seq.endswith("tie") or \
-        seq.endswith("järvi") or seq.endswith("joki") or \
-        seq.endswith("mäki") or seq.endswith("vuori") or \
-        seq.endswith("lahti") or seq.endswith("linna") or \
-        seq.endswith("vaara") or seq.endswith("koski") or \
-        seq.endswith("niemi") or seq.endswith("ranta"):
+    if any(seq.endswith(geo_descr) for geo_descr in FI_GEO_DESCRIPTORS):
         yield "ends_with_geo"
 
     if i > 0:
