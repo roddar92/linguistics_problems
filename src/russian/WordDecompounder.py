@@ -9,49 +9,52 @@ from nltk import word_tokenize, sent_tokenize
 
 class WordDictBuilder:
     def __init__(self):
-        self.stop_words = string.punctuation + '«»→↑—✰⛭№•/\\'
-        self.word_dict = None
+        self.__stop_words = string.punctuation + '«»→↑—✰⛭№•/\\'
+        self.__word_dict = None
 
     def build_dict(self, collection):
-        self.word_dict = Counter()
+        self.__word_dict = Counter()
         for f in os.listdir(collection):
             if f.endswith('.txt'):
                 self.collect_dictionary(open(os.path.join(collection, f), 'r', encoding='utf-8').read())
 
     def save_dictionary(self, filename):
         with open(filename, 'wb') as f:
-            pickle.dump(self.word_dict, f)
+            pickle.dump(self.__word_dict, f)
 
     def load_dictionary(self, filename):
         with open(filename, 'rb') as f:
-            self.word_dict = pickle.load(f)
-        return self.word_dict
+            self.__word_dict = pickle.load(f)
+        return self.__word_dict
 
     def collect_dictionary(self, text):
         counter = Counter(
-            [word.lower() for sent in sent_tokenize(text)
-             for word in word_tokenize(sent) if not (word in self.stop_words or word.isdecimal() or not word.isalpha())]
+            [
+                word.lower() for sent in sent_tokenize(text)
+                for word in word_tokenize(sent)
+                if not (word in self.__stop_words or word.isdecimal() or not word.isalpha())
+            ]
         )
-        self.word_dict += counter
+        self.__word_dict += counter
 
     def normalize_frequencies(self, alpha=1.0):
-        n = sum(self.word_dict.values())
-        return {word: float((freq + alpha) / (n + alpha * n)) for word, freq in self.word_dict.items()}
+        n = sum(self.__word_dict.values())
+        return {word: float((freq + alpha) / (n + alpha * n)) for word, freq in self.__word_dict.items()}
 
 
 class WordDecompounder:
     def __init__(self, path_to_dictionary):
         word_dict_builder = WordDictBuilder()
-        self.dictionary = word_dict_builder.load_dictionary(path_to_dictionary)
-        self.total = sum(self.dictionary.values())
-        self.max_word_length = max(map(len, self.dictionary))
+        self.__dictionary = word_dict_builder.load_dictionary(path_to_dictionary)
+        self.__total = sum(self.__dictionary.values())
+        self.__max_word_length = max(map(len, self.__dictionary))
 
     def split(self, text):
         return self._viterbi_segment(text)
 
     def __word_probability(self, word):
-        prob = self.dictionary[word]
-        total = self.total if not 0 <= prob <= 1 else 1
+        prob = self.__dictionary[word]
+        total = self.__total if not 0 <= prob <= 1 else 1
         return prob / total
 
     # Find the most probable sequence of words with Viterbi algorithm
@@ -59,7 +62,7 @@ class WordDecompounder:
         probs, lasts = [1.0], [0]
         for i in range(1, len(text) + 1):
             prob_pos, pos = max((probs[j] * self.__word_probability(text[j:i]), j)
-                                for j in range(max(0, i - self.max_word_length), i))
+                                for j in range(max(0, i - self.__max_word_length), i))
             probs.append(prob_pos)
             lasts.append(pos)
         words = []
@@ -74,21 +77,21 @@ class WordDecompounder:
 class WordDecompounderWithoutPrioriProb:
     # Build a cost dictionary, assuming Zipf's law and cost = -math.log(probability).
     def __init__(self, path_to_dictionary):
-        self.words = list(pickle.load(open(path_to_dictionary, 'rb')).keys())
-        total = len(self.words)
-        self.wordcost = dict((w, log((i + 1) * log(total))) for i, w in enumerate(self.words))
-        self.maxword = max(map(len, self.words))
+        self.__words = list(pickle.load(open(path_to_dictionary, 'rb')).keys())
+        total = len(self.__words)
+        self.__wordcost = dict((w, log((i + 1) * log(total))) for i, w in enumerate(self.__words))
+        self.__maxword = max(map(len, self.__words))
 
     def split(self, text):
         # Find the best match for the i first characters, assuming cost has
         # been built for the i-1 first characters.
         # Returns a pair (match_cost, match_length).
         def best_match(pos):
-            candidates = enumerate(reversed(costs[max(0, pos - self.maxword):pos]))
-            return min((c + self.wordcost.get(text[pos - k - 1:pos], 9e999), k + 1) for k, c in candidates)
+            candidates = enumerate(reversed(costs[max(0, pos - self.__maxword):pos]))
+            return min((c + self.__wordcost.get(text[pos - k - 1:pos], 9e999), k + 1) for k, c in candidates)
 
         # Build the cost array.
-        costs, lengths = [0], [0]
+        costs, lengths = [0.0], [0]
         for i in range(1, len(text) + 1):
             cost, length = best_match(i)
             costs.append(cost)
