@@ -64,7 +64,7 @@ class GuessCity(object):
         return self.__city_name
 
     def __make_city_used(self):
-        self.__guessed_cities.add(self.city_name)
+        self.__guessed_cities.add(self.__city_name)
         self.__city_name = ""
 
     def __make_city_asked(self, city_name):
