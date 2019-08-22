@@ -1,8 +1,8 @@
 # coding: utf-8
 
 """
-Pos-tagging for Russian Translit
-https://www.kaggle.com/c/pos-punk
+NER-tagging for Finnish news
+https://arxiv.org/abs/1908.04212
 """
 
 import pandas as pd
