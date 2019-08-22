@@ -21,10 +21,10 @@ class WordFiller:
         self.weights = weights
         self.vocab_size = None
 
-        self.unigram_counts = defaultdict(lambda: 0)
-        self.bigram_counts = defaultdict(lambda: 0)
+        self.__unigram_counts = defaultdict(lambda: 0)
+        self.__bigram_counts = defaultdict(lambda: 0)
 
-        self.dict_list = None
+        self.__dict_list = None
 
     def fit(self, path_to_train_file):
         with Path(path_to_train_file).open('r') as fin:
@@ -36,15 +36,15 @@ class WordFiller:
                     break
 
                 sent = f'{self.START} {sentence} {self.END}'.split()
-                self.unigram_counts.update(Counter(sent))
-                self.bigram_counts.update(Counter(' '.join([sent[i], sent[i+1]]) for i in range(len(sent) - 1)))
+                self.__unigram_counts.update(Counter(sent))
+                self.__bigram_counts.update(Counter(' '.join([sent[i], sent[i+1]]) for i in range(len(sent) - 1)))
                 n += 1
                 if n % 100000 == 0:
                     print(f"Processed {n} lines")
 
-        self.vocab_size = len(self.unigram_counts)
+        self.vocab_size = len(self.__unigram_counts)
 
-        self.dict_list = [self.bigram_counts, self.unigram_counts]
+        self.__dict_list = [self.__bigram_counts, self.__unigram_counts]
         return self
 
     def __calculate_prob(self, ngram):
@@ -60,15 +60,15 @@ class WordFiller:
             sub_gram = tokens[i:]
             sub_context = sub_gram[:-1]
             prob += self.weights[i] * (
-                    (self.dict_list[i][' '.join(sub_gram)] + self.alpha) /
-                    (self.alpha * self.vocab_size + self.dict_list[i + 1][' '.join(sub_context)]))
+                    (self.__dict_list[i][' '.join(sub_gram)] + self.alpha) /
+                    (self.alpha * self.vocab_size + self.__dict_list[i + 1][' '.join(sub_context)]))
 
         return np.log2(prob)
 
     def __calc_phrase_prob(self, *ngrams):
         return sum(self.__calculate_prob(ngram) for ngram in ngrams)
 
-    def _fill_word(self, ngram):
+    def __fill_word(self, ngram):
         fst_w, sec_w = ngram.split()
 
         candidates = self.__collect_candidates(fst_w, sec_w)
@@ -80,7 +80,7 @@ class WordFiller:
 
     def __collect_candidates(self, first, second):
         candidates = []
-        for bgram in self.bigram_counts:
+        for bgram in self.__bigram_counts:
             if bgram.startswith(first):
                 sec_bgram = f'{bgram.split()[-1]} {second}'
                 triple = ((bgram, sec_bgram), self.__calc_phrase_prob(bgram, sec_bgram))
@@ -106,7 +106,7 @@ class WordFiller:
                 min_prob = prob
                 min_ind = i
 
-        ngrams_new = self._fill_word(sent_bigrams[min_ind])
+        ngrams_new = self.__fill_word(sent_bigrams[min_ind])
         if sent_bigrams[min_ind] != ngrams_new:
             sent_bigrams.pop(min_ind)
             sent_bigrams[min_ind:min_ind] = list(ngrams_new)
