@@ -73,7 +73,9 @@ class Game(object):
         return city[self.__find_index_of_right_letter(city)]
 
     def __check_rules(self, word):
-        return self.__get_right_letter_by_rules(self.__previous_city) == word[0]
+        if self.__previous_city:
+            return self.__get_right_letter_by_rules(self.__previous_city) == word[0]
+        return True
 
     def __make_city_used(self, city):
         self.__previous_city = city
