@@ -6,12 +6,12 @@ from collections import defaultdict
 class OppositesGame(object):
     def __init__(self):
         self.status = "unknown"
-        self.opposites_dictionary = defaultdict(list)
-        self.answers = ''
-        self.quessed_keys = list()
-        self.current_key = ''
-        self.current_vals = list()
-        self.attempts = 1
+        self.__opposites_dictionary = defaultdict(list)
+        self.__answers = ''
+        self.__quessed_keys = list()
+        self.__current_key = ''
+        self.__current_vals = list()
+        self.__attempts = 1
 
         self.RIGHT_ANSWER = [
             "Да, всё правильно! :)",
@@ -23,51 +23,51 @@ class OppositesGame(object):
             for line in f:
                 (word, opposites) = line.split()
                 opposites = opposites.split(",")
-                self.opposites_dictionary[word].extend(list(opposites))
+                self.__opposites_dictionary[word].extend(list(opposites))
                 for opposite in opposites:
-                    if opposite not in self.opposites_dictionary:
-                        self.opposites_dictionary[opposite] = list()
-                    self.opposites_dictionary[opposite].append(word)
+                    if opposite not in self.__opposites_dictionary:
+                        self.__opposites_dictionary[opposite] = list()
+                    self.__opposites_dictionary[opposite].append(word)
 
                     # TODO refactoring links for synonyms
-                    for w in self.opposites_dictionary[opposite]:
-                        if opposite not in self.opposites_dictionary[w]:
-                            self.opposites_dictionary[w].append(opposite)
+                    for w in self.__opposites_dictionary[opposite]:
+                        if opposite not in self.__opposites_dictionary[w]:
+                            self.__opposites_dictionary[w].append(opposite)
 
-    def synonyms(self, values):
+    def __synonyms(self, values):
         synonyms = list()
         for value in values:
-            synonyms.extend(self.opposites_dictionary[value])
+            synonyms.extend(self.__opposites_dictionary[value])
         return set(synonyms)
 
     def move(self):
-        self.current_key = random.choice(
-            [key for key in self.opposites_dictionary.keys() if key not in self.quessed_keys]
+        self.__current_key = random.choice(
+            [key for key in self.__opposites_dictionary.keys() if key not in self.__quessed_keys]
         )
-        self.current_vals = self.opposites_dictionary[self.current_key]
-        print(self.current_key)
+        self.__current_vals = self.__opposites_dictionary[self.__current_key]
+        print(self.__current_key)
 
     def check_answer(self, word):
         if is_end_of_game(word):
             self.status = "over"
             print("Тогда давай закончим игру! Мы правильно ответили на " +
-                  str(self.answers.count('1')) + " вопросов из " + str(len(self.answers)) + ".")
-            self.answers = ''
-        elif word in self.current_vals:
-            self.attempts = 1
-            self.quessed_keys.append(self.current_key)
-            self.answers += '1'
+                  str(self.__answers.count('1')) + " вопросов из " + str(len(self.__answers)) + ".")
+            self.__answers = ''
+        elif word in self.__current_vals:
+            self.__attempts = 1
+            self.__quessed_keys.append(self.__current_key)
+            self.__answers += '1'
             print(random.choice(self.RIGHT_ANSWER))
-        elif self.attempts == 1 and (word == self.current_key or word in self.synonyms(self.current_vals)):
-            self.attempts += 1
+        elif self.__attempts == 1 and (word == self.__current_key or word in self.__synonyms(self.__current_vals)):
+            self.__attempts += 1
             raise Exception("Ты угадал синоним, но не противоположное слово.")
         else:
-            if self.attempts == 2:
-                self.attempts = 1
-                self.answers += '0'
-                print("Увы, правильный ответ - " + random.choice(self.current_vals))
+            if self.__attempts == 2:
+                self.__attempts = 1
+                self.__answers += '0'
+                print("Увы, правильный ответ - " + random.choice(self.__current_vals))
             else:
-                self.attempts += 1
+                self.__attempts += 1
                 raise Exception("Извини, но я не понял твоего ответа.")
 
 
