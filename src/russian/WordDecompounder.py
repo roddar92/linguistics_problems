@@ -49,7 +49,7 @@ class WordDecompounder:
     def split(self, text):
         return self._viterbi_segment(text)
 
-    def _word_probability(self, word):
+    def __word_probability(self, word):
         prob = self.dictionary[word]
         total = self.total if not 0 <= prob <= 1 else 1
         return prob / total
@@ -58,7 +58,7 @@ class WordDecompounder:
     def _viterbi_segment(self, text):
         probs, lasts = [1.0], [0]
         for i in range(1, len(text) + 1):
-            prob_pos, pos = max((probs[j] * self._word_probability(text[j:i]), j)
+            prob_pos, pos = max((probs[j] * self.__word_probability(text[j:i]), j)
                                 for j in range(max(0, i - self.max_word_length), i))
             probs.append(prob_pos)
             lasts.append(pos)
