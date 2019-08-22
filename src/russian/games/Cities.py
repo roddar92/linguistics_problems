@@ -28,16 +28,16 @@ class Game(object):
     ]
 
     def __init__(self):
-        self.allowed_cities = defaultdict(list)
-        self.guessed_cities = set()
-        self.previous_city = None
+        self.__allowed_cities = defaultdict(list)
+        self.__guessed_cities = set()
+        self.__previous_city = None
         self.status = "init"
 
         with open("../resources/ru_cities.txt", "r", encoding='utf-8') as f:
             for city in f:
                 city = city.strip()
                 if city:
-                    self.allowed_cities[city[0]] += [city]
+                    self.__allowed_cities[city[0]].append(city)
 
     @staticmethod
     def get_city_name(city):
@@ -49,67 +49,62 @@ class Game(object):
             return city.title()
 
     @staticmethod
-    def has_except_endings(word):
+    def __has_except_endings(word):
         return word in 'ъыь'
 
-    def _is_cities_exausted(self, letter):
-        return self.allowed_cities[letter] == []
+    def __is_cities_exausted(self, letter):
+        return self.__allowed_cities[letter] == []
 
-    def _is_all_cities_exausted(self):
-        return not self.allowed_cities
+    def __is_all_cities_exausted(self):
+        return not self.__allowed_cities
 
-    def _find_index_of_right_letter(self, previous_city):
+    def __find_index_of_right_letter(self, previous_city):
         ind = -1
         last_letter = previous_city[ind]
-        while self.has_except_endings(last_letter) or self._is_cities_exausted(last_letter):
+        while self.__has_except_endings(last_letter) or self.__is_cities_exausted(last_letter):
             ind -= 1
             last_letter = previous_city[ind]
         return ind
 
-    def _get_last_city(self):
-        return self.previous_city
+    def __get_last_city(self):
+        return self.__previous_city
+    
+    def __get_right_letter_by_rules(self, city):
+        return city[self.__find_index_of_right_letter(city)]
 
-    def _check_rules(self, word):
-        if len(self.guessed_cities) != 0:
-            ind = self._find_index_of_right_letter(self.previous_city)
-            return self.previous_city[ind] == word[0]
+    def __check_rules(self, word):
+        return self.__get_right_letter_by_rules(self.__previous_city) == word[0]
 
-        return True
+    def __make_city_used(self, city):
+        self.__previous_city = city
+        self.__guessed_cities.add(city)
+        self.__allowed_cities[city[0]].remove(city)
+        if len(self.__allowed_cities[city[0]]) == 0:
+            del self.__allowed_cities[city[0]]
 
-    def _make_city_used(self, city):
-        self.previous_city = city
-        self.guessed_cities.add(city)
-        self.allowed_cities[city[0]].remove(city)
-        if len(self.allowed_cities[city[0]]) == 0:
-            del self.allowed_cities[city[0]]
-
-    def check_city(self, city):
-        if city in self.guessed_cities:
+    def __check_city(self, city):
+        if city in self.__guessed_cities:
             raise CitiesGameException(random.choice(self.USED_CITY))
-        elif city[0] not in self.allowed_cities or city not in self.allowed_cities[city[0]]:
+        elif city[0] not in self.__allowed_cities or city not in self.__allowed_cities[city[0]]:
             raise CitiesGameException(random.choice(self.UNKNOWN_CITY))
-        elif not self._check_rules(city):
-            previous_city = self._get_last_city()
-            correct_letter_index = self._find_index_of_right_letter(previous_city)
-            l = previous_city[correct_letter_index].upper()
+        elif not self.__check_rules(city):
+            l = self.__get_right_letter_by_rules(self.__get_last_city()).upper()
             raise CitiesGameException(f"Этот город не начинается с буквы \'{l}\'!")
         else:
-            self._make_city_used(city)
+            self.__make_city_used(city)
 
     def move(self):
-        last_city = self._get_last_city()
-        ind = self._find_index_of_right_letter(last_city)
-        letter = last_city[ind]
-        city = random.choice(self.allowed_cities[letter])
-        self._make_city_used(city)
+        last_letter = self.__get_right_letter_by_rules(self.__get_last_city())
+        city = random.choice(self.__allowed_cities[last_letter])
+        self.__make_city_used(city)
         print(self.get_city_name(city))
 
     def check_and_move(self, city):
         if city.lower() in self.BYE_PHRASES:
             self.status = "over"
         else:
-            self.check_city(s)
-            self.status = "over" if self._is_all_cities_exausted() else "proceed"
+            self.__check_city(s)
+            self.status = "over" if self.__is_all_cities_exausted() else "proceed"
             self.move()
 
     def is_over(self):
