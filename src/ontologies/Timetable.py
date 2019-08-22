@@ -15,53 +15,53 @@ class TrainException(Exception):
 
 class Train(object):
     def __init__(self):
-        self.no = ''
-        self.name = 'undefined'
-        self.departure_time = 0
-        self.departure_location = ''
-        self.arrival_location = 'undefined'
-        self.track = ''
+        self.__no = ''
+        self.__name = 'undefined'
+        self.__departure_time = 0
+        self.__departure_location = ''
+        self.__arrival_location = 'undefined'
+        self.__track = ''
 
     ''' Suppose that train number property is unique '''
 
     def __hash__(self):
-        return self.no.__hash__()
+        return self.__no.__hash__()
 
     def set_no(self, no):
-        self.no = no
+        self.__no = no
 
     def get_no(self):
-        return self.no
+        return self.__no
 
     def set_name(self, name):
-        self.name = name
+        self.__name = name
 
     def get_name(self):
-        return self.name
+        return self.__name
 
     def set_departure_time(self, timestamp):
-        self.departure_time = timestamp
+        self.__departure_time = timestamp
 
     def get_departure_time(self):
-        return self.departure_time
+        return self.__departure_time
 
     def set_departure_location(self, location):
-        self.departure_location = location
+        self.__departure_location = location
 
     def get_departure_location(self):
-        return self.departure_location
+        return self.__departure_location
 
     def set_arrival_location(self, location):
-        self.arrival_location = location
+        self.__arrival_location = location
 
     def get_arrival_location(self):
-        return self.arrival_location
+        return self.__arrival_location
 
     def set_track(self, track):
-        self.track = track
+        self.__track = track
 
     def get_track(self):
-        return self.track
+        return self.__track
 
     def add_direction(self, direction, location):
         if direction == 'to':
@@ -82,7 +82,7 @@ class RailwayTimetable(object):
     TIME_STOPWORDS = ['at', 'on']
 
     def __init__(self):
-        self.timetable = {}
+        self.__timetable = {}
 
     def get_trains_list_by_train_desc(self, train_desc):
         if self.TRAIN_NO.search(train_desc):
@@ -91,7 +91,7 @@ class RailwayTimetable(object):
         else:
             projection_criterion = 'get_name'
 
-        trains = sorted([train for train in self.timetable.values()
+        trains = sorted([train for train in self.__timetable.values()
                          if train_desc == train_desc == getattr(train, projection_criterion)()],
                         key=lambda x: x.get_no())
         return trains
@@ -112,22 +112,22 @@ class RailwayTimetable(object):
         else:
             projection_criterion = None
 
-        trains = sorted([train for train in self.timetable.values()
+        trains = sorted([train for train in self.__timetable.values()
                          if project(train, terminus, train_desc, projection_criterion)],
                         key=lambda x: (x.get_departure_time() if time_flag else x.get_no()))
         return trains
 
     def is_terminus(self, train_desc, terminus):
         if self.TRAIN_NO.match(train_desc):
-            if train_desc not in self.timetable:
+            if train_desc not in self.__timetable:
                 return self.__class__.DEFAULT_ANSWER
 
-            train = self.timetable[train_desc]
+            train = self.__timetable[train_desc]
             asked_terminus = train.get_arrival_location()
         else:
             asked_terminus = self.__class__.DEFAULT_ANSWER
             locations = [train.get_arrival_location()
-                         for train in self.timetable.values() if train.get_name() == train_desc]
+                         for train in self.__timetable.values() if train.get_name() == train_desc]
 
             if len(set(locations)) >= 2:
                 return f'There are several terminus stations for {train_desc}. Please, type a train number!'
@@ -166,10 +166,10 @@ class RailwayTimetable(object):
 
     def get_terminus(self, train_desc):
         if self.TRAIN_NO.match(train_desc):
-            if train_desc not in self.timetable:
+            if train_desc not in self.__timetable:
                 return self.__class__.DEFAULT_ANSWER
 
-            train = self.timetable[train_desc]
+            train = self.__timetable[train_desc]
             asked_terminus = train.get_arrival_location()
             if asked_terminus == 'undefined':
                 return self.__class__.DEFAULT_ANSWER
@@ -178,7 +178,7 @@ class RailwayTimetable(object):
         else:
             answer = {
                 train.get_arrival_location()
-                for train in self.timetable.values() if train.get_name() == train_desc
+                for train in self.__timetable.values() if train.get_name() == train_desc
             }
 
             if len(answer) > 0:
@@ -270,7 +270,7 @@ class RailwayTimetable(object):
             else:
                 i += 1
 
-        self.timetable[train_info.get_no()] = train_info
+        self.__timetable[train_info.get_no()] = train_info
 
     ''' 
      General pattern for request:
