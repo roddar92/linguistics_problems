@@ -14,35 +14,35 @@ ATTEMPT_PHRASES = [
 class SecretLetter(object):
 
     def __init__(self):
-        self.d2w = {1: "Одна", 2: "Две", 3: "Три", 4: "Четыре", 5: "Пять",
+        self.__d2w = {1: "Одна", 2: "Две", 3: "Три", 4: "Четыре", 5: "Пять",
                     6: "Шесть", 7: "Семь", 8: "Восемь", 9: "Девять", 10: "Десять"}
         self.status = "undefined"
-        self.secret_letter = "А"
-        self.alphabet = list("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
-        self.ru_dict = enchant.Dict("ru_RU")
+        self.__secret_letter = "А"
+        self.__alphabet = list("АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ")
+        self.__ru_dict = enchant.Dict("ru_RU")
 
     def move(self):
         self.status = "start"
-        self.secret_letter = random.choice(self.alphabet)
+        self.__secret_letter = random.choice(self.__alphabet)
         print("Я загадал свою букву!")
 
-    def _count_letter(self, word):
-        count_of_letter = word.count(self.secret_letter)
+    def __count_letter(self, word):
+        count_of_letter = word.count(self.__secret_letter)
         if count_of_letter > 0:
-            return self.d2w[count_of_letter] + "!"
+            return self.__d2w[count_of_letter] + "!"
         else:
             raise SecretLetterException("В этом слове нет моей буквы.")
 
     def check_answer(self, word):
         word = word.upper()
-        if word in self.alphabet:
-            if word == self.secret_letter:
+        if word in self.__alphabet:
+            if word == self.__secret_letter:
                 self.status = "over"
                 print("Молодец, угадал!")
             else:
                 raise SecretLetterException("Пока не угадал.")
-        elif self.ru_dict.check(word):
-            print(self._count_letter(word))
+        elif self.__ru_dict.check(word):
+            print(self.__count_letter(word))
         else:
             raise SecretLetterException("Что-то я не понял твоего слова...")
 
