@@ -10,11 +10,11 @@ class NaiveSentenceBoundaryDetector(object):
     def __init__(self):
         self.tokenizer = NaiveTokenizer()
 
-    def is_eos(self, previous_token):
+    def __is_eos(self, previous_token):
         return previous_token in ['...'] + list(self.EOS)
 
     @staticmethod
-    def is_standard_abbr(current_sentence):
+    def __is_standard_abbr(current_sentence):
         if len(current_sentence) >= 3 and re.search(r'и т\. [дп]\.', ' '.join(current_sentence[-3:])):
             return True
         elif len(current_sentence) >= 2 and re.search(r'и [дп]р\.', ' '.join(current_sentence[-2:])):
@@ -48,7 +48,7 @@ class NaiveSentenceBoundaryDetector(object):
             elif ttype == 'QUOTE':
                 _inside_quotes = not _inside_quotes
 
-                if not _inside_quotes and (self.is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
+                if not _inside_quotes and (self.__is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
                     _current_status = _STATUS_EXPTED
                 else:
                     _current_status = _STATUS_MISS
@@ -57,7 +57,7 @@ class NaiveSentenceBoundaryDetector(object):
             elif ttype in ['RBR', 'RQUOTE']:
                 _brackets_count -= 1
 
-                if _brackets_count == 0 and (self.is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
+                if _brackets_count == 0 and (self.__is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
                     _current_status = _STATUS_EXPTED
                 else:
                     _current_status = _STATUS_MISS
@@ -69,7 +69,7 @@ class NaiveSentenceBoundaryDetector(object):
                         _current_status = _STATUS_EXPTED
                     elif _prev_ttype == 'QUOTE' and not _inside_quotes:
                         _current_status = _STATUS_EXPTED
-                    elif self.ABBR_WITH_POINTS.search(_prev_token) or self.is_standard_abbr(current_sentence):
+                    elif self.ABBR_WITH_POINTS.search(_prev_token) or self.__is_standard_abbr(current_sentence):
                         _current_status = _STATUS_EXPTED
                     elif _current_status == _STATUS_EXPTED and val.istitle():
                         _current_status = _STATUS_SPLIT
