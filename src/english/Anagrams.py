@@ -20,7 +20,7 @@ class AnagramVocabulary:
         self.anagram_dist = AnagramDistance()
 
         if words and isinstance(words, list):
-            self._make_vocabulary(words)
+            self.__make_vocabulary(words)
 
     def __make_vocabulary(self, words):
         for word in words:
