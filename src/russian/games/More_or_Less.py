@@ -4,25 +4,25 @@ from random import randint
 
 class MoreOrLessGame:
     def __init__(self):
-        self.number = -1
-        self.numbers = set()
-        self.quizzed_numbers = set()
-        self.left, self.right = 1, 100
+        self.__number = -1
+        self.__numbers = set()
+        self.__quizzed_numbers = set()
+        self.__left, self.__right = 1, 100
 
-    def update_fields(self):
-        self.number = -1
-        self.left, self.right = 1, 100
+    def __update_fields(self):
+        self.__number = -1
+        self.__left, self.__right = 1, 100
 
-    def clear_fields(self):
-        self.number = -1
-        self.numbers.clear()
-        self.quizzed_numbers.clear()
+    def __clear_fields(self):
+        self.__number = -1
+        self.__numbers.clear()
+        self.__quizzed_numbers.clear()
 
     def move(self):
-        self.numbers.clear()
-        self.number = randint(1, 100)
-        while self.number in self.quizzed_numbers:
-            self.number = randint(1, 100)
+        self.__numbers.clear()
+        self.__number = randint(1, 100)
+        while self.__number in self.__quizzed_numbers:
+            self.__number = randint(1, 100)
         print("Я загадал число от 1 до 100")
 
     def check_answer(self, answer):
@@ -30,31 +30,31 @@ class MoreOrLessGame:
             answer = int(answer)
         except:
             raise Exception("Я не понял твоё число.")
-        if answer in self.numbers:
+        if answer in self.__numbers:
             raise Exception("Ты уже называл такое число.")
         elif answer > 100:
             raise Exception("Ой-ой-ой! Моё число не может быть больше 100.")
-        elif answer < self.left or answer > self.right:
+        elif answer < self.__left or answer > self.__right:
             raise Exception("Ладно, я тебе подскажу! :) Моё число находится в границах [%d, %d]."
-                            % (self.left, self.right))
+                            % (self.__left, self.__right))
         else:
-            self.numbers.add(answer)
-            if answer == self.number:
-                self.update_fields()
-                self.quizzed_numbers.add(answer)
+            self.__numbers.add(answer)
+            if answer == self.__number:
+                self.__update_fields()
+                self.__quizzed_numbers.add(answer)
                 print("Ты угадал моё число. Молодец! Сыграешь со мной ещё?")
                 self.move()
             else:
-                if answer > self.number:
+                if answer > self.__number:
                     ml = "больше"
-                    self.right = answer
+                    self.__right = answer
                 else:
                     ml = "меньше"
-                    self.left = answer
+                    self.__left = answer
                 print("Твоё число %s моего. Попробуешь ещё разок?" % ml)
 
     def print_result(self):
-        total = len(self.quizzed_numbers)
+        total = len(self.__quizzed_numbers)
         if total % 10 == 2 and total % 100 != 12:
             word = "числа"
         elif total % 10 == 1 and total % 100 != 11:
@@ -62,7 +62,7 @@ class MoreOrLessGame:
         else:
             word = "чисел"
         print("Тогда давай закончим игру! Ты угадал %d %s." % (total, word))
-        self.clear_fields()
+        self.__clear_fields()
 
 
 def is_agree():
