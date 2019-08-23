@@ -22,7 +22,7 @@ class AnagramVocabulary:
         if words and isinstance(words, list):
             self._make_vocabulary(words)
 
-    def _make_vocabulary(self, words):
+    def __make_vocabulary(self, words):
         for word in words:
             nearest_word = [w for w in self.vocabulary if self.anagram_dist.distance(word, w) == 0]
             if not nearest_word:
@@ -31,7 +31,7 @@ class AnagramVocabulary:
                 self.vocabulary[nearest_word[0]] += [word]
 
     def add_words(self, words):
-        self._make_vocabulary(words)
+        self.__make_vocabulary(words)
 
 
 if __name__ == '__main__':
