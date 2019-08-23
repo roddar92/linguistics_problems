@@ -6,7 +6,7 @@ from collections import namedtuple
 
 class GrammemeExtractor:
     def __init__(self):
-        self.analyzer = pymystem3.Mystem()
+        self.__analyzer = pymystem3.Mystem()
 
     @staticmethod
     def create_base_token():
@@ -15,8 +15,8 @@ class GrammemeExtractor:
     def extract_grammems(self, sentence):
         grammems = []
 
-        self.analyzer.start()
-        for part in self.analyzer.analyze(sentence):
+        self.__analyzer.start()
+        for part in self.__analyzer.analyze(sentence):
             word, gram = '', ''
             if 'analysis' in part and part['analysis'] is not None:
                 grammems_set = part['analysis'][0]['gr']
@@ -32,7 +32,7 @@ class GrammemeExtractor:
                 token = self.create_base_token()
                 grammems += [token(word, gram)]
 
-                self.analyzer.close()
+                self.__analyzer.close()
 
         return grammems
 
@@ -41,7 +41,7 @@ class Chunker:
     PHRASE_TYPES = ['NP', 'VP', 'ALL']
 
     @staticmethod
-    def _extract_phrase_grammes(phrase):
+    def __extract_phrase_grammes(phrase):
         if not phrase:
             return ''
         i = -1
@@ -50,7 +50,7 @@ class Chunker:
         return phrase[i].Grammems
 
     @staticmethod
-    def _get_phrase_type(grams):
+    def __get_phrase_type(grams):
         if 'S,' in grams or 'S=' in grams or 'прич,' in grams:
             return 'NP'
         elif 'V' in grams and 'ADV' not in grams:
@@ -63,7 +63,7 @@ class Chunker:
         return namedtuple('Phrase', ('Type', 'Text', 'Grammems'))
 
     @staticmethod
-    def _get_pos_tags(tokens):
+    def __get_pos_tags(tokens):
         pos_tags = []
         for token in tokens:
             if not token.Grammems and token.Value.strip() in string.punctuation:
@@ -87,16 +87,16 @@ class Chunker:
         return pos_tags
 
     @staticmethod
-    def _was_apro_in_pos(pos_tags, i, dist):
+    def __was_apro_in_pos(pos_tags, i, dist):
         for j in range(i - dist, i):
             if pos_tags[j] == 'APRO':
                 return True
         return False
 
-    def _update_phrases(self, phrases_array, curr_phrase):
+    def __update_phrases(self, phrases_array, curr_phrase):
         txt = ' '.join(tok.Value for tok in curr_phrase)
-        gram = self._extract_phrase_grammes(curr_phrase)
-        ph_type = self._get_phrase_type(gram)
+        gram = self.__extract_phrase_grammes(curr_phrase)
+        ph_type = self.__get_phrase_type(gram)
 
         if txt and gram:
             tok = self.create_base_phrase()
@@ -107,7 +107,7 @@ class Chunker:
         phrases = []
         current_phrase = []
 
-        pos_tags = self._get_pos_tags(tagged_tokens)
+        pos_tags = self.__get_pos_tags(tagged_tokens)
 
         i = 0
         while i < len(tagged_tokens):
@@ -130,14 +130,14 @@ class Chunker:
                     if current_phrase:
                         last_token = current_phrase[-1]
                     if pos_tags[i] == 'S' and 'им,' in token.Grammems and 'им,' not in last_token.Grammems:
-                        phrases = self._update_phrases(phrases, current_phrase)
+                        phrases = self.__update_phrases(phrases, current_phrase)
                         current_phrase = [token]
                     else:
                         current_phrase += [token]
                     i += 1
             elif pos_tags[i] in 'A APRO'.split() or (pos_tags[i] == 'V' and 'прич,' in token.Grammems):
                 if current_phrase and i > 0 and pos_tags[i - 1] not in 'A APRO PR':
-                    phrases = self._update_phrases(phrases, current_phrase)
+                    phrases = self.__update_phrases(phrases, current_phrase)
                     current_phrase = [token]
                     i += 1
 
@@ -147,11 +147,11 @@ class Chunker:
                     current_phrase += [token]
                     i += 1
 
-                phrases = self._update_phrases(phrases, current_phrase)
+                phrases = self.__update_phrases(phrases, current_phrase)
                 current_phrase = []
             elif pos_tags[i] in 'V ADV'.split():
                 if current_phrase and i > 0 and pos_tags[i - 1] != 'V':
-                    phrases = self._update_phrases(phrases, current_phrase)
+                    phrases = self.__update_phrases(phrases, current_phrase)
                     current_phrase = [token]
                     i += 1
 
@@ -160,17 +160,17 @@ class Chunker:
                     current_phrase += [token]
                     i += 1
 
-                phrases = self._update_phrases(phrases, current_phrase)
+                phrases = self.__update_phrases(phrases, current_phrase)
                 current_phrase = []
             elif pos_tags[i] == 'PUNCT' and token.Value.strip() == ',':
                 while i < len(pos_tags) and \
                         (pos_tags[i] in 'A APRO S CONJ PUNCT'.split() or
-                         (pos_tags[i] == 'V' and ('прич,' in token.Grammems or self._was_apro_in_pos(pos_tags, i, 3)))):
+                         (pos_tags[i] == 'V' and ('прич,' in token.Grammems or self.__was_apro_in_pos(pos_tags, i, 3)))):
                     token = tagged_tokens[i]
                     current_phrase += [token]
                     i += 1
 
-                phrases = self._update_phrases(phrases, current_phrase)
+                phrases = self.__update_phrases(phrases, current_phrase)
                 current_phrase = []
             else:
                 if token.Value.strip() != '.':
@@ -178,7 +178,7 @@ class Chunker:
                 i += 1
 
         if current_phrase:
-            phrases = self._update_phrases(phrases, current_phrase)
+            phrases = self.__update_phrases(phrases, current_phrase)
 
         return phrases
 
