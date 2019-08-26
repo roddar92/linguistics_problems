@@ -5,30 +5,30 @@ from random import random
 
 class CharLevelLanguageModel:
     def __init__(self, ngram=10):
-        self.lm = defaultdict(Counter)
         self.ngram = ngram
-        self.start = '~'
+        self.__lm = defaultdict(Counter)
+        self.__start = '~'
 
     def train(self, path_to_corpus_file):
         print('Get data from the file...')
         with Path(path_to_corpus_file).open() as f:
             print('Collecting of letters\' probabilities...')
-            n_chars = self.start * self.ngram
+            n_chars = self.__start * self.ngram
             for char in f.read():
-                self.lm[n_chars][char] += 1
+                self.__lm[n_chars][char] += 1
                 n_chars = n_chars[1:] + char
-        self.lm = {hist: self._normalize(chars) for hist, chars in self.lm.items()}
+        self.__lm = {hist: self.__normalize(chars) for hist, chars in self.__lm.items()}
 
         return self
 
     @staticmethod
-    def _normalize(counter):
+    def __normalize(counter):
         total = float(sum(counter.values()))
         return [(c, cnt / total) for c, cnt in counter.items()]
 
-    def _generate_letter(self, history):
+    def __generate_letter(self, history):
         history = history[-self.ngram:]
-        dist = self.lm[history]
+        dist = self.__lm[history]
         x = random()
         for c, v in dist:
             x = x - v
@@ -40,7 +40,7 @@ class CharLevelLanguageModel:
         history = self.start * self.ngram
         out = []
         for i in range(n_letters):
-            c = self._generate_letter(history)
+            c = self.__generate_letter(history)
             history = history[-self.ngram:] + c
             out.append(c)
         return "".join(out)
