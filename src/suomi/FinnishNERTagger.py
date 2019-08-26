@@ -60,7 +60,7 @@ def features(sequence, i):
         :param i: word number
         :return: features set
     """
-    seq = sequence[i].split("\t")[1]
+    seq = sequence[i].split("\t")[0]
 
     # first position in the sentence
     if i == 0:
@@ -75,10 +75,10 @@ def features(sequence, i):
     yield "len=" + get_word_len(seq)
 
     # first 4 letters
-    yield "first_four_letters=" + seq[:4] if len(seq) > 4 else seq
+    yield "first_letters=" + seq[:3] if len(seq) > 3 else seq
 
     # last 3 letters
-    yield "last_three_letters=" + seq[-3:] if len(seq) > 3 else seq
+    yield "last_letters=" + seq[-4:] if len(seq) > 4 else seq
 
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
@@ -86,81 +86,57 @@ def features(sequence, i):
     yield "digits_count=" + str(digits_count(seq))
 
     # currency
-    if currency_pattern.search(seq):
-        yield "currency"
+    # if currency_pattern.search(seq):
+    #     yield "currency"
 
-    # ends with -'n' and a vowel behind 'n'
-    if any(seq.endswith(f"{l}n") for l in FI_VOWELS) and not seq.endswith("nen"):
-        yield "ends_with_vowel_n"
-        
-    # ends with -'nen'
-    if seq.endswith("nen"):
-        yield "ends_with_vowel_nen"
-
-    # ends with -'ssa'
-    if seq.endswith("ssa") or seq.endswith("ssä"):
-        yield "ends_with_ssa"
-        
-    # ends with -'sta'
-    if seq.endswith("sta") or seq.endswith("stä"):
-        yield "ends_with_sta"
-
-    # ends with -'lta'
-    if seq.endswith("lta") or seq.endswith("ltä"):
-        yield "ends_with_lta"
-
-    # ends with -'lla'
-    if seq.endswith("lla") or seq.endswith("llä"):
-        yield "ends_with_lla"
-        
     # ends with -'katu' or -'tie' or -'järvi' or -'joki' or -'saari' or -'mäki' or -'vuori' etc.
-    if any(seq.endswith(geo_descr) for geo_descr in FI_GEO_DESCRIPTORS):
-        yield "ends_with_geo"
-        
+    # if any(seq.endswith(geo_descr) for geo_descr in FI_GEO_DESCRIPTORS):
+    #     yield "ends_with_geo"
+
     # is organization descriptor
     if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
         yield "org_descriptor"
 
     if i > 0:
-        prev = sequence[i - 1].split("\t")[1]
+        prev = sequence[i - 1].split("\t")[0]
         # previous word's length
         yield "prev_len=" + str(get_word_len(prev))
 
     if i > 0:
-        prev = sequence[i - 1].split("\t")[1]
+        prev = sequence[i - 1].split("\t")[0]
         # last letters of the previous word
-        yield "prev_last_letters=" + (prev[-3:] if len(prev) > 3 else prev)
+        yield "prev_last_letters=" + (prev[-4:] if len(prev) > 4 else prev)
 
     if i > 0:
-        prev = sequence[i - 1].split("\t")[1]
+        prev = sequence[i - 1].split("\t")[0]
         yield "prev_short_word_shape=" + get_short_word_shape(prev)
         
     if i > 0:
-        prev = sequence[i - 1].split("\t")[1]
+        prev = sequence[i - 1].split("\t")[0]
         yield "prev_is_eos=" + str(prev == ".")
 
     if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[1]
+        next = sequence[i + 1].split("\t")[0]
         # next word's length
         yield "next_len=" + str(get_word_len(next))
 
     if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[1]
+        next = sequence[i + 1].split("\t")[0]
         # last letters of the next word
-        yield "next_last_letters=" + (next[-3:] if len(next) > 3 else next)
+        yield "next_last_letters=" + (next[-4:] if len(next) > 4 else next)
 
     if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[1]
+        next = sequence[i + 1].split("\t")[0]
         yield "next_short_word_shape=" + get_short_word_shape(next)
         
     if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[1]
+        next = sequence[i + 1].split("\t")[0]
         yield "next_is_eos=" + str(next == ".")
 
 # читаем обучающее множество
-X_train, y_train, lengths_train = load_conll(open("../resources/train.data", "r"), features)
+X_train, y_train, lengths_train = load_conll(open("finer-data/data/digitoday.2014.train.csv", "r"), features)
 
-clf = StructuredPerceptron(decode="viterbi", lr_exponent=.05, max_iter=30)
+clf = StructuredPerceptron(decode="bestfirst", lr_exponent=.05, max_iter=10)
 
 print("Fitting model " + str(clf))
 clf.fit(X_train, y_train, lengths_train)
@@ -168,13 +144,14 @@ clf.fit(X_train, y_train, lengths_train)
 print("\nPredictions on dev set")
 
 # читаем отладочное множество
-X_dev, y_dev, lengths_dev = load_conll(open("../resources/dev.data", "r"), features)
+X_dev, y_dev, lengths_dev = load_conll(open("finer-data/data/digitoday.2014.dev.csv", "r"), features)
 y_pred = clf.predict(X_dev, lengths_dev)
 
 print("Whole seq accuracy    ", whole_sequence_accuracy(y_dev, y_pred, lengths_dev))
 print("Element-wise accuracy ", accuracy_score(y_dev, y_pred))
 print("Mean F1-score macro   ", f1_score(y_dev, y_pred, average="macro"))
 
+"""
 print("\nPredictions on test set")
 
 # читаем тестовое множество
@@ -189,3 +166,4 @@ with open("submission.csv", "w") as wf:
     wf.write("id,tag\n")
     for id, tag in enumerate(list(y_pred)):
         wf.write(str(id + 1) + "," + tag + "\n")
+"""
