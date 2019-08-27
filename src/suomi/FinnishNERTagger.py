@@ -106,6 +106,10 @@ def features(sequence, i):
     # is organization descriptor
     if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
         yield "org_descriptor"
+        
+    # contains :
+    if ":" in seq and seq != ":":
+        yield "contains_colon"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
