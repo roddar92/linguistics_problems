@@ -53,7 +53,7 @@ def get_word_shape(seq):
 
 
 def get_short_word_shape(seq):
-    return re.sub("(\w)(\1)+", "\1", get_word_shape(seq))
+    return re.sub("(\\w)(\\1)+", "\\1", get_word_shape(seq))
 
 
 def features(sequence, i):
@@ -66,63 +66,54 @@ def features(sequence, i):
     seq = sequence[i].split("\t")[0]
 
     # first position in the sentence
-    if i == 0:
+    """if i == 0:
         yield "first"
 
     if i == len(sequence) - 1:
-        yield "last"
+        yield "last\""""
         
     yield "is_eos=" + str(seq == ".")
 
     # word's length
-    yield "len=" + get_word_len(seq)
+    # yield "len=" + get_word_len(seq)
 
     # first 4 letters
-    yield "first_letters=" + seq[:3] if len(seq) > 3 else seq
+    yield "first_letters=" + seq[:4] if len(seq) > 4 else seq
 
-    # last 3 letters
-    yield "last_letters=" + seq[-4:] if len(seq) > 4 else seq
+    # last 5 letters
+    yield "last_letters=" + seq[-5:] if len(seq) > 5 else seq
 
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
-    yield "digits_count=" + str(digits_count(seq))
-    
-    if "-" in seq and seq != '-':
-        yield "has_hypen"
-        
-    if "\"" in seq:
-        yield "has_quotes"
-
-    # currency
-    # if currency_pattern.search(seq):
-    #     yield "currency"
-
-    # ends with -'katu' or -'tie' or -'järvi' or -'joki' or -'saari' or -'mäki' or -'vuori' etc.
-    # if any(seq.endswith(geo_descr) for geo_descr in FI_GEO_DESCRIPTORS):
-    #     yield "ends_with_geo"
+    # yield "digits_count=" + str(digits_count(seq))
     
     # is date descriptor
     if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
         yield "date_descriptor"
 
     # is organization descriptor
-    if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
-        yield "org_descriptor"
-        
-    # contains :
-    if ":" in seq and seq != ":":
-        yield "contains_colon"
+    # if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
+    #     yield "org_descriptor"
 
-    if i > 0:
-        prev = sequence[i - 1].split("\t")[0]
+    # if i > 0:
+    #    prev = sequence[i - 1].split("\t")[0]
         # previous word's length
-        yield "prev_len=" + str(get_word_len(prev))
+    #    yield "prev_len=" + str(get_word_len(prev))
+
+    if i > 1:
+        pprev = sequence[i - 2].split("\t")[0]
+        yield "pprev_short_word_shape=" + get_short_word_shape(pprev)
+
+    if i > 1:
+        pprev = sequence[i - 2].split("\t")[0]
+        # last letters of the previous word
+        yield "pprev_last_letters=" + (pprev[-5:] if len(pprev) > 5 else pprev)
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
         # last letters of the previous word
-        yield "prev_last_letters=" + (prev[-4:] if len(prev) > 4 else prev)
+        yield "prev_last_letters=" + (prev[-5:] if len(prev) > 5 else prev)
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
@@ -132,15 +123,15 @@ def features(sequence, i):
         prev = sequence[i - 1].split("\t")[0]
         yield "prev_is_eos=" + str(prev == ".")
 
-    if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[0]
+    # if i < len(sequence) - 1:
+    #    next = sequence[i + 1].split("\t")[0]
         # next word's length
-        yield "next_len=" + str(get_word_len(next))
+    #    yield "next_len=" + str(get_word_len(next))
 
     if i < len(sequence) - 1:
         next = sequence[i + 1].split("\t")[0]
         # last letters of the next word
-        yield "next_last_letters=" + (next[-4:] if len(next) > 4 else next)
+        yield "next_last_letters=" + (next[-5:] if len(next) > 5 else next)
 
     if i < len(sequence) - 1:
         next = sequence[i + 1].split("\t")[0]
@@ -149,6 +140,15 @@ def features(sequence, i):
     if i < len(sequence) - 1:
         next = sequence[i + 1].split("\t")[0]
         yield "next_is_eos=" + str(next == ".")
+
+    if i < len(sequence) - 2:
+        nnext = sequence[i + 2].split("\t")[0]
+        yield "nnext_short_word_shape=" + get_short_word_shape(nnext)
+
+    if i < len(sequence) - 2:
+        nnext = sequence[i + 2].split("\t")[0]
+        # last letters of the next word
+        yield "nnext_last_letters=" + (nnext[-5:] if len(nnext) > 5 else nnext)
 
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("finer-data/data/digitoday.2014.train.csv", "r"), features)
