@@ -19,6 +19,9 @@ real_num_pattern = re.compile('\d+([\.\,\:\/]\d)+')
 currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
 
 
+FI_DATE_DESCRIPTORS = [
+    "kuun", "kuu", "kuuta", "kuussa", "kuulta", "vuoden", "vuonna", "vuoteen", "vuodesta", "vappu"
+]
 FI_GEO_DESCRIPTORS = [
     "kylä", "katu", "tie", "järvi", "joki", "mäki", "vuori", "salmi",
     "vaara", "lahti", "linna", "koski", "niemi", "ranta", "suu", "maa"
@@ -84,6 +87,9 @@ def features(sequence, i):
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
     yield "digits_count=" + str(digits_count(seq))
+    
+    if "-" in seq:
+        yield "has_hypen"
 
     # currency
     # if currency_pattern.search(seq):
@@ -92,6 +98,10 @@ def features(sequence, i):
     # ends with -'katu' or -'tie' or -'järvi' or -'joki' or -'saari' or -'mäki' or -'vuori' etc.
     # if any(seq.endswith(geo_descr) for geo_descr in FI_GEO_DESCRIPTORS):
     #     yield "ends_with_geo"
+    
+    # is date descriptor
+    if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
+        yield "date_descriptor"
 
     # is organization descriptor
     if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
