@@ -88,8 +88,11 @@ def features(sequence, i):
     yield "short_word_shape=" + get_short_word_shape(seq)
     yield "digits_count=" + str(digits_count(seq))
     
-    if "-" in seq:
+    if "-" in seq and seq != '-':
         yield "has_hypen"
+        
+    if "\"" in seq:
+        yield "has_quotes"
 
     # currency
     # if currency_pattern.search(seq):
