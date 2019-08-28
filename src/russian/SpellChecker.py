@@ -29,7 +29,15 @@ class WordDict:
         self.root = {}
 
     def __contains__(self, item):
-        return self.get_label_for_phrase(item.split())
+        node = self.root
+        for letter in item:
+            letter = letter.lower()
+            if letter not in node.keys():
+                return False
+
+            node = node[letter]
+        else:
+            return self._END in node
 
     def __add_item(self, word):
         node = self.root
@@ -42,17 +50,6 @@ class WordDict:
         for word in words:
             self.__add_item(word)
         return self
-
-    def get_label_for_phrase(self, word):
-        node = self.root
-        for letter in word:
-            letter = letter.lower()
-            if letter not in node.keys():
-                return False
-
-            node = node[letter]
-        else:
-            return self._END in node
 
 
 class StatisticalSpeller(object):
@@ -106,9 +103,9 @@ class StatisticalSpeller(object):
         checkpoint = time.time()
         words_vocab = self.voc_vectorizer.fit_transform(texts).tocoo()
 
-        # self.voc = dict(zip(self.voc_vectorizer.get_feature_names(), words_vocab.sum(axis=0).A1))
-        for itup in zip(words_vocab.row, words_vocab.col):
-            self.voc[itup[1]] += 1
+        self.voc = dict(zip(sorted(self.voc_vectorizer.vocabulary_.values()), words_vocab.sum(axis=0).A1))
+        # for itup in zip(words_vocab.row, words_vocab.col):
+        #     self.voc[itup[1]] += 1
 
         print("Speller fitted for texts in", time.time() - checkpoint)
 
