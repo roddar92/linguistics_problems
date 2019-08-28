@@ -106,9 +106,9 @@ class StatisticalSpeller(object):
         checkpoint = time.time()
         words_vocab = self.voc_vectorizer.fit_transform(texts).tocoo()
 
-        self.voc = dict(zip(self.voc_vectorizer.get_feature_names(), words_vocab.sum(axis=0).A1))
-        # for itup in zip(words_vocab.row, words_vocab.col):
-        #     self.voc[itup[1]] += 1
+        # self.voc = dict(zip(self.voc_vectorizer.get_feature_names(), words_vocab.sum(axis=0).A1))
+        for itup in zip(words_vocab.row, words_vocab.col):
+            self.voc[itup[1]] += 1
 
         print("Speller fitted for texts in", time.time() - checkpoint)
 
