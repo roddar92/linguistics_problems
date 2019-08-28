@@ -22,6 +22,39 @@ nltk.download('stopwords')
 all_stopwords = stopwords.words('russian') + stopwords.words('english')
 
 
+class WordDict:
+    _END = '__end__'
+
+    def __init__(self):
+        self.root = {}
+
+    def __contains__(self, item):
+        return self.get_label_for_phrase(item.split())
+
+    def __add_item(self, word):
+        node = self.root
+        for letter in word:
+            letter = letter.lower()
+            node = node.setdefault(letter, {})
+        node[self._END] = self._END
+            
+    def collect(self, words):
+        for word in words:
+            self.__add_item(word)
+        return self
+
+    def get_label_for_phrase(self, word):
+        node = self.root
+        for letter in word:
+            letter = letter.lower()
+            if letter not in node.keys():
+                return False
+
+            node = node[letter]
+        else:
+            return self._END in node
+
+
 class StatisticalSpeller(object):
     """
         Поиск слов, наиболее близких по числу общих n-грамм и
@@ -328,11 +361,13 @@ if __name__ == "__main__":
 
     # зачитываем словарь "правильных слов"
     words_set = set(line.strip() for line in codecs.open("../resources/words_dict.txt", "r", encoding="utf-8"))
-    words_list = sorted(list(words_set))
+    
+    words_dict = WordDict()
+    words_dict.collect(words_set)
 
     # создаём спеллер
     speller = StatisticalSpeller()
-    speller.fit(words_list)
+    speller.fit(sorted(list(words_set)))
 
     # читаем выборку
     df = pd.read_csv("../resources/texts.csv")
@@ -365,13 +400,13 @@ if __name__ == "__main__":
         # далее при наличие слева стопслова с опечаткой пытаемся его исправить с помощью простых эвристик
         for j in range(len(mispelled_tokens)):
             if mispelled_tokens[j] not in all_stopwords \
-                    and mispelled_tokens[j] not in words_set:
+                    and mispelled_tokens[j] not in words_dict:
                 rectified_token = speller.rectify(mispelled_tokens[j])
                 mispelled_tokens[j] = rectified_token
                 if j - 1 >= 0:
                     mispelled_tokens[j - 1] = speller.need_fix_prep(rectified_token, mispelled_tokens[j - 1])
                 was_rectified = True
-            elif mispelled_tokens[j] in words_set:
+            elif mispelled_tokens[j] in words_dict:
                 mispelled_tokens[j - 1] = speller.need_fix_prep(mispelled_tokens[j], mispelled_tokens[j - 1])
                 nw = mispelled_tokens[j + 1] if j + 1 < len(mispelled_tokens) else ''
                 mispelled_tokens[j] = speller.need_fix_prep_after_words(mispelled_tokens[j - 1],
