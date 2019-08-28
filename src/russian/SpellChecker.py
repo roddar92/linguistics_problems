@@ -141,7 +141,7 @@ class StatisticalSpeller(object):
             dl_distance = damerau_levenshtein_distance(sugg, word)
             fitted_sugg_list = self.voc_vectorizer.transform([f"{prev_word} {sugg}"]).tocoo().col
             if dl_distance <= 5:
-                suggests.append((sugg, dl_distance, self.voc[fitted_sugg_list[0]] if fitted_sugg_list else 0))
+                suggests.append((sugg, dl_distance, self.voc.get(fitted_sugg_list[0], 0.0) if fitted_sugg_list else 0))
 
         suggests = sorted(suggests, key=lambda tup: tup[1])
 
