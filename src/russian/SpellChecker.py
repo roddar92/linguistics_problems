@@ -63,7 +63,7 @@ class StatisticalSpeller(object):
 
     @staticmethod
     def tokenize(text):
-        return [t for t in text.split()]
+        return ['^'] + [t for t in text.split()] + ['$']
 
     def __init__(self, n_candidates_search=150):
         """
@@ -74,9 +74,9 @@ class StatisticalSpeller(object):
 
         # векторайзеры для нграмного индекса и частотного словаря
         self.vectorizer = CountVectorizer(analyzer="char_wb", ngram_range=(2, 3), binary=True)
-        self.voc_vectorizer = CountVectorizer(tokenizer=self.tokenize)
+        self.voc_vectorizer = CountVectorizer(tokenizer=self.tokenize, ngram_range=(2, 2))
 
-        # нграмный индекс + частотный словарь по корпусу текстов
+        # нграмный индекс + частотный словарь биграм по корпусу текстов
         self.index = defaultdict(set)
         self.voc = defaultdict(int)
 
@@ -106,13 +106,14 @@ class StatisticalSpeller(object):
         checkpoint = time.time()
         words_vocab = self.voc_vectorizer.fit_transform(texts).tocoo()
 
-        for itup in zip(words_vocab.row, words_vocab.col):
-            self.voc[itup[1]] += 1
+        self.voc = dict(zip(self.voc_vectorizer.get_feature_names(), words_vocab.sum(axis=0).A1))
+        # for itup in zip(words_vocab.row, words_vocab.col):
+        #     self.voc[itup[1]] += 1
 
         print("Speller fitted for texts in", time.time() - checkpoint)
 
     @lru_cache(maxsize=1000000)
-    def rectify(self, word):
+    def rectify(self, word, prev_word):
         """
             Предсказания спеллера
         """
@@ -138,7 +139,7 @@ class StatisticalSpeller(object):
         for suggest in counter.most_common(n=self.n_candidates):
             sugg = self.words_list[suggest[0]]
             dl_distance = damerau_levenshtein_distance(sugg, word)
-            fitted_sugg_list = self.voc_vectorizer.transform([sugg]).tocoo().col
+            fitted_sugg_list = self.voc_vectorizer.transform([f"{prev_word} {sugg}"]).tocoo().col
             if dl_distance <= 5:
                 suggests.append((sugg, dl_distance, self.voc[fitted_sugg_list[0]] if fitted_sugg_list else 0))
 
@@ -401,7 +402,8 @@ if __name__ == "__main__":
         for j in range(len(mispelled_tokens)):
             if mispelled_tokens[j] not in all_stopwords \
                     and mispelled_tokens[j] not in words_dict:
-                rectified_token = speller.rectify(mispelled_tokens[j])
+                prev_token = mispelled_tokens[j - 1] if j > 0 else '^'
+                rectified_token = speller.rectify(mispelled_tokens[j], prev_token)
                 mispelled_tokens[j] = rectified_token
                 if j - 1 >= 0:
                     mispelled_tokens[j - 1] = speller.need_fix_prep(rectified_token, mispelled_tokens[j - 1])
