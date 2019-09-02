@@ -48,8 +48,7 @@ def get_word_shape(seq):
         'A' if re.search('[ÄÖ]', s) else
         'x' if re.search('[a-z]', s) else
         'a' if re.search('[äö]', s) else
-        'd' if re.search('\d', s) else
-        'p' if s in string.punctuation else s
+        'd' if re.search('\d', s) else s
         for s in seq
     ])
 
@@ -77,7 +76,7 @@ def features(sequence, i):
     yield "is_eos=" + str(seq == ".")
 
     # word's length
-    # yield "len=" + get_word_len(seq)
+    yield "len=" + get_word_len(seq)
 
     # first 4 letters
     yield "first_letters=" + seq[:4] if len(seq) > 4 else seq
