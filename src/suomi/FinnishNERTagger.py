@@ -97,10 +97,10 @@ def features(sequence, i):
     # if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
     #     yield "org_descriptor"
 
-    # if i > 0:
-    #    prev = sequence[i - 1].split("\t")[0]
-        # previous word's length
-    #    yield "prev_len=" + str(get_word_len(prev))
+    if i > 0:
+       prev = sequence[i - 1].split("\t")[0]
+       # previous word's length
+       yield "prev_len=" + str(get_word_len(prev))
 
     if i > 1:
         pprev = sequence[i - 2].split("\t")[0]
@@ -124,10 +124,10 @@ def features(sequence, i):
         prev = sequence[i - 1].split("\t")[0]
         yield "prev_is_eos=" + str(prev == ".")
 
-    # if i < len(sequence) - 1:
-    #    next = sequence[i + 1].split("\t")[0]
-        # next word's length
-    #    yield "next_len=" + str(get_word_len(next))
+    if i < len(sequence) - 1:
+       next = sequence[i + 1].split("\t")[0]
+       # next word's length
+       yield "next_len=" + str(get_word_len(next))
 
     if i < len(sequence) - 1:
         next = sequence[i + 1].split("\t")[0]
