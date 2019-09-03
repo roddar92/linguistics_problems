@@ -12,12 +12,12 @@ class CognateWordChecker(object):
     def __init__(self, word2vec_path, lang="russian"):
         self.morphological_analyser = pymorphy2.MorphAnalyzer()
         self.stemmer = SnowballStemmer(language=lang)
-        self.prefixes = re.compile(r"^(пере|чрез|еже)")
-        self.suffixes = re.compile(r"([иоы]й|ая|ец|н[иь]е|ция|(ос)?ть|с[ья]|ище|ист|ни(к|ца)|тель)$")
+        self.__prefixes = re.compile(r"^(пере|чрез|еже)")
+        self.__suffixes = re.compile(r"([иоы]й|ая|ец|н[иь]е|ция|(ос)?ть|с[ья]|ище|ист|ни(к|ца)|тель)$")
 
-        self.w2v = self._load_word2vec(word2vec_path)
+        self.w2v = self.__load_word2vec(word2vec_path)
 
-        self.changed_consonants = [
+        self.__changed_consonants = [
             {'г', 'ж', 'з'},
             {'к', 'ч'},
             {'х', 'ш'},
@@ -27,7 +27,7 @@ class CognateWordChecker(object):
             {'с', 'щ'}
         ]
 
-        self.changed_vowels = [
+        self.__changed_vowels = [
             {'о', 'е', 'и'},
             {'о', 'у', 'ы'},
             {'о', 'е'},
@@ -42,7 +42,7 @@ class CognateWordChecker(object):
         self.consonants_before_l = 'бпвфм'
 
     @staticmethod
-    def _load_word2vec(path, limit=500000):
+    def __load_word2vec(path, limit=500000):
         """
         Init word2vec model
         :param path: path to the model
@@ -57,22 +57,22 @@ class CognateWordChecker(object):
         return w2v
 
     @staticmethod
-    def _is_vowel(symbol):
+    def __is_vowel(symbol):
         return symbol in 'аеиоуыэюя'
 
-    def _is_changed_consonants(self, symbol1, symbol2):
-        for changed_consinants_set in self.changed_consonants:
+    def __is_changed_consonants(self, symbol1, symbol2):
+        for changed_consinants_set in self.__changed_consonants:
             if symbol1 in changed_consinants_set and symbol2 in changed_consinants_set:
                 return True
         return False
 
-    def _is_changed_vowels(self, symbol1, symbol2):
-        for changed_vowels_set in self.changed_vowels:
+    def __is_changed_vowels(self, symbol1, symbol2):
+        for changed_vowels_set in self.__changed_vowels:
             if symbol1 in changed_vowels_set and symbol2 in changed_vowels_set:
                 return True
         return False
 
-    def _find_hidden_vowels(self, a, b):
+    def __find_hidden_vowels(self, a, b):
         w1, w2 = list(a), list(b)
         l1, l2 = len(a), len(b)
         for i in range(l1 - 2):
@@ -86,23 +86,23 @@ class CognateWordChecker(object):
                         w2[j + 1] = '*'
         return ''.join(w1), ''.join(w2)
 
-    def _find_changed_vowels(self, a, b):
+    def __find_changed_vowels(self, a, b):
         w1, w2 = list(a), list(b)
         l1, l2 = len(a), len(b)
         for i in range(l1 - 2):
             for j in range(l2 - 2):
                 if a[i] == b[j] and a[i + 2] == b[j + 2] and \
-                        a[i + 1] != b[j + 1] and self._is_changed_vowels(a[i + 1], b[j + 1]):
+                        a[i + 1] != b[j + 1] and self.__is_changed_vowels(a[i + 1], b[j + 1]):
                     w1[i + 1] = '*'
                     w2[j + 1] = '*'
         return ''.join(w1), ''.join(w2)
 
-    def _improve_substring(self, substring, word1, word2):
+    def __improve_substring(self, substring, word1, word2):
         start1, end1 = word1.find(substring), word1.find(substring) + len(substring)
         start2, end2 = word2.find(substring), word1.find(substring) + len(substring)
 
         if end1 < len(word1) and end2 < len(word2):
-            if self._is_changed_consonants(word1[end1], word2[end2]):
+            if self.__is_changed_consonants(word1[end1], word2[end2]):
                 substring += word1[end1]
 
         if substring[-1] in self.consonants_before_l and \
@@ -112,16 +112,16 @@ class CognateWordChecker(object):
 
         return substring
 
-    def _get_lemma(self, word):
+    def __get_lemma(self, word):
         return self.morphological_analyser.normal_forms(word)[0]
 
-    def _get_word_canonical_form(self, word):
+    def __get_word_canonical_form(self, word):
         stemmed_word = word
 
-        while self.prefixes.search(stemmed_word) and not len(stemmed_word) <= 5:
-            stemmed_word = self.prefixes.sub("", stemmed_word)
-        while self.suffixes.search(stemmed_word) and not len(stemmed_word) <= 5:
-            stemmed_word = self.suffixes.sub("", stemmed_word)
+        while self.__prefixes.search(stemmed_word) and not len(stemmed_word) <= 5:
+            stemmed_word = self.__prefixes.sub("", stemmed_word)
+        while self.__suffixes.search(stemmed_word) and not len(stemmed_word) <= 5:
+            stemmed_word = self.__suffixes.sub("", stemmed_word)
 
         if len(stemmed_word) > 5:
             stemmed_word = self.stemmer.stem(stemmed_word)
@@ -129,18 +129,18 @@ class CognateWordChecker(object):
         hard_sign_index = stemmed_word.find('ъ')
         stemmed_word = stemmed_word[(hard_sign_index + 1):]
 
-        if stemmed_word[-1] == 'н' and not self._is_vowel(stemmed_word[-2]):
+        if stemmed_word[-1] == 'н' and not self.__is_vowel(stemmed_word[-2]):
             return stemmed_word[:-1]
 
         return stemmed_word
 
     @staticmethod
-    def _is_complex(word, root):
+    def __is_complex(word, root):
         ind = word.find(root)
         return word[ind - 1] in "ое" if ind > 0 else word[ind + 1] in "ое" if ind < len(word) else False
 
     @staticmethod
-    def _find_lcs(a, b):
+    def __find_lcs(a, b):
         mem = [[0] * (1 + len(b)) for _ in range(1 + len(a))]
         lcs, end = 0, 0
         for i in range(1, 1 + len(a)):
@@ -155,7 +155,7 @@ class CognateWordChecker(object):
         return a[end - lcs: end]
 
     def has_words_same_root(self, w1, w2):
-        lemmas = [self._get_lemma(w) for w in (w1, w2)]
+        lemmas = [self.__get_lemma(w) for w in (w1, w2)]
 
         if len(set(lemmas)) < 2:
             return "У вас было введено одно и тоже слово!"
@@ -163,17 +163,17 @@ class CognateWordChecker(object):
         if self.w2v.similarity(lemmas[0], lemmas[-1]) < 0.45:
             return "Слова с омонимичным корнем не могут является однокоренными..."
 
-        normalized_words = [self._get_word_canonical_form(w) for w in lemmas]
-        corrected_normalized = self._find_changed_vowels(normalized_words[0], normalized_words[-1])
-        corrected_normalized = self._find_hidden_vowels(corrected_normalized[0], corrected_normalized[-1])
+        normalized_words = [self.__get_word_canonical_form(w) for w in lemmas]
+        corrected_normalized = self.__find_changed_vowels(normalized_words[0], normalized_words[-1])
+        corrected_normalized = self.__find_hidden_vowels(corrected_normalized[0], corrected_normalized[-1])
 
-        lcs = reduce(self._find_lcs, corrected_normalized)
+        lcs = reduce(self.__find_lcs, corrected_normalized)
 
         if len(lcs) <= 2:
-            lcs = self._improve_substring(lcs, normalized_words[0], normalized_words[-1])
+            lcs = self.__improve_substring(lcs, normalized_words[0], normalized_words[-1])
 
         if any(len(lcs) < len(w) * 0.5 for w in normalized_words):
-            if self._is_complex(w1, lcs) or self._is_complex(w2, lcs):
+            if self.__is_complex(w1, lcs) or self.__is_complex(w2, lcs):
                 return "О, кажется, обнаружено сложное слово с корнем из другого слова!"
             return "Ваши слова не является однокоренными..."
         else:
@@ -182,7 +182,7 @@ class CognateWordChecker(object):
 
 if __name__ == "__main__":
     rch = CognateWordChecker(
-        "/Users/daria/PycharmProjects/csc_projects/nlp/hw4/all.norm-sz100-w10-cb0-it1-min100.w2v"
+        "../resources/all.norm-sz100-w10-cb0-it1-min100.w2v"
     )
 
     assert rch.has_words_same_root("дом", "домик") == "Ура! Все слова происходят от одного корня!"
