@@ -10,7 +10,7 @@ from nltk import bigrams, word_tokenize
 class WordFiller:
     START, END = '^', '^'
 
-    def __init__(self, ngram, weights, alpha=1.0):
+    def __init__(self, ngram=2, weights=[.5, .5], alpha=1.0):
         if ngram < 2:
             raise Exception('N-gram parameter should be at least 2 size!')
         if ngram != len(weights):
@@ -20,6 +20,7 @@ class WordFiller:
         self.ngram = ngram
         self.weights = weights
         self.vocab_size = None
+        self.__total = None
 
         self.__unigram_counts = defaultdict(lambda: 0)
         self.__bigram_counts = defaultdict(lambda: 0)
@@ -43,6 +44,7 @@ class WordFiller:
                     print(f"Processed {n} lines")
 
         self.vocab_size = len(self.__unigram_counts)
+        self.__total = sum(self.__unigram_counts.values())
 
         self.__dict_list = [self.__bigram_counts, self.__unigram_counts]
         return self
@@ -59,9 +61,10 @@ class WordFiller:
         for i in range(self.ngram - 1):
             sub_gram = tokens[i:]
             sub_context = sub_gram[:-1]
+            context_freq = self.__total if not sub_context else self.__dict_list[i + 1][' '.join(sub_context)]
             prob += self.weights[i] * (
                     (self.__dict_list[i][' '.join(sub_gram)] + self.alpha) /
-                    (self.alpha * self.vocab_size + self.__dict_list[i + 1][' '.join(sub_context)]))
+                    (self.alpha * self.vocab_size + context_freq))
 
         return np.log2(prob)
 
