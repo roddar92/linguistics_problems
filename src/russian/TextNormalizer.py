@@ -73,14 +73,14 @@ class Number2TextConverter:
         7: 'десятимиллионная',
     }
 
-    _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
-    _DECIMAL = re.compile(r'(\d+)[.,](\d+)', re.IGNORECASE)
+    __ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
+    __DECIMAL = re.compile(r'(\d+)[.,](\d+)', re.IGNORECASE)
 
     def __init__(self):
         self.morph = pymorphy2.MorphAnalyzer()
 
     @staticmethod
-    def _number2decomposition(number):
+    def __number2decomposition(number):
         decomposition = []
         k = 1
         while number > 0:
@@ -109,7 +109,7 @@ class Number2TextConverter:
                 i += 2
         return number
 
-    def _inflect_word(self, n, word):
+    def __inflect_word(self, n, word):
         return self.morph.parse(word)[0].make_agree_with_number(n).word
 
     def convert(self, number, grammems=None, ordered=False):
@@ -127,8 +127,8 @@ class Number2TextConverter:
         if type(number) == float:
             number = str(number)
 
-        if type(number) == str and self._DECIMAL.search(number):
-            decimal = self._DECIMAL.search(number)
+        if type(number) == str and self.__DECIMAL.search(number):
+            decimal = self.__DECIMAL.search(number)
             b_point, a_point = int(decimal.group(1)), decimal.group(2)
 
             rem = self.FRAC_REM[len(a_point)]
@@ -139,14 +139,14 @@ class Number2TextConverter:
             b_str = _change_last_word(b_str)
 
             first, second = ' '.join(a_str), ' '.join(b_str)
-            n_word, rem_word = self._inflect_word(b_point, 'целая'), self._inflect_word(int(a_point), rem)
+            n_word, rem_word = self.__inflect_word(b_point, 'целая'), self.__inflect_word(int(a_point), rem)
             result = f'{first} {n_word} {second} {rem_word}'
             return result
 
-        if type(number) == str and self._ROMAN_REGEX.match(number):
-            decomposition = self._number2decomposition(self.roman2arabic(number.upper()))
+        if type(number) == str and self.__ROMAN_REGEX.match(number):
+            decomposition = self.__number2decomposition(self.roman2arabic(number.upper()))
         else:
-            decomposition = self._number2decomposition(number)
+            decomposition = self.__number2decomposition(number)
 
         answer = []
         for i, n in enumerate(decomposition):
@@ -214,15 +214,15 @@ class Number2TextConverter:
 
 # TODO class TextNormalizer with normalization approach (2км => 2 км => два км OR 2 книги => две книги)
 class TextNormalizer:
-    _NUMB_WITH_ORD_ENDINGS = re.compile(r'(\d+)-?([оыьа][ехя]|[ео]?го|[еоы]?й|е|х)', re.IGNORECASE)
-    _NUMB_WITH_ENDINGS = re.compile(r'(\d+)-?([мт]?и|(ть)?ю)', re.IGNORECASE)
-    _NUMBERS = re.compile(r'^(\d+([.,]\d+)?)$', re.IGNORECASE)
-    _NUMBERS_WITH_ZEROS = re.compile(r'(?<=\d)(\s)(000)', re.IGNORECASE)
-    _ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
-    _MONTHS = re.compile(r'^(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
+    __NUMB_WITH_ORD_ENDINGS = re.compile(r'(\d+)-?([оыьа][ехя]|[ео]?го|[еоы]?й|е|х)', re.IGNORECASE)
+    __NUMB_WITH_ENDINGS = re.compile(r'(\d+)-?([мт]?и|(ть)?ю)', re.IGNORECASE)
+    __NUMBERS = re.compile(r'^(\d+([.,]\d+)?)$', re.IGNORECASE)
+    __NUMBERS_WITH_ZEROS = re.compile(r'(?<=\d)(\s)(000)', re.IGNORECASE)
+    __ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
+    __MONTHS = re.compile(r'^(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
                          r'ма[йя]|июня?|июля?|авг(уст)?а?|'
                          r'сент?(ябр[ья])?|окт(ябр[ья])?|ноя(бр[ья])?|дек(абр[ья])?)$', re.IGNORECASE)
-    _YEAR_CENTURY = re.compile(r'^(век(а|е|ов)|вв?|год[ау]|гг?)$', re.IGNORECASE)
+    __YEAR_CENTURY = re.compile(r'^(век(а|е|ов)|вв?|год[ау]|гг?)$', re.IGNORECASE)
 
     ENDING_TO_GRAMMEME = {
         'ая': {'femn'},
@@ -297,11 +297,11 @@ class TextNormalizer:
 
     @classmethod
     def remove_spaces_between_zeros(cls, text):
-        return cls._NUMBERS_WITH_ZEROS.sub(r'\2', text)
+        return cls.__NUMBERS_WITH_ZEROS.sub(r'\2', text)
 
-    def _extract_parameters_for_number(self, text):
-        match = self._NUMB_WITH_ORD_ENDINGS.search(text)
-        match2 = self._NUMB_WITH_ENDINGS.search(text)
+    def __extract_parameters_for_number(self, text):
+        match = self.__NUMB_WITH_ORD_ENDINGS.search(text)
+        match2 = self.__NUMB_WITH_ENDINGS.search(text)
         if match:
             number, ending = int(match.group(1)), match.group(2)
         else:
@@ -314,10 +314,10 @@ class TextNormalizer:
         grammems, ordered = set(), False
         gender, number, case = (False, False, False)
         for token in text_fragment:
-            if self._YEAR_CENTURY.match(token) or self._MONTHS.match(token) or \
+            if self.__YEAR_CENTURY.match(token) or self.__MONTHS.match(token) or \
                     self.morph.parse(token)[0].normal_form in ['быть', 'стать']:
                 ordered = True
-                if self._YEAR_CENTURY.match(token):
+                if self.__YEAR_CENTURY.match(token):
                     parse = self.morph.parse(token)
                     if parse:
                         grammems = {parse[0].tag.number, parse[0].tag.case}
@@ -327,7 +327,7 @@ class TextNormalizer:
                         grammems = {'masc', 'gent'}
                         case = True
                         gender = True
-                elif self._MONTHS.search(token):
+                elif self.__MONTHS.search(token):
                     grammems = {'neut'}
                     case = True
                 elif self.morph.parse(token)[0].normal_form in ['быть', 'стать']:
@@ -350,29 +350,29 @@ class TextNormalizer:
     def normalize(self, tokens, neighbours=2):
         result = []
         for i, token in enumerate(tokens):
-            if self._ROMAN_REGEX.match(token) or self._NUMBERS.match(token):
+            if self.__ROMAN_REGEX.match(token) or self.__NUMBERS.match(token):
                 # TODO: improve/train ordered and grammems parameters
                 a = 0 if i < neighbours else i - neighbours
                 b = len(tokens) if i + neighbours > len(tokens) + 1 else i + neighbours
                 ordered, grammems = self.calculate_parameters_by_neighbours(
                     tokens[a:i] + tokens[i:b])
 
-            if self._NUMB_WITH_ORD_ENDINGS.search(token) or self._NUMB_WITH_ENDINGS.search(token):
-                number, ordered, grammems = self._extract_parameters_for_number(token)
+            if self.__NUMB_WITH_ORD_ENDINGS.search(token) or self.__NUMB_WITH_ENDINGS.search(token):
+                number, ordered, grammems = self.__extract_parameters_for_number(token)
                 if number in [2, 3] and token.endswith('х'):
                     result += ['двух' if number == 2 else 'трех']
                 else:
                     result += [self.numb2text.convert(number, grammems=grammems, ordered=ordered)]
-            elif self._ROMAN_REGEX.match(token):
+            elif self.__ROMAN_REGEX.match(token):
                 result += [self.numb2text.convert(token, grammems=grammems, ordered=ordered)]
-            elif self._NUMBERS.match(token):
+            elif self.__NUMBERS.match(token):
                 result += [self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)]
             elif token in self.UNITS:
                 units = self.UNITS[token]
-                if self._ROMAN_REGEX.match(tokens[i - 1]) or self._NUMBERS.match(tokens[i - 1]):
+                if self.__ROMAN_REGEX.match(tokens[i - 1]) or self.__NUMBERS.match(tokens[i - 1]):
                     prev_token = tokens[i - 1]
                     n = self.numb2text.roman2arabic(prev_token) \
-                        if self._ROMAN_REGEX.match(prev_token) else int(prev_token)
+                        if self.__ROMAN_REGEX.match(prev_token) else int(prev_token)
                     units_parse = self.morph.parse(units)
                     if units_parse:
                         for unit in units_parse:
