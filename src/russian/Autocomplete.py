@@ -40,4 +40,4 @@ if __name__ == '__main__':
     trie.add('hackerearth', 10)
     trie.add('hackerrank', 9)
     trie.add('hacker', 6)
-    assert trie.autocomplete(hacker) == ('hackerearth', 10)
+    assert trie.autocomplete('hacker') == ('hackerearth', 10)
