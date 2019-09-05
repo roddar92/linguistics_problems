@@ -35,7 +35,7 @@ def is_vowel(symbol):
 
 
 def get_word_len(seq):
-    return str(len(seq) if len(seq) < 6 else "long")
+    return str(len(seq) if len(seq) < 7 else "long")
 
 
 def digits_count(seq):
@@ -87,7 +87,7 @@ def features(sequence, i):
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
-    yield "digits_count=" + str(digits_count(seq))
+    # yield "digits_count=" + str(digits_count(seq))
     
     # is date descriptor
     if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
