@@ -185,7 +185,7 @@ class Number2TextConverter:
                 if k > 1 and not ordered_condition:
                     answer.append(w)
                 thousand = self.THOUSANDS[t]
-                word_for_thousand = thousand[1] if ordered_condition else self._inflect_word(k, thousand[0])
+                word_for_thousand = thousand[1] if ordered_condition else self.__inflect_word(k, thousand[0])
                 if ordered_condition:
                     word_for_thousand = (w if k > 1 else '') + word_for_thousand
                 answer.append(word_for_thousand)
@@ -220,8 +220,8 @@ class TextNormalizer:
     __NUMBERS_WITH_ZEROS = re.compile(r'(?<=\d)(\s)(000)', re.IGNORECASE)
     __ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
     __MONTHS = re.compile(r'^(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
-                         r'ма[йя]|июня?|июля?|авг(уст)?а?|'
-                         r'сент?(ябр[ья])?|окт(ябр[ья])?|ноя(бр[ья])?|дек(абр[ья])?)$', re.IGNORECASE)
+                          r'ма[йя]|июня?|июля?|авг(уст)?а?|'
+                          r'сент?(ябр[ья])?|окт(ябр[ья])?|ноя(бр[ья])?|дек(абр[ья])?)$', re.IGNORECASE)
     __YEAR_CENTURY = re.compile(r'^(век(а|е|ов)|вв?|год[ау]|гг?)$', re.IGNORECASE)
 
     ENDING_TO_GRAMMEME = {
