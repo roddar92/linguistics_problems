@@ -10,9 +10,13 @@ from nltk import bigrams, word_tokenize
 class WordFiller:
     START, END = '^', '^'
 
-    def __init__(self, ngram=2, weights=[.5, .5], alpha=1.0):
+    def __init__(self, ngram=2, weights=None, alpha=1.0):
         if ngram < 2:
             raise Exception('N-gram parameter should be at least 2 size!')
+
+        if not weights:
+            weights = [.5, .5]
+
         if ngram != len(weights):
             raise Exception('N-gram and length of weights array should be the same size!')
 
