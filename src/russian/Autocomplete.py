@@ -35,9 +35,25 @@ class Trie:
         return key, max_count
 
 
+class AutoComplete:
+    def __init__(self, vocab=None):
+        self.dictionary = Trie()
+        if vocab:
+            assert type(vocab) == dict
+            for word, score in vocab.items():
+                self.dictionary.add(word, score)
+
+    def get_k_auto_completes(self, prefix, k=1):
+        return self.dictionary.autocomplete(prefix)
+
+
+
 if __name__ == '__main__':
     trie = Trie()
     trie.add('hackerearth', 10)
     trie.add('hackerrank', 9)
     trie.add('hacker', 6)
     assert trie.autocomplete('hacker') == ('hackerearth', 10)
+
+    trie.add('hackerrating', 11)
+    assert trie.autocomplete('hacker') == ('hackerrating', 11)
