@@ -35,15 +35,16 @@ class CharLevelLanguageModel:
             if x <= 0:
                 return c
 
-    def generate_text(self, n_letters=1000):
-        print('Generating of an example of text...')
-        history = self.start * self.ngram
-        out = []
+    def __generate_tail(self, history, n_letters):
         for i in range(n_letters):
             c = self.__generate_letter(history)
             history = history[-self.ngram:] + c
-            out.append(c)
-        return "".join(out)
+            yield c
+
+    def generate_text(self, n_letters=1000):
+        print('Generating of an example of text...')
+        history = self.__start * self.ngram
+        return "".join(self.__generate_tail(history, n_letters))
 
 
 if __name__ == '__main__':
