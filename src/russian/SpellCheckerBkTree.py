@@ -134,7 +134,7 @@ class StatisticalSpellerBkTree(object):
         return swap_words[0][0] if swap_words and swap_words[0][1] > 0 else suggests[0][0]
 
     # ищем тег среди разборов одного слова
-    def tag_in_parse(self, tag_name, word):
+    def __tag_in_parse(self, tag_name, word):
         for parse in self.morph.parse(word):
             if tag_name in parse.tag:
                 return True
@@ -143,7 +143,7 @@ class StatisticalSpellerBkTree(object):
     # строим эвристики для битых предлогов
     def need_fix_prep(self, word, prep):
         if prep == 'е':
-            if self.tag_in_parse('VERB', word) \
+            if self.__tag_in_parse('VERB', word) \
                     or word in ['только', 'более', 'менее', 'больше', 'меньше']:
                 return 'не'
             else:
@@ -165,12 +165,12 @@ class StatisticalSpellerBkTree(object):
         elif prep in ['ым', 'ыт', 'ыв']:
             return prep[::-1]
         elif prep in ['зи', 'ов', 'од', 'ан', 'оп', 'ми', 'хи', 'ен']:
-            if not self.tag_in_parse('PREP', word):
+            if not self.__tag_in_parse('PREP', word):
                 return prep[::-1]
             else:
                 return prep
         elif prep == 'аз':
-            if self.tag_in_parse('accs', word):
+            if self.__tag_in_parse('accs', word):
                 return prep[::-1]
             elif 'VERB' in self.morph.parse(word)[0].tag:
                 return 'раз'
@@ -189,10 +189,10 @@ class StatisticalSpellerBkTree(object):
                 return prep
         elif prep == 'з':
             if len(word) > 1:
-                if self.tag_in_parse('gent', word):
+                if self.__tag_in_parse('gent', word):
                     return 'из'
-                elif self.tag_in_parse('accs', word) \
-                        or self.tag_in_parse('ablt', word):
+                elif self.__tag_in_parse('accs', word) \
+                        or self.__tag_in_parse('ablt', word):
                     return 'за'
                 else:
                     return prep
@@ -200,9 +200,9 @@ class StatisticalSpellerBkTree(object):
                 return prep
         elif prep == 'н':
             if len(word) > 1:
-                if self.tag_in_parse('accs', word) \
-                        or self.tag_in_parse('loct', word) \
-                        or self.tag_in_parse('loc2', word):
+                if self.__tag_in_parse('accs', word) \
+                        or self.__tag_in_parse('loct', word) \
+                        or self.__tag_in_parse('loc2', word):
                     return 'на'
                 elif 'VERB' in self.morph.parse(word)[0].tag:
                     return 'он'
@@ -211,19 +211,19 @@ class StatisticalSpellerBkTree(object):
             else:
                 return prep
         elif prep == 'п':
-            if self.tag_in_parse('datv', word) \
-                    or self.tag_in_parse('loct', word) \
-                    or self.tag_in_parse('loc2', word) or word.isdigit():
+            if self.__tag_in_parse('datv', word) \
+                    or self.__tag_in_parse('loct', word) \
+                    or self.__tag_in_parse('loc2', word) or word.isdigit():
                 return 'по'
             else:
                 return prep
         elif prep == 'т':
             if len(word) > 1:
-                if self.tag_in_parse('gent', word):
+                if self.__tag_in_parse('gent', word):
                     return 'от'
-                elif self.tag_in_parse('ablt', word) or word in ['же', 'есть']:
+                elif self.__tag_in_parse('ablt', word) or word in ['же', 'есть']:
                     return 'то'
-                elif self.tag_in_parse('femn', word):
+                elif self.__tag_in_parse('femn', word):
                     return 'та'
                 else:
                     return prep
@@ -254,45 +254,45 @@ class StatisticalSpellerBkTree(object):
             else:
                 return prep
         elif prep == 'оо':
-            if self.tag_in_parse('loct', word):
+            if self.__tag_in_parse('loct', word):
                 return 'о'
             else:
                 return prep
         elif prep == 'сс':
-            if self.tag_in_parse('gent', word) \
-                    or self.tag_in_parse('ablt', word) \
+            if self.__tag_in_parse('gent', word) \
+                    or self.__tag_in_parse('ablt', word) \
                     or self.year.search(word):
                 return 'с'
             else:
                 return prep
         elif self.on_prep.search(prep):
-            if self.tag_in_parse('accs', word) \
-                    or self.tag_in_parse('loct', word) \
-                    or self.tag_in_parse('loc2', word) \
+            if self.__tag_in_parse('accs', word) \
+                    or self.__tag_in_parse('loct', word) \
+                    or self.__tag_in_parse('loc2', word) \
                     or word.isdigit():
                 return 'на'
             else:
                 return prep
         elif prep == 'пр':
-            if self.tag_in_parse('loct', word):
+            if self.__tag_in_parse('loct', word):
                 return 'при'
-            elif self.tag_in_parse('accs', word):
+            elif self.__tag_in_parse('accs', word):
                 return 'про'
             else:
                 return prep
         elif prep == 'эо':
             return 'это'
         elif prep == 'эт':
-            if self.tag_in_parse('femn', word):
-                if self.tag_in_parse('accs', word):
+            if self.__tag_in_parse('femn', word):
+                if self.__tag_in_parse('accs', word):
                     return 'эту'
-                elif self.tag_in_parse('gent', word) \
-                        or self.tag_in_parse('datv', word):
+                elif self.__tag_in_parse('gent', word) \
+                        or self.__tag_in_parse('datv', word):
                     return 'этой'
                 else:
                     return 'эта'
-            elif self.tag_in_parse('masc', word) \
-                    and not self.tag_in_parse('ablt', word):
+            elif self.__tag_in_parse('masc', word) \
+                    and not self.__tag_in_parse('ablt', word):
                 return 'этот'
             else:
                 return 'это'
@@ -315,7 +315,7 @@ class StatisticalSpellerBkTree(object):
             if word in ['то', 'та', 'те', 'так', 'это', 'эта', 'эти', 'той', 'тем',
                         'там', 'том', 'тех', 'этих', 'этой', 'этом', 'согласно']:
                 return 'же'
-            elif self.tag_in_parse('Name', word):
+            elif self.__tag_in_parse('Name', word):
                 return 'де'
             elif next_word != '' and next_word not in string.punctuation:
                 return 'ее'
@@ -328,7 +328,7 @@ class StatisticalSpellerBkTree(object):
             else:
                 return prep
         elif prep == 'ил':
-            if self.tag_in_parse('VERB', word):
+            if self.__tag_in_parse('VERB', word):
                 return 'ли'
             else:
                 return 'или'
