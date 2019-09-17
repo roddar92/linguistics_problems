@@ -35,7 +35,7 @@ def is_vowel(symbol):
 
 
 def get_word_len(seq):
-    return str(len(seq) if len(seq) < 7 else "long")
+    return str(len(seq) if len(seq) < 5 else "long")
 
 
 def digits_count(seq):
@@ -44,10 +44,10 @@ def digits_count(seq):
 
 def get_word_shape(seq):
     return ''.join([
-        'X' if re.search('[A-Z]', s) else
-        'A' if re.search('[ÄÖ]', s) else
-        'x' if re.search('[a-z]', s) else
-        'a' if re.search('[äö]', s) else
+        'X' if re.search('[A-XZ]', s) else
+        'A' if re.search('[ÄÖY]', s) else
+        'x' if re.search('[a-xz]', s) else
+        'a' if re.search('[äöy]', s) else
         'd' if re.search('\d', s) else s
         for s in seq
     ])
