@@ -125,7 +125,7 @@ if __name__ == '__main__':
     start = time()
     assert phrase_trie.search(['Мама', 'мыла', 'раму']) == 'X'
     assert phrase_trie.search(['Мама', 'мыла', 'рамку']) == ''
-    print(f'Elapsed {(time() - start)/1000} sec')
+    print(f'Elapsed {(time() - start)/1000:.10f} sec')
 
     phrase_trie = PhraseTrie()
     phrase_trie.add_phrase(['Мама', 'мыла', 'раму'], 'X')
@@ -141,4 +141,4 @@ if __name__ == '__main__':
     assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'рамку']) == ''
     assert 'Мама мыла раму' in phrase_trie
     assert 'Мама мыла рамку' not in phrase_trie
-    print(f'Elapsed {(time() - start)/1000} sec')
+    print(f'Elapsed {(time() - start)/1000:.10f} sec')
