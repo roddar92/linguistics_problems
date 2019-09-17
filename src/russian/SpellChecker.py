@@ -113,6 +113,11 @@ class StatisticalSpeller(object):
             Предсказания спеллера
         """
 
+        if word == ',,':
+            return ','
+        if word == '..':
+            return '...'
+
         # запрос, преобразованный в нграммы
         char_ngrams_list = self.vectorizer.transform([word]).tocoo().col
 
@@ -134,9 +139,11 @@ class StatisticalSpeller(object):
         for suggest in counter.most_common(n=self.n_candidates):
             sugg = self.words_list[suggest[0]]
             dl_distance = damerau_levenshtein_distance(sugg, word)
-            fitted_sugg_list = self.voc_vectorizer.transform([f"{prev_word} {sugg}"]).tocoo().col
+            fitted_sugg_list = self.voc_vectorizer.transform([f"{prev_word} {sugg}"]).tocoo().col.tolist()
             if dl_distance <= 5:
-                suggests.append((sugg, dl_distance, self.voc.get(fitted_sugg_list[0], 0.0) if fitted_sugg_list else 0))
+                suggests.extend([(sugg, dl_distance, self.voc.get(fitt_sugg, 0.0))
+                                 for fitt_sugg in fitted_sugg_list]
+                                if fitted_sugg_list else [(sugg, dl_distance, 0.0)])
 
         suggests = sorted(suggests, key=lambda tup: tup[1])
 
@@ -365,10 +372,13 @@ if __name__ == "__main__":
     speller = StatisticalSpeller()
     speller.fit(sorted(list(words_set)))
 
-    # читаем выборку
-    df = pd.read_csv("../resources/texts.csv")
+    # читаем выборку из правильных текстов
+    df = pd.read_csv("../resources/corrected_texts.csv")
 
     speller.fit_texts(list(df["text"]))
+
+    # читаем выборку
+    df = pd.read_csv("../resources/broken_texts.csv")
 
     checkpoint1 = time.time()
     total_rectification_time = 0.0
@@ -394,20 +404,19 @@ if __name__ == "__main__":
         # для каждого слова из текста поступаем следующим образом:
         # если слово отсутствует в словаре, то подбираем ему наилучшее исправление
         # далее при наличие слева стопслова с опечаткой пытаемся его исправить с помощью простых эвристик
-        for j in range(len(mispelled_tokens)):
-            if mispelled_tokens[j] not in all_stopwords \
-                    and mispelled_tokens[j] not in words_dict:
+        for j, mispelled_token in enumerate(mispelled_tokens):
+            if mispelled_token not in all_stopwords and mispelled_token not in words_dict:
                 prev_token = mispelled_tokens[j - 1] if j > 0 else '^'
-                rectified_token = speller.rectify(mispelled_tokens[j], prev_token)
+                rectified_token = speller.rectify(mispelled_token, prev_token)
                 mispelled_tokens[j] = rectified_token
                 if j - 1 >= 0:
                     mispelled_tokens[j - 1] = speller.need_fix_prep(rectified_token, mispelled_tokens[j - 1])
                 was_rectified = True
-            elif mispelled_tokens[j] in words_dict:
-                mispelled_tokens[j - 1] = speller.need_fix_prep(mispelled_tokens[j], mispelled_tokens[j - 1])
+            elif mispelled_token in words_dict:
+                mispelled_tokens[j - 1] = speller.need_fix_prep(mispelled_token, mispelled_tokens[j - 1])
                 nw = mispelled_tokens[j + 1] if j + 1 < len(mispelled_tokens) else ''
                 mispelled_tokens[j] = speller.need_fix_prep_after_words(mispelled_tokens[j - 1],
-                                                                        mispelled_tokens[j], nw, j)
+                                                                        mispelled_token, nw, j)
                 was_rectified = True
 
         if was_rectified:
