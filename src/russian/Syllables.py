@@ -15,21 +15,21 @@ class RussianSyllableModule(SyllableModule):
     _RU_VOWELS = "аеёиоуыэюя"
     _RU_CONSONANTS = "".join(set(_RU_ALPHABET) - set(_RU_VOWELS))
 
-    def is_russian_double_consonants(self, seq):
-        return len(seq) == 2 and self.is_russian_consonant(seq[-1]) and seq[0] == seq[-1]
+    def __is_russian_double_consonants(self, seq):
+        return len(seq) == 2 and self.__is_russian_consonant(seq[-1]) and seq[0] == seq[-1]
 
     @staticmethod
-    def is_russian_sonour(symbol):
+    def __is_russian_sonour(symbol):
         return symbol not in 'лмнр'
 
     @staticmethod
-    def is_russian_reflexive_suffix(seq):
+    def __is_russian_reflexive_suffix(seq):
         return seq in 'сь ся'.split()
 
-    def is_vowel(self, symbol):
+    def __is_vowel(self, symbol):
         return symbol in self._RU_VOWELS
 
-    def is_russian_consonant(self, symbol):
+    def __is_russian_consonant(self, symbol):
         return symbol in self._RU_CONSONANTS
 
     def syllables_count(self, word):
@@ -37,7 +37,7 @@ class RussianSyllableModule(SyllableModule):
         word = word.lower()
         cnt = 0
         for letter in word:
-            if self.is_vowel(letter):
+            if self.__is_vowel(letter):
                 cnt += 1
 
         return cnt
@@ -51,11 +51,11 @@ class RussianSyllableModule(SyllableModule):
 
         for _, letter in enumerate(word):
             cur_syllable += letter
-            if self.is_vowel(letter):
+            if self.__is_vowel(letter):
                 syllables.append(cur_syllable)
                 cur_syllable = ""
             if syllables:
-                if self.is_russian_reflexive_suffix(syllables[-1]):
+                if self.__is_russian_reflexive_suffix(syllables[-1]):
                     last = syllables.pop()
                     prelast = syllables.pop()
                     if prelast.endswith('т'):
@@ -66,13 +66,13 @@ class RussianSyllableModule(SyllableModule):
                         ind = len(prelast)
                     syllables.append(prelast[:ind])
                     syllables.append(prelast[ind:] + last)
-                elif letter in "ьъ" or self.is_vowel(syllables[-1][-1]) and letter == "й":
+                elif letter in "ьъ" or self.__is_vowel(syllables[-1][-1]) and letter == "й":
                     last = syllables.pop()
                     syllables.append(last + cur_syllable)
                     cur_syllable = ""
-                elif len(cur_syllable) >= 2 and self.is_russian_consonant(letter) and \
-                        not (self.is_russian_sonour(cur_syllable[0]) or
-                             self.is_russian_double_consonants(cur_syllable)):
+                elif len(cur_syllable) >= 2 and self.__is_russian_consonant(letter) and \
+                        not (self.__is_russian_sonour(cur_syllable[0]) or
+                             self.__is_russian_double_consonants(cur_syllable)):
                     last = syllables.pop()
                     syllables.append(last + cur_syllable[0])
                     cur_syllable = cur_syllable[1:]
@@ -88,18 +88,18 @@ class FinnishSyllableModule(SyllableModule):
     _FI_VOWELS = "aäeioöuy"
 
     @staticmethod
-    def is_diphthong(vowels):
+    def __is_diphthong(vowels):
         return vowels in "ai äi oi öi ui yi ei au ou eu iu äy öy ie uo yö".split()
 
     @staticmethod
-    def is_double_vowel(vowels):
+    def __is_double_vowel(vowels):
         return vowels[-1] == vowels[-2]
 
-    def is_vowel(self, symbol):
+    def __is_vowel(self, symbol):
         return symbol in self._FI_VOWELS
 
-    def contains_only_consonants(self, cur_syllable):
-        return all(not self.is_vowel(letter) for letter in cur_syllable)
+    def __contains_only_consonants(self, cur_syllable):
+        return all(not self.__is_vowel(letter) for letter in cur_syllable)
 
     def syllables_count(self, word):
         """Return count of the word syllables"""
@@ -108,8 +108,8 @@ class FinnishSyllableModule(SyllableModule):
         cnt = 0
         prev_letter = ""
         for letter in word:
-            if self.is_vowel(letter) and \
-                    not self.is_diphthong(prev_letter + letter) and prev_letter != letter:
+            if self.__is_vowel(letter) and \
+                    not self.__is_diphthong(prev_letter + letter) and prev_letter != letter:
                 cnt += 1
             prev_letter = letter
 
@@ -124,16 +124,16 @@ class FinnishSyllableModule(SyllableModule):
         for _, letter in enumerate(word):
             cur_syllable += letter
             if len(cur_syllable) >= 2:
-                if self.is_vowel(letter):
-                    if self.is_vowel(cur_syllable[-2]):
-                        if self.is_diphthong(cur_syllable[-2:]) or self.is_double_vowel(cur_syllable[-2:]):
+                if self.__is_vowel(letter):
+                    if self.__is_vowel(cur_syllable[-2]):
+                        if self.__is_diphthong(cur_syllable[-2:]) or self.__is_double_vowel(cur_syllable[-2:]):
                             syllables.append(cur_syllable)
                             cur_syllable = ""
-                        elif self.is_vowel(cur_syllable[-2]) and self.is_vowel(cur_syllable[-1]):
+                        elif self.__is_vowel(cur_syllable[-2]) and self.__is_vowel(cur_syllable[-1]):
                             syllables.append(cur_syllable[:-1])
                             cur_syllable = cur_syllable[-1]
                 else:
-                    if not self.is_vowel(cur_syllable[-2]):
+                    if not self.__is_vowel(cur_syllable[-2]):
                         if syllables:
                             last = syllables.pop()
                             syllables.append(last + cur_syllable[:-1])
@@ -145,7 +145,7 @@ class FinnishSyllableModule(SyllableModule):
                         cur_syllable = cur_syllable[-1]
 
         if cur_syllable:
-            if syllables and self.contains_only_consonants(cur_syllable):
+            if syllables and self.__contains_only_consonants(cur_syllable):
                 last = syllables.pop()
                 syllables.append(last + cur_syllable)
             else:
@@ -158,13 +158,13 @@ class EstonianSyllableModule(FinnishSyllableModule):
     _EE_VOWELS = "aäeioöõuü"
 
     @staticmethod
-    def is_diphthong(vowels):
+    def __is_diphthong(vowels):
         return vowels in "ai äi oi öi õi ui üi ei " \
                          "ao au ae äu oa ou ea eo " \
                          "eu iu äe öa öe õe ie uo " \
                          "ua oe õu õa äa äo õo".split()
 
-    def is_vowel(self, symbol):
+    def __is_vowel(self, symbol):
         return symbol in self._EE_VOWELS
 
 
@@ -174,25 +174,25 @@ class EnglishSyllableModule(SyllableModule):
     _EN_CONSONANTS = "".join(set(_EN_ALPHABET) - set(_EN_VOWELS))
 
     @staticmethod
-    def is_english_double_consonants(seq):
+    def __is_english_double_consonants(seq):
         return seq in "bb ll mm nn pp ss".split()
 
     @staticmethod
-    def has_silent_ending(consonants):
+    def __has_silent_ending(consonants):
         return consonants in "ch sh dg ng gh th ck rk gn rn".split()
 
     @staticmethod
-    def is_diphthong(vowels):
+    def __is_diphthong(vowels):
         return vowels in "ea ia oa ua ae ee ie oe ue ai ei oi ui eo io oo au ou ay ey oy".split()
 
     @staticmethod
-    def is_triphthong(vowels):
+    def __is_triphthong(vowels):
         return vowels in "eau iou eye oye"
 
     def is_english_vowel(self, symbol):
         return symbol in self._EN_VOWELS
 
-    def is_english_consonant(self, symbol):
+    def __is_english_consonant(self, symbol):
         return symbol in self._EN_CONSONANTS
 
     def syllables_count(self, word):
@@ -211,7 +211,7 @@ class EnglishSyllableModule(SyllableModule):
             leng -= 4
 
         if (word[-2:] in ["ed", "es", "er"] or word.endswith("est")) and \
-                self.is_english_consonant(word[leng - 1]) and \
+                self.__is_english_consonant(word[leng - 1]) and \
                 not word[:leng] in ["ll", word[leng - 1] + word[leng - 1]]:
             leng -= 1
 
@@ -222,22 +222,22 @@ class EnglishSyllableModule(SyllableModule):
         for i in range(leng):
             if self.is_english_vowel(word[i]):
                 cnt += 1
-            if (i >= 1 and self.is_diphthong(word[i - 1] + word[i])) or \
-                    (i >= 2 and self.is_triphthong(word[i - 2:i] + word[i])):
+            if (i >= 1 and self.__is_diphthong(word[i - 1] + word[i])) or \
+                    (i >= 2 and self.__is_triphthong(word[i - 2:i] + word[i])):
                 cnt -= 1
 
         if word.endswith("ed"):
             bef_ed = word[-4:-2]
-            if (not (self.is_english_double_consonants(bef_ed) or self.has_silent_ending(bef_ed)) and
-                not (word[-3] not in "dt" and self.is_english_consonant(word[-3]) and
+            if (not (self.__is_english_double_consonants(bef_ed) or self.__has_silent_ending(bef_ed)) and
+                not (word[-3] not in "dt" and self.__is_english_consonant(word[-3]) and
                      self.is_english_vowel(word[-4])) and
                 not (self.is_english_vowel(word[-3]) and self.is_english_vowel(word[-4]))) or \
                     self.is_english_vowel(word[-4]) and word[-3] in "dt":
                 cnt += 1
-        elif word.endswith("es") and not (self.is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
+        elif word.endswith("es") and not (self.__is_english_consonant(word[-3]) and self.is_english_vowel(word[-4])):
             cnt += 1
 
-        if word.endswith("le") and self.is_english_consonant(word[-3]):
+        if word.endswith("le") and self.__is_english_consonant(word[-3]):
             cnt += 1
 
         if word.endswith("ery"):
