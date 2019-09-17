@@ -76,6 +76,7 @@ class StatisticalSpeller(object):
         # нграмный индекс + частотный словарь биграм по корпусу текстов
         self.index = defaultdict(set)
         self.voc = defaultdict(int)
+        self.words_list = None
 
         # регэкспы для битых предлогов
         self.on_prep = re.compile(r'\b(н{2,}а|на{2,})\b')
@@ -92,8 +93,8 @@ class StatisticalSpeller(object):
         encoded_words = self.vectorizer.fit_transform(words_list).tocoo()
 
         # строим словарь, отображающий идентификатор нграммы в множество термов
-        for i in zip(encoded_words.row, encoded_words.col):
-            self.index[i[1]].add(i[0])
+        for ind in zip(encoded_words.row, encoded_words.col):
+            self.index[ind[1]].add(ind[0])
 
         print("Speller fitted in", time.time() - checkpoint)
 

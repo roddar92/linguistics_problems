@@ -1,12 +1,12 @@
   
 """
-    Simple spell-checker
+    Simple spell-checker with BK-tree
     https://www.kaggle.com/c/csc-iinlp-2017-please-feax-me/
 """
 import codecs
 import csv
 import time
-from collections import Counter, defaultdict
+from collections import defaultdict
 from pyxdameraulevenshtein import damerau_levenshtein_distance
 from functools import lru_cache
 
@@ -77,6 +77,7 @@ class StatisticalSpellerBkTree(object):
 
         # частотный словарь биграм по корпусу текстов
         self.voc = defaultdict(int)
+        self.words_list = None
 
         # регэкспы для битых предлогов
         self.on_prep = re.compile(r'\b(н{2,}а|на{2,})\b')
@@ -113,7 +114,7 @@ class StatisticalSpellerBkTree(object):
         candidates = sorted(self.words_list.find(word, 7))
         
         # среди топа кандидатов ищем "хорошее" исправление
-        # используем модифицированное расстояние Левенштейна (с перестановками)
+        # используем модифицированное расстояние Дамерау-Левенштейна (с перестановками)
         # а также ищем слово с минимальным количеством новых букв
         suggests = list()
         for _, sugg in candidates[:self.n_candidates]:
