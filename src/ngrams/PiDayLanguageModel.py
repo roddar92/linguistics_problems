@@ -29,13 +29,12 @@ class PIDayLanguageModel:
 
         return self
 
-    def tokens_stream(self, word='', n_words=5):
+    def __tokens_stream(self, word='', n_words=5):
         def generate_word(prev_word, l):
             subseq = [t for t in self.lm[prev_word] if len(t) == l]
             if not subseq:
                 subseq = [t for t in self.lm[''] if len(t) == l]
-            res_word = choice(subseq)
-            return res_word
+            return choice(subseq)
 
         print('Generating of an example of PI text...')
         prev_word = None
@@ -54,7 +53,7 @@ class PIDayLanguageModel:
             yield t; prev_word = t
 
     def generate_text(self, word='', n_words=5):
-        return " ".join(self.tokens_stream(word=word, n_words=n_words))
+        return " ".join(self.__tokens_stream(word=word, n_words=n_words))
 
 
 if __name__ == '__main__':
