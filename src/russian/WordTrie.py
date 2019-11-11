@@ -90,7 +90,7 @@ class PhraseTrie:
 
     def add_phrase(self, phrase, label=_DEFAULT_LABEL):
         node = self.root
-        i, prev_word = 0, self._ROOT
+        prev_word = self._ROOT
         for i, word in enumerate(phrase):
             word = word.lower()
             children = node.get(prev_word, None)
@@ -115,6 +115,52 @@ class PhraseTrie:
             prev_word = word
 
         return node[prev_word]['label']
+    
+    
+class PhraseTemplateTrie:
+    _DEFAULT_LABEL = '__default__'
+
+    def __init__(self):
+        self.root = {}
+
+    def __contains__(self, item):
+        return self.get_label_for_phrase(item.split())
+    
+    def __get_node(self, node, word):
+        if word not in node:
+            node[word] = {}
+        return node[word]
+    
+    # add recursively alternatives for tokens i.e. (token1|token2|...|tokenN)
+    def __add_subtree(self, subphrase, label, node, token=''):
+        if not token.isspace():
+            node = self.__get_node(node, token)
+                
+        is_alternative = False
+        for i, word in enumerate(phrase):
+            word = word.lower()
+            if word.startswith('(') and word.startswith(')'):
+                for token in word[1:-1].split('|'):
+                    is_alternative = True
+                    self.__add_subtree(phrase[i + 1:], label, node, token)
+            else:
+                node = self.__get_node(node, word)
+                
+        if not is_alternative:
+            node['label'] = label
+
+    def add_phrase(self, phrase, label=_DEFAULT_LABEL):
+        self.__add_subtree(phrase, label, self.root)
+
+    def get_label_for_phrase(self, phrase):
+        node = self.root
+        for word in phrase:
+            word = word.lower()
+            if word not in node:
+                return ''
+            node = node[word]
+
+        return node['label']
 
 
 if __name__ == '__main__':
