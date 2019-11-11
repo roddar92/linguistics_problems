@@ -1,3 +1,8 @@
+# -*- coding: utf-8 -*-
+
+"""
+Testing Trie data structure for phrases matching
+"""
 from time import time
 
 
