@@ -26,8 +26,9 @@ class NGramDictionaryManager:
     # TODO override this method for information retrieval with spell-checker
     def create_dictionary_for_spelling(self, input_path, n_gram_length=2, remove_stop_words=False):
         def get_ngrams(word, ngram_len):
-            for i in range(len(word) - ngram_len + 1):
-                yield word[i:i + ngram_len]
+            return (
+                word[i:i + ngram_len] for i in range(len(word) - ngram_len + 1)
+            )
 
         with open(input_path, 'r', encoding='utf-8') as f:
             for line in f:
@@ -56,7 +57,7 @@ class NGramDictionaryManager:
 
     def save_dictionary_to_file(self, output_path):
         with open(output_path, "w", encoding='utf-8') as f:
-            for (k, v) in sorted(self.ngram_dictionary.items(), key=lambda x: -x[1]):
+            for (k, v) in self.ngram_dictionary.most_common():
                 f.write("{}\t{}".format(k, v))
             f.flush()
             f.close()
