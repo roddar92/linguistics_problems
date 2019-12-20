@@ -101,12 +101,8 @@ class Number2TextConverter:
         while i < len(roman_str):
             first = self.ROMAN[roman_str[i]]
             second = self.ROMAN[roman_str[i + 1]] if i < len(roman_str) - 1 else -1
-            if first >= second:
-                number += first
-                i += 1
-            else:
-                number += second - first
-                i += 2
+            number += (first if first >= second else (second - first))
+            i += (1 if first >= second else 2)
         return number
 
     def __inflect_word(self, n, word):
@@ -117,11 +113,11 @@ class Number2TextConverter:
         def _change_last_word(frac_str):
             last_word = frac_str.pop()
             if last_word == 'один':
-                frac_str += ['одна']
+                frac_str.append('одна')
             elif last_word == 'два':
-                frac_str += ['две']
+                frac_str.append('две')
             else:
-                frac_str += [last_word]
+                frac_str.append(last_word)
             return frac_str
 
         if type(number) == float:
@@ -212,7 +208,7 @@ class Number2TextConverter:
         return ' '.join(answer)
 
 
-# TODO class TextNormalizer with normalization approach (2км => 2 км => два км OR 2 книги => две книги)
+# TODO class TextNormalizer with normalization approach (2км => 2 км => два километра OR 2 книги => две книги)
 class TextNormalizer:
     __NUMB_WITH_ORD_ENDINGS = re.compile(r'(\d+)-?([оыьа][ехя]|[ео]?го|[еоы]?й|е|х)', re.IGNORECASE)
     __NUMB_WITH_ENDINGS = re.compile(r'(\d+)-?([мт]?и|(ть)?ю)', re.IGNORECASE)
@@ -220,7 +216,7 @@ class TextNormalizer:
     __NUMBERS_WITH_ZEROS = re.compile(r'(?<=\d)(\s)(000)', re.IGNORECASE)
     __ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
     __MONTHS = re.compile(r'^(янв(ар[ья])?|фев(рал[ья])?|марта?|апр(ел[ья])?|'
-                          r'ма[йя]|июня?|июля?|авг(уст)?а?|'
+                          r'ма[йя]|июн[ья]?|июл[ья]?|авг(уст)?а?|'
                           r'сент?(ябр[ья])?|окт(ябр[ья])?|ноя(бр[ья])?|дек(абр[ья])?)$', re.IGNORECASE)
     __YEAR_CENTURY = re.compile(r'^(век(а|е|ов)|вв?|год[ау]|гг?)$', re.IGNORECASE)
 
@@ -360,13 +356,13 @@ class TextNormalizer:
             if self.__NUMB_WITH_ORD_ENDINGS.search(token) or self.__NUMB_WITH_ENDINGS.search(token):
                 number, ordered, grammems = self.__extract_parameters_for_number(token)
                 if number in [2, 3] and token.endswith('х'):
-                    result += ['двух' if number == 2 else 'трех']
+                    ans = 'двух' if number == 2 else 'трех'
                 else:
-                    result += [self.numb2text.convert(number, grammems=grammems, ordered=ordered)]
+                    ans = self.numb2text.convert(number, grammems=grammems, ordered=ordered)
             elif self.__ROMAN_REGEX.match(token):
-                result += [self.numb2text.convert(token, grammems=grammems, ordered=ordered)]
+                ans = self.numb2text.convert(token, grammems=grammems, ordered=ordered)
             elif self.__NUMBERS.match(token):
-                result += [self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)]
+                ans = self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)
             elif token in self.UNITS:
                 units = self.UNITS[token]
                 if self.__ROMAN_REGEX.match(tokens[i - 1]) or self.__NUMBERS.match(tokens[i - 1]):
@@ -378,9 +374,10 @@ class TextNormalizer:
                         for unit in units_parse:
                             if 'nomn' in unit.tag:
                                 units = unit.make_agree_with_number(n).word
-                result += [units]
+                ans = units
             else:
-                result += [token]
+                ans = token
+            result.append(ans)
         return result
 
 
