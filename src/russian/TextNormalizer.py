@@ -344,7 +344,6 @@ class TextNormalizer:
         return ordered, grammems
 
     def normalize(self, tokens, neighbours=2):
-        result = []
         for i, token in enumerate(tokens):
             if self.__ROMAN_REGEX.match(token) or self.__NUMBERS.match(token):
                 # TODO: improve/train ordered and grammems parameters
@@ -356,13 +355,13 @@ class TextNormalizer:
             if self.__NUMB_WITH_ORD_ENDINGS.search(token) or self.__NUMB_WITH_ENDINGS.search(token):
                 number, ordered, grammems = self.__extract_parameters_for_number(token)
                 if number in [2, 3] and token.endswith('х'):
-                    ans = 'двух' if number == 2 else 'трех'
+                    yield 'двух' if number == 2 else 'трех'
                 else:
-                    ans = self.numb2text.convert(number, grammems=grammems, ordered=ordered)
+                    yield self.numb2text.convert(number, grammems=grammems, ordered=ordered)
             elif self.__ROMAN_REGEX.match(token):
-                ans = self.numb2text.convert(token, grammems=grammems, ordered=ordered)
+                yield self.numb2text.convert(token, grammems=grammems, ordered=ordered)
             elif self.__NUMBERS.match(token):
-                ans = self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)
+                yield self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)
             elif token in self.UNITS:
                 units = self.UNITS[token]
                 if self.__ROMAN_REGEX.match(tokens[i - 1]) or self.__NUMBERS.match(tokens[i - 1]):
@@ -374,11 +373,9 @@ class TextNormalizer:
                         for unit in units_parse:
                             if 'nomn' in unit.tag:
                                 units = unit.make_agree_with_number(n).word
-                ans = units
+                yield units
             else:
-                ans = token
-            result.append(ans)
-        return result
+                yield token
 
 
 if __name__ == '__main__':
