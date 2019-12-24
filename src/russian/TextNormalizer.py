@@ -430,10 +430,10 @@ if __name__ == '__main__':
     assert converter.convert(2.35) == 'две целые тридцать пять сотых'
 
     normalizer = TextNormalizer()
-    assert normalizer.normalize(['80-е'])[-1] == 'восьмидесятые'
-    assert normalizer.normalize(['80-х'])[-1] == 'восьмидесятых'
-    assert normalizer.normalize(['21й'])[-1] == 'двадцать первый'
-    assert normalizer.normalize(['3х'])[-1] == 'трех'
+    assert list(normalizer.normalize(['80-е']))[-1] == 'восьмидесятые'
+    assert list(normalizer.normalize(['80-х']))[-1] == 'восьмидесятых'
+    assert list(normalizer.normalize(['21й']))[-1] == 'двадцать первый'
+    assert list(normalizer.normalize(['3х']))[-1] == 'трех'
     assert ' '.join(normalizer.normalize(['21', 'июня'])) == 'двадцать первое июня'
     assert ' '.join(normalizer.normalize(['23', 'июля', '1806', 'года'])) == \
            'двадцать третье июля тысяча восемсот шестого года'
