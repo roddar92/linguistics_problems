@@ -134,17 +134,17 @@ class PhraseTemplateTrie:
     
     # add recursively alternatives for tokens i.e. (token1|token2|...|tokenN)
     def __add_subtree(self, subphrase, label, node, token=''):
-        if not token.isspace():
+        if token != '':
             node = self.__get_node(node, token)
                 
         is_alternative = False
         for i, word in enumerate(subphrase):
             word = word.lower()
-            if word.startswith('(') and word.startswith(')'):
+            if word.startswith('(') and word.endswith(')') and not is_alternative:
                 for token in word[1:-1].split('|'):
                     is_alternative = True
                     self.__add_subtree(subphrase[i + 1:], label, node, token)
-            else:
+            elif not is_alternative:
                 node = self.__get_node(node, word)
                 
         if not is_alternative:
@@ -193,4 +193,21 @@ if __name__ == '__main__':
     assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'рамку']) == ''
     assert 'Мама мыла раму' in phrase_trie
     assert 'Мама мыла рамку' not in phrase_trie
+    print(f'Elapsed {(time() - start)/1000:.10f} sec')
+
+    phrase_trie = PhraseTemplateTrie()
+    phrase_trie.add_phrase(['Мама', '(мыла|умывала)', '(раму|рамку)'], 'X')
+    phrase_trie.add_phrase(['Во', 'поле', '(берёзонька|кудрявая)', 'стояла'], 'Y')
+    phrase_trie.add_phrase(['(Мама|Папа)', '(подарила|подарил)', 'мне', '(куклу|бабочку)'], 'Z')
+    phrase_trie.add_phrase(['Во', 'поле', 'снежок', 'расстаял'], 'Y')
+    phrase_trie.add_phrase(['у', 'Васи', 'сегодня', 'день', '(рождения|варенья)'], 'Z')
+    phrase_trie.add_phrase(['я', 'помню', 'чудное', 'мгновенье'], 'P')
+    phrase_trie.add_phrase(['я', 'помню', 'чудное', 'мгновенье', 'передо', 'мной', 'явилась', 'ты'], 'A')
+
+    start = time()
+    assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'раму']) == 'X'
+    assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'рамку']) == 'X'
+    assert phrase_trie.get_label_for_phrase(['Во', 'поле', 'кудрявая', 'стояла']) == 'Y'
+    assert 'Мама мыла раму' in phrase_trie
+    assert 'Мама мыла рамочку' not in phrase_trie
     print(f'Elapsed {(time() - start)/1000:.10f} sec')
