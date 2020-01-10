@@ -59,12 +59,12 @@ class RegexTrie:
 
 
 if __name__ == '__main__':
-    VOCABULARY = ['ale', 'apple', 'orange', 'tomato', 'apfle', 'sandwich', 'avocado', 'tonic', 'timato']
+    VOCABULARY = ['ale', 'apple', 'orange', 'tomato', 'apfle', 'sandwich', 'avocado', 'avocadole', 'tonic', 'timato']
     trie = RegexTrie()
     for w in VOCABULARY:
         trie.add(w)
         
-    assert trie.search_all('a*le') == ['ale', 'apple', 'apfle']
+    assert trie.search_all('a*le') == ['ale', 'apple', 'apfle', 'avocadole']
     assert trie.search_all('t?mato') == ['tomato', 'timato']
     assert trie.search_all('t?mato*') == ['tomato', 'tomatosoup', 'timato']
     assert trie.search_all('ap?le') == ['apple', 'apfle']
