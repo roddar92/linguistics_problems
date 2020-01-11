@@ -59,7 +59,8 @@ class RegexTrie:
 
 
 if __name__ == '__main__':
-    VOCABULARY = ['ale', 'apple', 'orange', 'tomato', 'apfle', 'sandwich', 'avocado', 'avocadole', 'tonic', 'timato']
+    VOCABULARY = ['ale', 'apple', 'orange', 'tomato', 'apfle', 'tomatosoup',
+                  'sandwich', 'avocado', 'avocadole', 'tonic', 'timato']
     trie = RegexTrie()
     for w in VOCABULARY:
         trie.add(w)
