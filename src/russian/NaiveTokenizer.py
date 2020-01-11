@@ -32,20 +32,25 @@ class NaiveTokenizer(object):
                 line.strip().lower() for i, line in enumerate(inf) if i > 3
             ]
 
-        url = r'('
-        url += r'(?:(https?|s?ftp):\/\/)?'
-        url += r'(?:www\.)?'
-        url += r'('
-        url += r'(?:(?:([A-Z0-9][A-Z0-9-_]+)@([A-Z0-9-_\.])+[A-Z0-9]\.)' \
-               r'|(?:[A-Z0-9][A-Z0-9-]{0,61}[A-Z0-9]\.)+)'
-
         tld = r'(' + r'|'.join(self.tlds) + r')'
+        schema = r'(?:[^:\/]+:\/\/)'
+        email = r'(?:([A-Z0-9][\w-]+)@([\w\.-])+[A-Z0-9]\.)'
+        domain = r'(?:www\.)?(?:[A-Z0-9][A-Z0-9-]{0,61}[A-Z0-9]\.)+'
+        port = r'(?::(\d{1,5}))'
+        ip_address = r'(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+        any_path = r'(?:(\/\S+[^\.\,\s]))'
+
+        url = r'('
+        url += rf'{schema}?'
+        url += r'('
+        url += rf'(?:{email}' \
+               rf'|{domain})'
 
         url += tld
-        url += r'|(?:\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'
+        url += rf'|{ip_address}'
         url += r')'
-        url += r'(?::(\d{1,5}))?'
-        url += r'(?:(\/\S+[^\.\,\s]))?'
+        url += rf'{port}?'
+        url += rf'{any_path}?'
         url += r')'
 
         self.URL = re.compile(url, re.IGNORECASE)
@@ -226,6 +231,10 @@ if __name__ == '__main__':
     assert [token.Value for token in list(tokenizer.tokenize(
         'Следите за всеми новостями тут : facebook.com/zebrochka.'
     ))] == ['Следите', 'за', 'всеми', 'новостями', 'тут', ':', 'facebook.com/zebrochka', '.']
+
+    assert [token.Value for token in list(tokenizer.tokenize(
+        'Следите за всеми новостями тут: https://facebook.com/zebrochka.'
+    ))] == ['Следите', 'за', 'всеми', 'новостями', 'тут', ':', 'https://facebook.com/zebrochka', '.']
 
     assert [token.Value for token in list(tokenizer.tokenize(
         'Пишите все письма на мой электронный ящик : dobro@gmail.com.'
