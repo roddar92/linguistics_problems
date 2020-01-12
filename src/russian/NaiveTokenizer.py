@@ -4,13 +4,18 @@ from collections import namedtuple
 
 
 class NaiveTokenizer(object):
+    __digit = r'(\d)+'
+    __letter = r'[A-ZА-Я]'
+
     emjoi_pattern = r'([\=\:\;8BX][\-\~\^oc]?[PD3\<\>\}\{\]\[\)\(\/]+)'
 
     CURRENCY = '$€£¢¥₽'
     OTHER_PUNCT = '#%^~±°'
     PUNCT = string.punctuation
-    DIGIT = re.compile(r'((\d)+([.,](\d)+)?)')
-    ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
+    DIGIT = re.compile(__digit)
+    LETTER = re.compile(__letter, re.IGNORECASE)
+    NUMBER = re.compile(r'(-?' + __digit + r'([.,]' + __digit + r')?)')
+    ABBR_WITH_POINTS = re.compile(r'(' + __letter + r'\.){3,}')
     NUMALPHA = re.compile(r'([/.\w-]+)')
     EMJOI = re.compile(r'(' + emjoi_pattern + r')+')
     EOS = '.?!'
@@ -42,13 +47,7 @@ class NaiveTokenizer(object):
 
         url = r'('
         url += rf'{schema}?'
-        url += r'('
-        url += rf'(?:{email}' \
-               rf'|{domain})'
-
-        url += tld
-        url += rf'|{ip_address}'
-        url += r')'
+        url += rf'((?:{email}|{domain})' + tld + rf'|{ip_address})'
         url += rf'{port}?'
         url += rf'{any_path}?'
         url += r')'
@@ -58,7 +57,7 @@ class NaiveTokenizer(object):
     def tokenize(self, text):
 
         def isnumalpha(s):
-            return re.search('[A-ZА-Я]', s, re.IGNORECASE) and re.search('(\d)+', s)
+            return self.LETTER.search(s) and self.DIGIT.search(s)
 
         def get_sequence(cur_token):
 
@@ -156,44 +155,48 @@ class NaiveTokenizer(object):
                 return token(value, 'URL')
             elif self.NUMALPHA.search(value):
                 return token(value, 'WORD')
-            elif self.DIGIT.search(value):
-                return token(value, 'DIGIT')
+            elif self.NUMBER.search(value):
+                return token(value, 'NUMBER')
             elif self.EMJOI.search(value):
                 return token(value, 'EMJOI')
             else:
                 return token(value, 'WORD')
 
-        for excpected_token in text.split():
-            if self.URL.search(excpected_token) or \
-                    self.DIGIT.search(excpected_token) or \
-                    self.ABBR_WITH_POINTS.search(excpected_token) or self.EMJOI.search(excpected_token):
-                if self.URL.search(excpected_token):
-                    matched_pattern = self.URL.search(excpected_token)
-                elif self.ABBR_WITH_POINTS.search(excpected_token):
-                    matched_pattern = self.ABBR_WITH_POINTS.search(excpected_token)
-                elif self.EMJOI.search(excpected_token):
-                    matched_pattern = self.EMJOI.search(excpected_token)
-                elif not isnumalpha(excpected_token):
-                    matched_pattern = self.DIGIT.search(excpected_token)
+        for expected_token in text.split():
+            if self.URL.search(expected_token) or \
+                    self.NUMBER.search(expected_token) or \
+                    self.ABBR_WITH_POINTS.search(expected_token) or self.EMJOI.search(expected_token):
+                if self.URL.search(expected_token):
+                    matched_pattern = self.URL.search(expected_token)
+                elif self.ABBR_WITH_POINTS.search(expected_token):
+                    matched_pattern = self.ABBR_WITH_POINTS.search(expected_token)
+                elif self.EMJOI.search(expected_token):
+                    matched_pattern = self.EMJOI.search(expected_token)
+                elif not isnumalpha(expected_token):
+                    matched_pattern = self.NUMBER.search(expected_token)
                 else:
-                    matched_pattern = self.NUMALPHA.search(excpected_token)
+                    matched_pattern = self.NUMALPHA.search(expected_token)
                 start, end = matched_pattern.start(), matched_pattern.end()
-                first, middile, last = excpected_token[:start], excpected_token[start:end], excpected_token[end:]
+                first, middle, last = expected_token[:start], expected_token[start:end], expected_token[end:]
                 if first:
                     for tok in get_sequence(first):
                         yield put_token(tok)
-                yield put_token(middile)
+                yield put_token(middle)
                 if last:
                     for tok in get_sequence(last):
                         yield put_token(tok)
             else:
-                for tok in get_sequence(excpected_token):
+                for tok in get_sequence(expected_token):
                     yield put_token(tok)
 
 
 if __name__ == '__main__':
     tokenizer = NaiveTokenizer()
     # print(list(tokenizer.tokenize('2 + 2 = 4, а 2*2 == 5!')))
+
+    assert [token.Value for token in list(tokenizer.tokenize(
+        'За окном -5 градусов. Хорошего дня!'
+    ))] == ['За', 'окном', '-5', 'градусов', '.', 'Хорошего', 'дня', '!']
 
     assert [token.Value for token in list(tokenizer.tokenize(
         'Спешите приобрести последние автомобили Volvo XS60!'

@@ -36,7 +36,7 @@ class NaiveSentenceBoundaryDetector(object):
         current_sentence = []
         for token in self.tokenizer.tokenize(text):
             ttype, val = token.Type, token.Value
-            if ttype not in ['WORD', 'DIGIT', 'URL', 'QUOTE', 'LBR', 'LQUOTE', 'RBR', 'RQUOTE']:
+            if ttype not in ['WORD', 'NUMBER', 'URL', 'QUOTE', 'LBR', 'LQUOTE', 'RBR', 'RQUOTE']:
                 if val in self.EOS or self.MULTI_PUNCT.search(val):
                     if val in '?!' or self.MULTI_PUNCT.search(val):
                         _current_status = _STATUS_MISS
