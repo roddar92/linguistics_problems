@@ -1,4 +1,5 @@
-from collections import Counter
+from collections import Counter, defaultdict
+from string import ascii_lowercase
 
 
 class AnagramDistance:
@@ -30,6 +31,12 @@ class AnagramVocabulary:
             else:
                 self.vocabulary[nearest_word[0]] += [word]
 
+    def group_anagrams(self, words):
+        groups = defaultdict(list)
+        for word in words:
+            groups[str([word.count(ch) for ch in ascii_lowercase])].append(word)
+        return groups
+
     def add_words(self, words):
         self.__make_vocabulary(words)
 
@@ -44,3 +51,7 @@ if __name__ == '__main__':
     assert anagram_dist.distance('abc', 'bca') == 0
     assert anagram_dist.distance('prs', 'tuf') == 3
     assert anagram_dist.distance('aaa', 'bbb') == 3
+
+    dictionary = ['abcd', 'bba', 'tuf', 'abc', 'ab', 'bc', 'abb', 'bca', 'prs', 'aaa', 'bbb', 'fut', 'dacb']
+    anagram_voc = AnagramVocabulary()
+    print(anagram_voc.group_anagrams(dictionary))
