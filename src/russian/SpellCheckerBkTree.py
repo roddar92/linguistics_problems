@@ -60,6 +60,9 @@ class StatisticalSpellerBkTree(object):
         Поиск слов, наиболее близких по числу общих n-грамм и
         последующее ранжирование по эвристике-близости
     """
+    __pron_set = ['то', 'та', 'те', 'так', 'это', 'эта', 'эти',
+                  'той', 'тем', 'там', 'том', 'тех',
+                  'этих', 'этой', 'этом', 'согласно']
 
     @staticmethod
     def tokenize(text):
@@ -314,8 +317,7 @@ class StatisticalSpellerBkTree(object):
         elif prep == 'мк' and word.isdigit():
             return prep[::-1]
         elif prep == 'е':
-            if word in ['то', 'та', 'те', 'так', 'это', 'эта', 'эти', 'той', 'тем',
-                        'там', 'том', 'тех', 'этих', 'этой', 'этом', 'согласно']:
+            if word in self.__pron_set:
                 return 'же'
             elif self.__tag_in_parse('Name', word):
                 return 'де'
@@ -324,8 +326,7 @@ class StatisticalSpellerBkTree(object):
             else:
                 return prep
         elif prep == 'ж':
-            if word in ['то', 'та', 'те', 'так', 'это', 'эта', 'эти', 'той', 'тем',
-                        'там', 'том', 'тех', 'этих', 'этой', 'этом', 'согласно']:
+            if word in self.__pron_set:
                 return 'же'
             else:
                 return prep
