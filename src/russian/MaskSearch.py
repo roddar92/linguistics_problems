@@ -25,7 +25,8 @@ class RegexTrie:
             self.__dfs(node[ch], key, candidates, start=start + 1, prefix=prefix + ch)
         elif ch == '?':
             for letter in node:
-                self.__dfs(node[letter], key, candidates, start=start + 1, prefix=prefix + letter)
+                if letter != 'is_leaf':
+                    self.__dfs(node[letter], key, candidates, start=start + 1, prefix=prefix + letter)
                 
     def __dfs(self, node, key, candidates, start, prefix, next_ch=''):
         if 'is_leaf' in node and len(node) == 1 and next_ch not in ('', '*'):
@@ -40,7 +41,8 @@ class RegexTrie:
             self.__dfs(node[ch], key, candidates, start=start + 1, prefix=prefix + ch)
         elif ch == '?':
             for letter in node:
-                self.__dfs(node[letter], key, candidates, start=start + 1, prefix=prefix + letter)
+                if letter != 'is_leaf':
+                    self.__dfs(node[letter], key, candidates, start=start + 1, prefix=prefix + letter)
         elif ch == '*':
             next_ch = key[start + 1] if start + 1 < len(key) else '*'
 
