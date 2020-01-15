@@ -1,3 +1,7 @@
+from functools import wraps
+from time import time
+
+
 class RegexTrie:
     def __init__(self):
         self.children = {}
@@ -57,19 +61,41 @@ class RegexTrie:
                     self.__dfs(node[letter], key, candidates, start=start, prefix=prefix + letter, next_ch=next_ch)
 
 
+def profile(func):
+    @wraps(func)
+    def wrapper(*args):
+        start = time()
+        result = func(*args)
+        print(f'Elapsed {(time() - start):.10f} ms...')
+        return result
+    return wrapper
+
+
+@profile
+def search_by_pattern(func, pattern):
+    return func(pattern)
+
+
 if __name__ == '__main__':
     VOCABULARY = ['ale', 'apple', 'orange', 'tomato', 'timati', 'apfle', 'tomatosoup',
                   'sandwich', 'avocado', 'avocadole', 'tonic', 'timato']
     trie = RegexTrie()
     for w in VOCABULARY:
         trie.add(w)
+
+    test_pairs = [
+        ('?', []),
+        ('???', ['ale']),
+        ('a*le', ['ale', 'apple', 'apfle', 'avocadole']),
+        ('t*mat?', ['tomato', 'timati', 'timato']),
+        ('t?mato', ['tomato', 'timato']),
+        ('t?mato*', ['tomato', 'tomatosoup', 'timato']),
+        ('ap?le', ['apple', 'apfle']),
+        ('a??le', ['apple', 'apfle']),
+        ('orange', ['orange'])
+    ]
         
-    assert sorted(trie.search_all('*')) == sorted(VOCABULARY)
-    assert trie.search_all('?') == []
-    assert trie.search_all('???') == ['ale']
-    assert trie.search_all('a*le') == ['ale', 'apple', 'apfle', 'avocadole']
-    assert trie.search_all('t?mato') == ['tomato', 'timato']
-    assert trie.search_all('t?mato*') == ['tomato', 'tomatosoup', 'timato']
-    assert trie.search_all('ap?le') == ['apple', 'apfle']
-    assert trie.search_all('a??le') == ['apple', 'apfle']
-    assert trie.search_all('orange') == ['orange']
+    assert sorted(search_by_pattern(trie.search_all, '*')) == sorted(VOCABULARY)
+
+    for arg, expected in test_pairs:
+        assert search_by_pattern(trie.search_all, arg) == expected
