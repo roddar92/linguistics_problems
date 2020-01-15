@@ -165,9 +165,9 @@ class Transliterator:
 
     def __transliterate_ij_ending(self, text, elems, i):
         symbol = text[i]
-        if symbol in 'i' and self.__is_vowel(elems[-1]):
+        if symbol == 'i' and self.__is_vowel(elems[-1]):
             return 'й'
-        elif text[i] in self.__inverted_phonemes:
+        elif symbol in self.__inverted_phonemes:
             return self.__inverted_phonemes[symbol]
         else:
             return symbol
