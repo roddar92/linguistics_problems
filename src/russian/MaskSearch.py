@@ -35,7 +35,7 @@ class RegexTrie:
             candidates.append(prefix)
             return
 
-        ch = key[start] if start < len(key) else '*'
+        ch = key[start] if start < len(key) else '' if key[start - 1] == '?' else '*'
         if ch in node:
             self.__dfs(node[ch], key, candidates, start=start + 1, prefix=prefix + ch)
         elif ch == '?':
@@ -59,12 +59,15 @@ class RegexTrie:
 
 
 if __name__ == '__main__':
-    VOCABULARY = ['ale', 'apple', 'orange', 'tomato', 'apfle', 'tomatosoup',
+    VOCABULARY = ['ale', 'apple', 'orange', 'tomato', 'timati', 'apfle', 'tomatosoup',
                   'sandwich', 'avocado', 'avocadole', 'tonic', 'timato']
     trie = RegexTrie()
     for w in VOCABULARY:
         trie.add(w)
         
+    assert trie.search_all('*') == sorted(VOCABULARY)
+    assert trie.search_all('?')) == []
+    assert trie.search_all('???')) == ['ale']
     assert trie.search_all('a*le') == ['ale', 'apple', 'apfle', 'avocadole']
     assert trie.search_all('t?mato') == ['tomato', 'timato']
     assert trie.search_all('t?mato*') == ['tomato', 'tomatosoup', 'timato']
