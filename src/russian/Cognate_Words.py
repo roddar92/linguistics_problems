@@ -155,15 +155,15 @@ class CognateWordChecker(object):
         return a[end - lcs: end]
 
     def has_words_same_root(self, w1, w2):
-        lemmas = [self.__get_lemma(w) for w in (w1, w2)]
+        lemmas = list(map(self.__get_lemma, (w1, w2)))
 
         if len(set(lemmas)) < 2:
             return "У вас было введено одно и тоже слово!"
 
-        if self.w2v.similarity(lemmas[0], lemmas[-1]) < 0.45:
+        if self.w2v and self.w2v.similarity(lemmas[0], lemmas[-1]) < 0.45:
             return "Слова с омонимичным корнем не могут является однокоренными..."
 
-        normalized_words = [self.__get_word_canonical_form(w) for w in lemmas]
+        normalized_words = list(map(self.__get_word_canonical_form, lemmas))
         corrected_normalized = self.__find_changed_vowels(normalized_words[0], normalized_words[-1])
         corrected_normalized = self.__find_hidden_vowels(corrected_normalized[0], corrected_normalized[-1])
 
