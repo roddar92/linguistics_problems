@@ -107,7 +107,9 @@ class StatisticalSpeller(object):
     def fit_texts(self, texts):
         checkpoint = time.time()
         words_vocab = self.voc_vectorizer.fit_transform(texts).tocoo()
-        self.voc = dict(zip(sorted(self.voc_vectorizer.vocabulary_.values()), words_vocab.sum(axis=0).A1))
+        self.voc = dict(zip(
+            sorted(self.voc_vectorizer.vocabulary_.values()),
+            words_vocab.sum(axis=0).A1))
 
         print("Speller fitted for texts in", time.time() - checkpoint)
 
@@ -142,29 +144,28 @@ class StatisticalSpeller(object):
         suggests = list()
         for suggest in counter.most_common(n=self.n_candidates):
             sugg = self.words_list[suggest[0]]
-            dl_distance = damerau_levenshtein_distance(sugg, word)
-            fitted_sugg_list = self.voc_vectorizer.transform([f"{prev_word} {sugg}"]).tocoo().col.tolist()
-            if dl_distance <= 5:
-                suggests.extend([(sugg, dl_distance, self.voc.get(fitt_sugg, 0.0))
-                                 for fitt_sugg in fitted_sugg_list]
-                                if fitted_sugg_list else [(sugg, dl_distance, 0.0)])
+            dist = damerau_levenshtein_distance(sugg, word)
+            context_list = self.voc_vectorizer.transform([f"{prev_word} {sugg}"]).tocoo().col.tolist()
+            if dist <= 5:
+                if context_list:
+                    suggs = [(sugg, dist, self.voc.get(context, 0.0)) for context in context_list]
+                else:
+                    suggs = [(sugg, dist, 0.0)]
+                suggests.extend(suggs)
 
         suggests = sorted(suggests, key=lambda tup: tup[1])
 
         minimal_distance = min([suggest[1] for suggest in suggests])
-        swap_words = sorted(
+        candidates = sorted(
             [(suggest[0], suggest[2]) for suggest in suggests
              if suggest[1] == minimal_distance and set(suggest[0]) == set(word)],
             key=lambda tup: -tup[1])
 
-        return swap_words[0][0] if swap_words and swap_words[0][1] > 0 else suggests[0][0]
+        return candidates[0][0] if candidates and candidates[0][1] > 0 else suggests[0][0]
 
     # ищем тег среди разборов одного слова
     def __tag_in_parse(self, tag_name, word):
-        for parse in self.morph.parse(word):
-            if tag_name in parse.tag:
-                return True
-        return False
+        return any(tag_name in parse.tag for parse in self.morph.parse(word))
 
     # строим эвристики для битых предлогов
     def need_fix_prep(self, word, prep):
