@@ -141,8 +141,8 @@ class PhraseTemplateTrie:
         for i, word in enumerate(subphrase):
             word = word.lower()
             if word.startswith('(') and word.endswith(')') and not is_alternative:
+                is_alternative = True
                 for token in word[1:-1].split('|'):
-                    is_alternative = True
                     self.__add_subtree(subphrase[i + 1:], label, node, token)
             elif not is_alternative:
                 node = self.__get_node(node, word)
@@ -202,7 +202,7 @@ if __name__ == '__main__':
     phrase_trie.add_phrase(['Во', 'поле', 'снежок', 'расстаял'], 'Y')
     phrase_trie.add_phrase(['у', 'Васи', 'сегодня', 'день', '(рождения|варенья)'], 'Z')
     phrase_trie.add_phrase(['я', 'помню', 'чудное', 'мгновенье'], 'P')
-    phrase_trie.add_phrase(['я', 'помню', 'чудное', 'мгновенье', 'передо', 'мной', 'явилась', 'ты'], 'A')
+    phrase_trie.add_phrase(['я', 'помню', 'чудное', '(мгновенье|варенье)', 'передо', 'мной', 'явилась', 'ты'], 'A')
 
     start = time()
     assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'раму']) == 'X'
