@@ -6,6 +6,8 @@ class NaiveSentenceBoundaryDetector(object):
     EOS = '.?!'
     MULTI_PUNCT = re.compile(r'([.?!]){2,}')
     ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
+    ITD = re.compile(r'и т\. [дп]\.', re.I)
+    IDR = re.compile(r'и [дп]р\.', re.I)
 
     def __init__(self):
         self.tokenizer = NaiveTokenizer()
@@ -13,20 +15,16 @@ class NaiveSentenceBoundaryDetector(object):
     def __is_eos(self, previous_token):
         return previous_token in ['...'] + list(self.EOS)
 
-    @staticmethod
-    def __is_standard_abbr(current_sentence):
-        if len(current_sentence) >= 3 and re.search(r'и т\. [дп]\.', ' '.join(current_sentence[-3:])):
+    def __is_standard_abbr(self, curr_sent):
+        if len(curr_sent) >= 3 and self.ITD.search(f'{curr_sent[-3]} {curr_sent[-2]} {curr_sent[-1]}'):
             return True
-        elif len(current_sentence) >= 2 and re.search(r'и [дп]р\.', ' '.join(current_sentence[-2:])):
+        elif len(curr_sent) >= 2 and self.IDR.search(f'{curr_sent[-2]} {curr_sent[-1]}'):
             return True
         else:
             return False
 
     def extract_sentences(self, text):
-        _STATUS_START = 0
-        _STATUS_SPLIT = 1
-        _STATUS_MISS = 2
-        _STATUS_EXPTED = 3
+        _STATUS_START, _STATUS_SPLIT, _STATUS_MISS, _STATUS_EXPTED = range(4)
         _brackets_count = 0
         _inside_quotes = False
 
@@ -36,7 +34,7 @@ class NaiveSentenceBoundaryDetector(object):
         current_sentence = []
         for token in self.tokenizer.tokenize(text):
             ttype, val = token.Type, token.Value
-            if ttype not in ['WORD', 'NUMBER', 'URL', 'QUOTE', 'LBR', 'LQUOTE', 'RBR', 'RQUOTE']:
+            if ttype not in ('WORD', 'NUMBER', 'URL', 'QUOTE', 'LBR', 'LQUOTE', 'RBR', 'RQUOTE'):
                 if val in self.EOS or self.MULTI_PUNCT.search(val):
                     if val in '?!' or self.MULTI_PUNCT.search(val):
                         _current_status = _STATUS_MISS
@@ -52,9 +50,9 @@ class NaiveSentenceBoundaryDetector(object):
                     _current_status = _STATUS_EXPTED
                 else:
                     _current_status = _STATUS_MISS
-            elif ttype in ['LBR', 'LQUOTE']:
+            elif ttype in ('LBR', 'LQUOTE'):
                 _brackets_count += 1
-            elif ttype in ['RBR', 'RQUOTE']:
+            elif ttype in ('RBR', 'RQUOTE'):
                 _brackets_count -= 1
 
                 if _brackets_count == 0 and (self.__is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
@@ -65,7 +63,7 @@ class NaiveSentenceBoundaryDetector(object):
                 if _prev_token:
                     if _prev_token in self.EOS or self.MULTI_PUNCT.search(_prev_token):
                         _current_status = _STATUS_EXPTED
-                    elif _prev_ttype in ['RBR', 'RQUOTE']:
+                    elif _prev_ttype in ('RBR', 'RQUOTE'):
                         _current_status = _STATUS_EXPTED
                     elif _prev_ttype == 'QUOTE' and not _inside_quotes:
                         _current_status = _STATUS_EXPTED
