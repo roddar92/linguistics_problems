@@ -12,14 +12,14 @@ class CamelCaseSplitter:
         word = ''
         for ch in text:
             if ch.isupper():
-                if curr_state in [_is_lower, _other, _start]:
+                if curr_state in (_is_lower, _other, _start):
                     if word:
                         yield word
                         word = ''
                     curr_state = _is_upper
                 word += ch
             elif ch.islower():
-                if curr_state in [_is_upper, _other, _start]:
+                if curr_state in (_is_upper, _other, _start):
                     if word.isupper() and len(word) > 1:
                         yield word[:-1]
                         word = word[-1] + ch
