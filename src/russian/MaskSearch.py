@@ -93,6 +93,8 @@ if __name__ == '__main__':
         ('?', []),
         ('???', ['ale']),
         ('a*le', ['ale', 'apple', 'apfle', 'avocadole']),
+        ('t*m*to', ['tomato', 'timato']),
+        ('t*m*t?', ['tomato', 'timati', 'timato']),
         ('t*mat?', ['tomato', 'timati', 'timato']),
         ('t?mato', ['tomato', 'timato']),
         ('t?mato*', ['tomato', 'tomatosoup', 'timato']),
