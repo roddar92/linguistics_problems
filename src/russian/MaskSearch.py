@@ -4,10 +4,10 @@ from time import time
 
 class RegexTrie:
     def __init__(self):
-        self.children = {}
+        self.root = {}
 
     def add(self, word):
-        curr = self.children
+        curr = self.root
         for letter in word:
             if letter not in curr:
                 curr[letter] = {}
@@ -16,7 +16,7 @@ class RegexTrie:
 
     def search_all(self, key):
         answer = []
-        self.__dfs(self.children, key, candidates=answer, start=0, prefix="")
+        self.__dfs(self.root, key, candidates=answer, start=0, prefix="")
         return answer
 
     def __dfs_light(self, node, key, candidates, start, prefix):
@@ -36,11 +36,17 @@ class RegexTrie:
         if 'is_leaf' in node and len(node) == 1 and next_ch not in ('', '*'):
             return
 
-        if start == len(key) and 'is_leaf' in node:
+        if start >= len(key) and 'is_leaf' in node:
             candidates.append(prefix)
             return
 
-        ch = key[start] if start < len(key) else '' if key[start - 1] == '?' else '*'
+        if start < len(key):
+            ch = key[start]
+        elif key[start - 1] == '?':
+            ch = '$'
+        else:
+            ch = '*'
+
         if ch in node:
             self.__dfs(node[ch], key, candidates, start=start + 1, prefix=prefix + ch)
         elif ch == '?':
