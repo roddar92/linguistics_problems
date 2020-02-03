@@ -141,10 +141,11 @@ class CognateWordChecker(object):
 
     @staticmethod
     def __find_lcs(a, b):
-        mem = [[0] * (1 + len(b)) for _ in range(1 + len(a))]
+        m, n = 1 + len(a), 1 + len(b)
+        mem = [[0] * n for _ in range(m)]
         lcs, end = 0, 0
-        for i in range(1, 1 + len(a)):
-            for j in range(1, 1 + len(b)):
+        for i in range(1, m):
+            for j in range(1, n):
                 if a[i - 1] == b[j - 1]:
                     mem[i][j] = mem[i - 1][j - 1] + 1
                     if mem[i][j] > lcs:
