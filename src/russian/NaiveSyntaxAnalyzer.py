@@ -88,10 +88,7 @@ class Chunker:
 
     @staticmethod
     def __was_apro_in_pos(pos_tags, i, dist):
-        for j in range(i - dist, i):
-            if pos_tags[j] == 'APRO':
-                return True
-        return False
+        return any(pos_tags[j] == 'APRO' for j in range(i - dist, i))
 
     def __update_phrases(self, phrases_array, curr_phrase):
         txt = ' '.join(tok.Value for tok in curr_phrase)
