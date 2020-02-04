@@ -23,34 +23,38 @@ class SpellingDictionary:
         for word in words:
             self.add(word)
 
-    def __search_dfs(self, node, word, dist, count, start):
-        if start == len(word):
-            return 'is_leaf' in node and count <= dist
+    def __search_dfs(self, node, word, dist, candidates, prefix, count, start):
+        if start == len(word) and 'is_leaf' in node and count <= dist:
+            candidates.append(prefix)
+            return
+
+        if start >= len(word):
+            return
 
         letter = word[start]
-        res = False
         for ll in node:
             if ll != 'is_leaf' and letter == ll:
-                res = self.__search_dfs(node[letter], word, dist, count, start + 1)
+                self.__search_dfs(node[letter], word, dist, candidates, prefix + letter, count, start + 1)
             elif ll != 'is_leaf':
-                res = self.__search_dfs(node[ll], word, dist, count + 1, start + 1)
-            if res:
-                return True
-        return res
+                self.__search_dfs(node[ll], word, dist, candidates, prefix + ll, count + 1, start + 1)
 
-    def search(self, word: str, distance=1) -> bool:
+    def search(self, word: str, distance=1) -> List[str]:
         """
-        Returns if there is any word in the trie that equals to the given word after modifying exactly distance characters
+        Returns candidates list with words that equal to the given word after modifying exactly distance characters
         """
-        return self.__search_dfs(self.root, word, distance, 0, 0)
+        candidates = []
+        self.__search_dfs(self.root, word, distance, candidates, '', 0, 0)
+        return candidates
 
 
 if __name__ == '__main__':
     dictionary = SpellingDictionary()
-    dictionary.build_dict(['hello', 'leetcode'])
+    dictionary.build_dict(['hello', 'leetcode', 'hell'])
 
-    assert dictionary.search('hello')
-    assert dictionary.search('hhllo')
-    assert dictionary.search('hkelo', 2)
-    assert not dictionary.search('hklo', 2)
+    assert dictionary.search('hello') == ['hello']
+    assert dictionary.search('hhllo') == ['hello']
+    assert dictionary.search('hkelo', 2) == ['hello']
     assert not dictionary.search('hklo')
+    assert dictionary.search('hklo', 2) == ['hell']
+    assert dictionary.search('hkloo', 2) == ['hello']
+    assert not dictionary.search('elloo', 2)
