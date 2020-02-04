@@ -52,8 +52,10 @@ if __name__ == '__main__':
 
     assert dictionary.search('hello') == ['hello']
     assert dictionary.search('hhllo', 1) == ['hello', 'hallo']
+    assert dictionary.search('hhllo', 2) == ['hello', 'hallo']
     assert dictionary.search('hkelo', 2) == ['hello', 'hallo']
     assert not dictionary.search('hklo')
     assert dictionary.search('hklo', 2) == ['hell']
     assert dictionary.search('hkloo', 2) == ['hello', 'hallo']
     assert not dictionary.search('elloo', 2)
+    assert dictionary.search('elloo', 3) == ['hello', 'hallo']
