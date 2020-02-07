@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 
-class SpellingDictionary:
+class SpellingHammingDictionary:
     def __init__(self):
         """
         Initialize your data structure here.
@@ -47,7 +47,7 @@ class SpellingDictionary:
 
 
 if __name__ == '__main__':
-    dictionary = SpellingDictionary()
+    dictionary = SpellingHammingDictionary()
     dictionary.build_dict(['hello', 'hallo', 'leetcode', 'hell'])
 
     assert dictionary.search('hello') == [('hello', 0)]
