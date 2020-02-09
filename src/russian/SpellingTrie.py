@@ -37,6 +37,15 @@ class SpellingHammingDictionary:
                 one = int(letter != ll)
                 self.__search_dfs(node[ll], word, dist, candidates, prefix + [ll], cost + one, start + 1)
 
+    def find_longest_prefix(self, word):
+        pos, node = -1, self.root
+        for i, letter in enumerate(word):
+            if letter not in node:
+                pos = i
+                break
+            node = node[letter]
+        return word[:pos] if pos >= 0 else word
+
     def search(self, word: str, distance=0) -> List[Tuple[str, int]]:
         """
         Returns candidates list with words that equal to the given word after modifying exactly distance characters
@@ -60,3 +69,7 @@ if __name__ == '__main__':
     assert dictionary.search('hkloo', 2) == [('hello', 2), ('hallo', 2)]
     assert not dictionary.search('elloo', 2)
     assert dictionary.search('elloo', 3) == [('hello', 3), ('hallo', 3)]
+    assert dictionary.find_longest_prefix('elloo') == ''
+    assert dictionary.find_longest_prefix('hkloo') == 'h'
+    assert dictionary.find_longest_prefix('lettcode') == 'le'
+    assert dictionary.find_longest_prefix('hello') == 'hello'
