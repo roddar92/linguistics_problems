@@ -56,15 +56,15 @@ class RegexTrie:
         elif ch == '*':
             next_ch = key[start + 1] if start + 1 < len(key) else '*'
 
-            if next_ch in node:
-                self.__dfs(node[next_ch], key, candidates, start=start + 2, prefix=prefix + next_ch)
-
             for letter in node:
                 if letter == 'is_leaf' and next_ch == '*':
                     candidates.append(prefix)
 
+                add = 2 if letter == next_ch else 0
+                n_ch = '' if letter == next_ch else next_ch
+
                 if letter != 'is_leaf':
-                    self.__dfs(node[letter], key, candidates, start=start, prefix=prefix + letter, next_ch=next_ch)
+                    self.__dfs(node[letter], key, candidates, start=start + add, prefix=prefix + letter, next_ch=n_ch)
 
 
 def profile(func):
