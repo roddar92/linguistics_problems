@@ -26,11 +26,11 @@ class RegexTrie:
 
         ch = key[start]
         if ch in node:
-            self.__dfs(node[ch], key, candidates, start=start + 1, prefix=prefix + ch)
+            self.__dfs_light(node[ch], key, candidates, start=start + 1, prefix=prefix + ch)
         elif ch == '?':
             for letter in node:
                 if letter != 'is_leaf':
-                    self.__dfs(node[letter], key, candidates, start=start + 1, prefix=prefix + letter)
+                    self.__dfs_light(node[letter], key, candidates, start=start + 1, prefix=prefix + letter)
                 
     def __dfs(self, node, key, candidates, start, prefix, next_ch=''):
         if 'is_leaf' in node and len(node) == 1 and next_ch not in ('', '*'):
@@ -60,11 +60,13 @@ class RegexTrie:
                 if letter == 'is_leaf' and next_ch == '*':
                     candidates.append(prefix)
 
+                if letter == 'is_leaf':
+                    continue
+
                 add = 2 if letter == next_ch else 0
                 n_ch = '' if letter == next_ch else next_ch
 
-                if letter != 'is_leaf':
-                    self.__dfs(node[letter], key, candidates, start=start + add, prefix=prefix + letter, next_ch=n_ch)
+                self.__dfs(node[letter], key, candidates, start=start + add, prefix=prefix + letter, next_ch=n_ch)
 
 
 def profile(func):
