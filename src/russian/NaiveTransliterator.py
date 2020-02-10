@@ -173,23 +173,27 @@ class Transliterator:
             return symbol
 
     def __transliterate_vowels_sequence(self, text, answer, elems, i):
+        segment = text[i:i + 2]
+
         if self.__is_of_word_start(elems, i) or self.__is_vowel(elems[-1]) or elems[-1] == 'ь':
             if self.__is_of_word_start(elems, i) and self.__iot_must_changed(text, i):
-                return self.__COMBINATED_E_PHONEMES[text[i:i + 2]]
-            return self.__inverted_phonemes[text[i:i + 2]]
-        elif (i > 0 or elems[-1].isalpha()) and text[i:i + 2].lower() in self.IOT_VOWELS:
-                return self.__inverted_phonemes[text[i:i + 2]]
+                return self.__COMBINATED_E_PHONEMES[segment]
+            return self.__inverted_phonemes[segment]
+        elif (i > 0 or elems[-1].isalpha()) and segment.lower() in self.IOT_VOWELS:
+                return self.__inverted_phonemes[segment]
         elif i > 0 and not self.__is_vowel(elems[-1]) and self.__is_solid_sign_possible(text, i):
-            return 'ъ' + self.__inverted_phonemes[text[i:i + 2]]
+            return 'ъ' + self.__inverted_phonemes[segment]
         else:
             return answer
 
     def __transliterate_ch_sequence(self, text, i):
+        segment = text[i:i + 2]
+
         if i + 4 < len(text) and text[i + 2:i + 4] in self.CH_AFTER_SEQ:
             letter = self.CH_AFTER_SEQ[text[i + 2:i + 4]]
-            return letter.upper() if text[i:i + 2].istitle() else letter
+            return letter.upper() if segment.istitle() else letter
         else:
-            return self.__inverted_phonemes[text[i:i + 2]]
+            return self.__inverted_phonemes[segment]
 
     def __transliterate_ch_end_sequence(self, text, elems, i, is_upper):
         if ''.join(elems[-2:]) in ['ви', 'ны'] and is_upper == 1:
@@ -203,22 +207,24 @@ class Transliterator:
         return 'ий' if re.search(r'[гджкцчшщ]$', elems[-1]) else self.__inverted_phonemes[text[i:i + 2]]
 
     def transliterate_two_letter_sequence(self, text, elems, i, is_upper):
+        segment = text[i:i + 2]
+
         if self.__CH_START_REGEX.search(text[:i + 2]):
             res = self.__transliterate_ch_sequence(text, i)
         elif self.__CH_END_REGEX.search(text[i:]):
             res = self.__transliterate_ch_end_sequence(text, elems, i, is_upper)
-        elif self.__is_iot_combination(text[i:i + 2]):
-            answer = self.__COMBINATED_PHONEMES[text[i:i + 2]] if text[i:i + 2].lower() in self.IET_VOWELS \
-                else self.__COMBINATED_E_PHONEMES[text[i:i + 2]] if text[i:i + 2].lower() in self.IOT_VOWELS \
-                else self.__inverted_phonemes[text[i:i + 2]]
+        elif self.__is_iot_combination(segment):
+            answer = self.__COMBINATED_PHONEMES[segment] if segment.lower() in self.IET_VOWELS \
+                else self.__COMBINATED_E_PHONEMES[segment] if segment.lower() in self.IOT_VOWELS \
+                else self.__inverted_phonemes[segment]
             res = self.__transliterate_vowels_sequence(text, answer, elems, i)
-        elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj'] and not text[i + 2].isalnum():
+        elif segment.lower() in ['ij', 'iy', 'yi', 'yj'] and not text[i + 2].isalnum():
             res = self.__transliterate_vowel_ending(text, elems, i)
-        elif text[i:i + 2].lower() in ['ij', 'iy', 'yi', 'yj']:
+        elif segment.lower() in ['ij', 'iy', 'yi', 'yj']:
             res = self.__inverted_phonemes[text[i:i + 1]]
             i -= 1
         else:
-            res = self.__inverted_phonemes[text[i:i + 2]]
+            res = self.__inverted_phonemes[segment]
         return res, i
 
     def simple_spell_euristic(self, word):
