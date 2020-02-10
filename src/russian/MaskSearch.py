@@ -16,7 +16,7 @@ class RegexTrie:
 
     def search_all(self, key):
         answer = []
-        self.__dfs(self.root, key, candidates=answer, start=0, prefix="")
+        self.__dfs(self.root, key, candidates=answer, start=0, prefix='')
         return answer
 
     def __dfs_light(self, node, key, candidates, start, prefix):
