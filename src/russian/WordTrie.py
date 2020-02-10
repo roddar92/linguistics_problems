@@ -135,7 +135,8 @@ class PhraseTemplateTrie:
     # add recursively alternatives for tokens i.e. (token1|token2|...|tokenN)
     def __add_subtree(self, subphrase, label, node, token=''):
         if token != '':
-            node = self.__get_node(node, token)
+            for part in token.split():
+                node = self.__get_node(node, part)
                 
         is_alternative = False
         for i, word in enumerate(subphrase):
@@ -197,7 +198,7 @@ if __name__ == '__main__':
 
     phrase_trie = PhraseTemplateTrie()
     phrase_trie.add_phrase(['Мама', '(мыла|умывала)', '(раму|рамку)'], 'X')
-    phrase_trie.add_phrase(['Во', 'поле', '(берёзонька|кудрявая)', 'стояла'], 'Y')
+    phrase_trie.add_phrase(['Во', 'поле', '(берёзонька|кудрявая|зелёная и пушистая)', 'стояла'], 'Y')
     phrase_trie.add_phrase(['(Мама|Папа)', '(подарила|подарил)', 'мне', '(куклу|бабочку)'], 'Z')
     phrase_trie.add_phrase(['Во', 'поле', 'снежок', 'расстаял'], 'Y')
     phrase_trie.add_phrase(['у', 'Васи', 'сегодня', 'день', '(рождения|варенья)'], 'Z')
@@ -208,6 +209,7 @@ if __name__ == '__main__':
     assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'раму']) == 'X'
     assert phrase_trie.get_label_for_phrase(['Мама', 'мыла', 'рамку']) == 'X'
     assert phrase_trie.get_label_for_phrase(['Во', 'поле', 'кудрявая', 'стояла']) == 'Y'
+    assert phrase_trie.get_label_for_phrase(['Во', 'поле', 'зелёная', 'и', 'пушистая', 'стояла']) == 'Y'
     assert 'Мама мыла раму' in phrase_trie
     assert 'Мама мыла рамочку' not in phrase_trie
     print(f'Elapsed {(time() - start)/1000:.10f} sec')
