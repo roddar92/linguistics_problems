@@ -47,13 +47,13 @@ class RussianSyllableModule(SyllableModule):
         word = word.lower()
 
         syllables = []
-        cur_syllable = ""
+        cur_syllable = []
 
         for _, letter in enumerate(word):
-            cur_syllable += letter
+            cur_syllable += [letter]
             if self.__is_vowel(letter):
-                syllables.append(cur_syllable)
-                cur_syllable = ""
+                syllables.append(''.join(cur_syllable))
+                cur_syllable = []
             if syllables:
                 if self.__is_russian_reflexive_suffix(syllables[-1]):
                     last = syllables.pop()
@@ -68,18 +68,18 @@ class RussianSyllableModule(SyllableModule):
                     syllables.append(prelast[ind:] + last)
                 elif letter in "ьъ" or self.__is_vowel(syllables[-1][-1]) and letter == "й":
                     last = syllables.pop()
-                    syllables.append(last + cur_syllable)
-                    cur_syllable = ""
+                    syllables.append(last + ''.join(cur_syllable))
+                    cur_syllable = []
                 elif len(cur_syllable) >= 2 and self.__is_russian_consonant(letter) and \
                         not (self.__is_russian_sonour(cur_syllable[0]) or
                              self.__is_russian_double_consonants(cur_syllable)):
                     last = syllables.pop()
                     syllables.append(last + cur_syllable[0])
-                    cur_syllable = cur_syllable[1:]
+                    cur_syllable.pop(0)
 
         if cur_syllable:
             last = syllables.pop()
-            syllables.append(last + cur_syllable)
+            syllables.append(last + ''.join(cur_syllable[:]))
 
         return syllables
 
