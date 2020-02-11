@@ -12,30 +12,32 @@ class Trie:
             if letter not in curr:
                 curr[letter] = {}
             curr = curr[letter]
-        curr['word'] = word
         curr['score'] = score
 
     def find_most_freq(self, prefix):
+        curr = self.find(prefix)
+        return self.__preorder_for_most_freq(curr, prefix) if curr else None
+
+    def find(self, prefix):
         curr = self.children
         for letter in prefix:
             if letter not in curr:
-                return -1
+                return None
             curr = curr[letter]
-        key = curr.get('word', '')
-        count = curr.get('score', 0)
-        return self.__preorder_for_most_freq(curr, key, count)
+        return curr
 
-    def __preorder_for_most_freq(self, node, key, max_count):
-        if type(node) != dict:
-            return key, max_count
+    def __preorder_for_most_freq(self, node, prefix):
+        key, max_count = prefix, -1
+        stack = [(node, key)]
 
-        for ch in node:
-            if ch in ('word', 'score'):
-                continue
-            if 'score' in node[ch] and max_count < node[ch]['score']:
-                max_count = node[ch]['score']
-                key = node[ch]['word']
-            key, max_count = self.__preorder_for_most_freq(node[ch], key, max_count)
+        while stack:
+            node, prefix = stack.pop()
+            if 'score' in node and node['score'] > max_count:
+                max_count = node['score']
+                key = prefix
+            for ch in node:
+                if ch != 'score':
+                    stack.append((node[ch], prefix + ch))
         return key, max_count
 
 
@@ -49,20 +51,25 @@ class AutoComplete:
             for word, score in vocab.items():
                 self.dictionary.add(word, score)
 
-    def __preorder(self, node):
-        for ch in node:
-            if ch in ('word', 'score'):
-                continue
-            if 'score' in node[ch]:
-                self.heap.add(self.node(node[ch]['word'], node[ch]['score']))
-            self.__preorder(node[ch])
+    def __preorder(self, node, prefix):
+        stack = [(node, prefix)]
+        while stack:
+            node, prefix = stack.pop()
+            if 'score' in node:
+                self.heap.add(self.node(prefix, node['score']))
+            for ch in node:
+                if ch != 'score':
+                    stack.append((node[ch], prefix + ch))
 
     def get_k_auto_completes(self, prefix, k=1):
         if k == 1:
             return self.dictionary.find_most_freq(prefix)
         else:
-            node = self.dictionary.children
-            self.__preorder(node)
+            node = self.dictionary.find(prefix)
+            if not node:
+                return []
+
+            self.__preorder(node, prefix)
             answer = []
 
             while k > 0:
