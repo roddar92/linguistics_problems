@@ -19,19 +19,31 @@ class RegexTrie:
         self.__dfs(self.root, key, candidates=answer, start=0, prefix='')
         return answer
 
-    def __dfs_light(self, node, key, candidates, start, prefix):
-        if start == len(key) and 'is_leaf' in node:
-            candidates.append(prefix)
-            return
+    def search_light_all(self, key):
+        return self.__dfs_light(self.root, key, start=0, prefix='')
 
-        ch = key[start]
-        if ch in node:
-            self.__dfs_light(node[ch], key, candidates, start=start + 1, prefix=prefix + ch)
-        elif ch == '?':
-            for letter in node:
-                if letter != 'is_leaf':
-                    self.__dfs_light(node[letter], key, candidates, start=start + 1, prefix=prefix + letter)
-                
+    @staticmethod
+    def __dfs_light(node, key, start, prefix):
+        candidates = []
+
+        stack = [(node, start, prefix)]
+        while stack:
+            node, start, prefix = stack.pop()
+            if start == len(key):
+                if 'is_leaf' in node:
+                    candidates.append(prefix)
+                continue
+
+            ch = key[start]
+            if ch in node:
+                stack.append((node[ch], start + 1, prefix + ch))
+            elif ch == '?':
+                for letter in node:
+                    if letter != 'is_leaf':
+                        stack.append((node[letter], start + 1, prefix + letter))
+
+        return candidates
+
     def __dfs(self, node, key, candidates, start, prefix, next_ch=''):
         if 'is_leaf' in node and len(node) == 1 and next_ch not in ('', '*'):
             return
@@ -74,7 +86,7 @@ def profile(func):
     def wrapper(*args):
         start = time()
         result = func(*args)
-        print(f'Elapsed {(time() - start):.10f} ms...')
+        print(f'Elapsed for {args[-1]} pattern: {(time() - start):.10f} ms...')
         return result
     return wrapper
 
@@ -94,6 +106,18 @@ if __name__ == '__main__':
     test_pairs = [
         ('?', []),
         ('???', ['ale']),
+        ('t?mato', ['timato', 'tomato']),
+        ('ap?le', ['apfle', 'apple']),
+        ('a??le', ['apfle', 'apple']),
+        ('orange', ['orange'])
+    ]
+
+    for arg, expected in test_pairs:
+        assert search_by_pattern(trie.search_light_all, arg) == expected
+
+    test_pairs = [
+        ('?', []),
+        ('???', ['ale']),
         ('a*le', ['ale', 'apple', 'apfle', 'avocadole']),
         ('t*m*to', ['tomato', 'timato']),
         ('t*m*t?', ['tomato', 'timati', 'timato']),
@@ -105,7 +129,7 @@ if __name__ == '__main__':
         ('t*mat*up', ['tomatosoup']),
         ('orange', ['orange'])
     ]
-        
+
     assert sorted(search_by_pattern(trie.search_all, '*')) == sorted(VOCABULARY)
 
     for arg, expected in test_pairs:
