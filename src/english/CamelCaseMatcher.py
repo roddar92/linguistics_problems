@@ -21,7 +21,15 @@ if __name__ == '__main__':
     queries = ['FooBar', 'FooBarTest', 'addFooBarTest', 'FootBall', 'FrameBuffer', 'ForceFeedBack']
 
     matcher = CamelCaseMatcher()
-    assert list(matcher.collect_camel_case_names(queries, 'FB')) == ['FooBar', 'FootBall', 'FrameBuffer']
-    assert list(matcher.collect_camel_case_names(queries, 'FoBa')) == ['FooBar', 'FootBall']
-    assert list(matcher.collect_camel_case_names(queries, 'FoBaT')) == ['FooBarTest', 'addFooBarTest']
-    assert list(matcher.collect_camel_case_names(queries, 'aFoBaT')) == ['addFooBarTest']
+    test_pairs = [
+        ('FBk', []),
+        ('FBl', ['FootBall']),
+        ('FBall', ['FootBall']),
+        ('FB', ['FooBar', 'FootBall', 'FrameBuffer']),
+        ('FoBa', ['FooBar', 'FootBall']),
+        ('FoBaT', ['FooBarTest', 'addFooBarTest']),
+        ('aFoBaT', ['addFooBarTest'])
+    ]
+
+    for arg, expected in test_pairs:
+        assert list(matcher.collect_camel_case_names(queries, arg)) == expected
