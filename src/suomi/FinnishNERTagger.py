@@ -11,7 +11,9 @@ from seqlearn.evaluation import whole_sequence_accuracy
 from seqlearn.perceptron import StructuredPerceptron
 from sklearn.metrics.classification import accuracy_score, f1_score
 
-real_num_pattern = re.compile('\d+([\.\,\:\/]\d)+')
+real_num_pattern = re.compile('\d+([\.\,]\d)+')
+time_num_pattern = re.compile('\d+([\:\/]\d)+')
+eng_pattern = re.compile('[a-z]+', re.I)
 currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
 
 
@@ -40,10 +42,8 @@ def digits_count(seq):
 
 def get_word_shape(seq):
     return ''.join([
-        'X' if re.search('[A-XZ]', s) else
-        'A' if re.search('[ÄÖY]', s) else
-        'x' if re.search('[a-xz]', s) else
-        'a' if re.search('[äöy]', s) else
+        'X' if re.search('[A-ZÄÖ]', s) else
+        'x' if re.search('[a-zäö]', s) else
         'd' if re.search('\d', s) else s
         for s in seq
     ])
@@ -83,29 +83,33 @@ def features(sequence, i):
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
-    yield "digits_count=" + str(digits_count(seq))
+    # yield "digits_count=" + str(digits_count(seq))
     
     # is date descriptor
     if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
         yield "date_descriptor"
+
+    if seq.endswith(':n'):
+        yield "ends_with_n"
+
+    if real_num_pattern.search(seq):
+        yield "num_with_point"
+
+    if eng_pattern.search(seq):
+        yield "contains_latin_chars"
 
     # is organization descriptor
     # if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
     #     yield "org_descriptor"
 
     if i > 0:
-       prev = sequence[i - 1].split("\t")[0]
-       # previous word's length
-       yield "prev_len=" + str(get_word_len(prev))
+        prev = sequence[i - 1].split("\t")[0]
+        # previous word's length
+        yield "prev_len=" + str(get_word_len(prev))
 
     if i > 1:
         pprev = sequence[i - 2].split("\t")[0]
         yield "pprev_short_word_shape=" + get_short_word_shape(pprev)
-
-    if i > 1:
-        pprev = sequence[i - 2].split("\t")[0]
-        # last letters of the previous word
-        yield "pprev_last_letters=" + (pprev[-5:] if len(pprev) > 5 else pprev)
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
@@ -121,31 +125,27 @@ def features(sequence, i):
         yield "prev_is_eos=" + str(prev == ".")
 
     if i < len(sequence) - 1:
-       next = sequence[i + 1].split("\t")[0]
-       # next word's length
-       yield "next_len=" + str(get_word_len(next))
+        next_ = sequence[i + 1].split("\t")[0]
+        # next word's length
+        yield "next_len=" + str(get_word_len(next_))
 
     if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[0]
+        next_ = sequence[i + 1].split("\t")[0]
         # last letters of the next word
-        yield "next_last_letters=" + (next[-5:] if len(next) > 5 else next)
+        yield "next_last_letters=" + (next_[-5:] if len(next_) > 5 else next_)
 
     if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[0]
-        yield "next_short_word_shape=" + get_short_word_shape(next)
+        next_ = sequence[i + 1].split("\t")[0]
+        yield "next_short_word_shape=" + get_short_word_shape(next_)
         
     if i < len(sequence) - 1:
-        next = sequence[i + 1].split("\t")[0]
-        yield "next_is_eos=" + str(next == ".")
+        next_ = sequence[i + 1].split("\t")[0]
+        yield "next_is_eos=" + str(next_ == ".")
 
     if i < len(sequence) - 2:
         nnext = sequence[i + 2].split("\t")[0]
         yield "nnext_short_word_shape=" + get_short_word_shape(nnext)
 
-    if i < len(sequence) - 2:
-        nnext = sequence[i + 2].split("\t")[0]
-        # last letters of the next word
-        yield "nnext_last_letters=" + (nnext[-5:] if len(nnext) > 5 else nnext)
 
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("finer-data/data/digitoday.2014.train.csv", "r"), features)
