@@ -111,10 +111,7 @@ class FinnishPredicativeQuestioner(object):
                 if self.is_aux_verb(word):
                     request.insert(0, (word + "ko").upper())
                 else:
-                    if negative:
-                        normalized = self.get_lemma(word, request[-1], negative)
-                    else:
-                        normalized = self.get_lemma(word, request[-1])
+                    normalized = self.get_lemma(word, request[-1], negative)
                     request.insert(0, normalized)
             else:
                 request.append(word)
