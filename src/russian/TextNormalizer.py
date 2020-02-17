@@ -2,6 +2,9 @@ import pymorphy2
 import re
 
 
+from collections import deque
+
+
 class Number2TextConverter:
 
     SIMPLE_NUMBERS = {
@@ -81,7 +84,7 @@ class Number2TextConverter:
 
     @staticmethod
     def __number2decomposition(number):
-        decomposition = []
+        decomposition = deque()
         k = 1
         while number > 0:
             rem = number % 10
@@ -90,10 +93,10 @@ class Number2TextConverter:
                 if t == 10:
                     digit = decomposition.pop()
                     t += digit
-                decomposition.append(t)
+                decomposition.appendleft(t)
             k *= 10
             number //= 10
-        return decomposition[::-1]
+        return decomposition
 
     def roman2arabic(self, roman_str):
         number = 0
@@ -140,9 +143,9 @@ class Number2TextConverter:
             return result
 
         if type(number) == str and self.__ROMAN_REGEX.match(number):
-            decomposition = self.__number2decomposition(self.roman2arabic(number.upper()))
-        else:
-            decomposition = self.__number2decomposition(number)
+            number = self.roman2arabic(number.upper())
+
+        decomposition = self.__number2decomposition(number)
 
         answer = []
         for i, n in enumerate(decomposition):
@@ -186,11 +189,11 @@ class Number2TextConverter:
                     word_for_thousand = (w if k > 1 else '') + word_for_thousand
                 answer.append(word_for_thousand)
             elif n >= 100:
-                answer += [self.HUNDREDS[n][key]]
+                answer.append(self.HUNDREDS[n][key])
             elif n >= 10 and not (11 <= n <= 19):
-                answer += [self.DOZENS[n][key]]
+                answer.append(self.DOZENS[n][key])
             else:
-                answer += [self.SIMPLE_NUMBERS[n][key]]
+                answer.append(self.SIMPLE_NUMBERS[n][key])
 
         if grammems:
             if not ordered:
@@ -296,39 +299,35 @@ class TextNormalizer:
         return cls.__NUMBERS_WITH_ZEROS.sub(r'\2', text)
 
     def __extract_parameters_for_number(self, text):
+        ordered = True
         match = self.__NUMB_WITH_ORD_ENDINGS.search(text)
-        match2 = self.__NUMB_WITH_ENDINGS.search(text)
-        if match:
-            number, ending = int(match.group(1)), match.group(2)
-        else:
-            number, ending = int(match2.group(1)), match2.group(2)
+        if not match:
+            match = self.__NUMB_WITH_ENDINGS.search(text)
+            ordered = False
+        number, ending = int(match.group(1)), match.group(2)
         grammems = self.ENDING_TO_GRAMMEME[ending]
-        ordered = match is not None
         return number, ordered, grammems
 
     def calculate_parameters_by_neighbours(self, text_fragment):
         grammems, ordered = set(), False
-        gender, number, case = (False, False, False)
+        gender, number, case = False, False, False
         for token in text_fragment:
             if self.__YEAR_CENTURY.match(token) or self.__MONTHS.match(token) or \
                     self.morph.parse(token)[0].normal_form in ['быть', 'стать']:
                 ordered = True
+                case = True
                 if self.__YEAR_CENTURY.match(token):
                     parse = self.morph.parse(token)
                     if parse:
                         grammems = {parse[0].tag.number, parse[0].tag.case}
-                        case = True
                         number = True
                     else:
                         grammems = {'masc', 'gent'}
-                        case = True
                         gender = True
                 elif self.__MONTHS.search(token):
                     grammems = {'neut'}
-                    case = True
                 elif self.morph.parse(token)[0].normal_form in ['быть', 'стать']:
                     grammems = {'ablt'}
-                    case = True
             elif token not in self.UNITS:
                 parse = self.morph.parse(token)
                 if not gender and parse[0].tag.gender:
