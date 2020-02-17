@@ -1,9 +1,9 @@
-from typing import Generator, List
+from typing import Iterator, List
 
 
 class CamelCaseMatcher:
-    def collect_camel_case_names(self, camel_case_names: List[str], pattern: str) -> Generator:
-        return (camel_case_name for camel_case_name in camel_case_names if self.__is_matched(pattern, camel_case_name))
+    def collect_camel_case_names(self, camel_case_names: List[str], pattern: str) -> Iterator:
+        return filter(lambda name: self.__is_matched(pattern, name), camel_case_names)
 
     @staticmethod
     def __is_matched(pattern, query) -> bool:
