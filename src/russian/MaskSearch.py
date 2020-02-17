@@ -15,18 +15,15 @@ class RegexTrie:
         curr['is_leaf'] = True
 
     def search_all(self, key):
-        answer = []
-        self.__dfs(self.root, key, candidates=answer, start=0, prefix='')
-        return answer
+        return self.__dfs(key)
 
     def search_light_all(self, key):
-        return self.__dfs_light(self.root, key, start=0, prefix='')
+        return self.__dfs_light(key)
 
-    @staticmethod
-    def __dfs_light(node, key, start, prefix):
+    def __dfs_light(self, key):
         candidates = []
 
-        stack = [(node, start, prefix)]
+        stack = [(self.root, 0, '')]
         while stack:
             node, start, prefix = stack.pop()
             if start == len(key):
@@ -44,41 +41,48 @@ class RegexTrie:
 
         return candidates
 
-    def __dfs(self, node, key, candidates, start, prefix, next_ch=''):
-        if 'is_leaf' in node and len(node) == 1 and next_ch not in ('', '*'):
-            return
+    def __dfs(self, key):
+        candidates = set()
 
-        if start >= len(key) and 'is_leaf' in node:
-            candidates.append(prefix)
-            return
+        stack = [(self.root, 0, '', '')]
+        while stack:
+            node, start, prefix, next_ch = stack.pop()
 
-        if start < len(key):
-            ch = key[start]
-        elif key[start - 1] == '?':
-            ch = '$'
-        else:
-            ch = '*'
+            if 'is_leaf' in node and len(node) == 1 and next_ch not in ('', '*'):
+                continue
 
-        if ch in node:
-            self.__dfs(node[ch], key, candidates, start=start + 1, prefix=prefix + ch)
-        elif ch == '?':
-            for letter in node:
-                if letter != 'is_leaf':
-                    self.__dfs(node[letter], key, candidates, start=start + 1, prefix=prefix + letter)
-        elif ch == '*':
-            next_ch = key[start + 1] if start + 1 < len(key) else '*'
+            if start >= len(key) and 'is_leaf' in node:
+                candidates.add(prefix)
+                continue
 
-            for letter in node:
-                if letter == 'is_leaf' and next_ch == '*':
-                    candidates.append(prefix)
+            if start < len(key):
+                ch = key[start]
+            elif key[start - 1] == '?':
+                ch = '$'
+            else:
+                ch = '*'
 
-                if letter == 'is_leaf':
-                    continue
+            if ch in node:
+                stack.append((node[ch], start + 1, prefix + ch, ''))
+            elif ch == '?':
+                for letter in node:
+                    if letter != 'is_leaf':
+                        stack.append((node[letter], start + 1, prefix + letter, ''))
+            elif ch == '*':
+                next_ch = key[start + 1] if start + 1 < len(key) else '*'
 
-                add = 2 if letter == next_ch else 0
-                n_ch = '' if letter == next_ch else next_ch
+                for letter in node:
+                    if letter == 'is_leaf' and next_ch == '*':
+                        candidates.add(prefix)
 
-                self.__dfs(node[letter], key, candidates, start=start + add, prefix=prefix + letter, next_ch=n_ch)
+                    if letter == 'is_leaf':
+                        continue
+
+                    add = 2 if letter == next_ch else 0
+                    n_ch = '' if letter == next_ch else next_ch
+
+                    stack.append((node[letter], start + add, prefix + letter, n_ch))
+        return candidates
 
 
 def profile(func):
@@ -116,18 +120,18 @@ if __name__ == '__main__':
         assert search_by_pattern(trie.search_light_all, arg) == expected
 
     test_pairs = [
-        ('?', []),
-        ('???', ['ale']),
-        ('a*le', ['ale', 'apple', 'apfle', 'avocadole']),
-        ('t*m*to', ['tomato', 'timato']),
-        ('t*m*t?', ['tomato', 'timati', 'timato']),
-        ('t*mat?', ['tomato', 'timati', 'timato']),
-        ('t?mato', ['tomato', 'timato']),
-        ('t?mato*', ['tomato', 'tomatosoup', 'timato']),
-        ('ap?le', ['apple', 'apfle']),
-        ('a??le', ['apple', 'apfle']),
-        ('t*mat*up', ['tomatosoup']),
-        ('orange', ['orange'])
+        ('?', set()),
+        ('???', {'ale'}),
+        ('a*le', {'ale', 'avocadole', 'apfle', 'apple'}),
+        ('t*m*to', {'timato', 'tomato'}),
+        ('t*m*t?', {'timato', 'timati', 'tomato'}),
+        ('t*mat?', {'timato', 'timati', 'tomato'}),
+        ('t?mato', {'timato', 'tomato'}),
+        ('t?mato*', {'timato', 'tomato', 'tomatosoup'}),
+        ('ap?le', {'apfle', 'apple'}),
+        ('a??le', {'apfle', 'apple'}),
+        ('t*mat*up', {'tomatosoup'}),
+        ('orange', {'orange'})
     ]
 
     assert sorted(search_by_pattern(trie.search_all, '*')) == sorted(VOCABULARY)
