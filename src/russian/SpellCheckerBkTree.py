@@ -124,15 +124,15 @@ class StatisticalSpellerBkTree(object):
             dist = damerau_levenshtein_distance(sugg, word)
             context_list = self.voc_vectorizer.transform([f"{prev_word} {sugg}"]).tocoo().col.tolist()
             if dist <= 5:
+                suggs = [(sugg, dist, 0.0)]
                 if context_list:
                     suggs = [(sugg, dist, self.voc.get(context, 0.0)) for context in context_list]
-                else:
-                    suggs = [(sugg, dist, 0.0)]
+
                 suggests.extend(suggs)
 
         suggests = sorted(suggests, key=lambda tup: tup[1])
 
-        minimal_distance = min([suggest[1] for suggest in suggests])
+        minimal_distance = min(suggest[1] for suggest in suggests)
         candidates = sorted(
             [(suggest[0], suggest[2]) for suggest in suggests
              if suggest[1] == minimal_distance and set(suggest[0]) == set(word)],
