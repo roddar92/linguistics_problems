@@ -6,6 +6,8 @@ https://arxiv.org/abs/1908.04212
 """
 import re
 
+from string import punctuation
+
 from seqlearn.datasets import load_conll
 from seqlearn.evaluation import whole_sequence_accuracy
 from seqlearn.perceptron import StructuredPerceptron
@@ -13,18 +15,18 @@ from sklearn.metrics.classification import accuracy_score, f1_score
 
 real_num_pattern = re.compile('\d+([\.\,]\d)+')
 time_num_pattern = re.compile('\d+([\:\/]\d)+')
-eng_pattern = re.compile('[a-z]+', re.I)
+eng_pattern = re.compile('^[a-z]+$', re.I)
 currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
 
 
-FI_DATE_DESCRIPTORS = [
+FI_DATE_DESCRIPTORS = {
     "kuun", "kuu", "kuuta", "kuussa", "kuulta", "vuoden", "vuonna", "vuoteen", "vuodesta", "vappu"
-]
-FI_GEO_DESCRIPTORS = [
+}
+FI_GEO_DESCRIPTORS = {
     "kylä", "katu", "tie", "järvi", "joki", "mäki", "vuori", "salmi",
     "vaara", "lahti", "linna", "koski", "niemi", "ranta", "suu", "maa"
-]
-FI_ORG_DESCRIPTORS = ["Oy"]
+}
+FI_ORG_DESCRIPTORS = {"Oy"}
 FI_VOWELS = "aeäöiouy"
 
 
@@ -33,11 +35,15 @@ def is_vowel(symbol):
 
 
 def get_word_len(seq):
-    return str(len(seq)) if len(seq) < 6 else "long"
+    return str(len(seq))
 
 
 def digits_count(seq):
     return len([j.isdigit() for j in seq])
+
+
+def non_alphabet_count(seq):
+    return sum(1 for j in seq if j not in punctuation and not re.match('^[a-z\d]$', j, re.I))
 
 
 def get_word_shape(seq):
@@ -83,19 +89,29 @@ def features(sequence, i):
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
+    yield "non_en_alphabet_count=" + str(non_alphabet_count(seq))
     # yield "digits_count=" + str(digits_count(seq))
-    
+
     # is date descriptor
     if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
         yield "date_descriptor"
 
-    if seq.endswith(':n'):
+    if seq[-2:] in (':n', 'en', 'in', 'an', 'un', 'on'):
         yield "ends_with_n"
+
+    if seq[-2:] == 'us':
+        yield "ends_with_us"
+
+    if 'ch' in seq.lower() or 'ck' in seq.lower() or any(l in seq.lower() for l in 'bcgwz'):
+        yield "contains_c_ck_ch_z"
+
+    # if seq[-1] in 'aeiou':
+    #     yield "ends_with_vowel"
 
     if real_num_pattern.search(seq):
         yield "num_with_point"
 
-    if eng_pattern.search(seq):
+    if eng_pattern.match(seq):
         yield "contains_latin_chars"
 
     # is organization descriptor
@@ -150,7 +166,7 @@ def features(sequence, i):
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("finer-data/data/digitoday.2014.train.csv", "r"), features)
 
-clf = StructuredPerceptron(decode="bestfirst", lr_exponent=.05, max_iter=10)
+clf = StructuredPerceptron(decode="bestfirst", lr_exponent=.05, max_iter=10, verbose=1)
 
 print("Fitting model " + str(clf))
 clf.fit(X_train, y_train, lengths_train)
