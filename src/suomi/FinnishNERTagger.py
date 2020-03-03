@@ -48,8 +48,10 @@ def non_alphabet_count(seq):
 
 def get_word_shape(seq):
     return ''.join([
-        'X' if re.search('[A-ZÄÖ]', s) else
-        'x' if re.search('[a-zäö]', s) else
+        'C' if s in 'BCGWXZ' else
+        'c' if s in 'bcgwxz' else
+        'X' if re.search('[AD-VYÄÖ]', s) else
+        'x' if re.search('[ad-vyäö]', s) else
         'd' if re.search('\d', s) else s
         for s in seq
     ])
@@ -75,7 +77,7 @@ def features(sequence, i):
     if i == len(sequence) - 1:
         yield "last\""""
         
-    yield "is_eos=" + str(seq == ".")
+    # yield "is_eos=" + str(seq == ".")
 
     # word's length
     yield "len=" + get_word_len(seq)
@@ -99,17 +101,17 @@ def features(sequence, i):
     if seq[-2:] in (':n', 'en', 'in', 'an', 'un', 'on'):
         yield "ends_with_n"
 
-    if seq[-2:] == 'us':
-        yield "ends_with_us"
+    # if seq.endswith('us'):
+    #     yield "ends_with_us"
 
-    if 'ch' in seq.lower() or 'ck' in seq.lower() or any(l in seq.lower() for l in 'bcgwz'):
-        yield "contains_c_ck_ch_z"
+    if 'ch' in seq.lower() or 'ck' in seq.lower():
+        yield "contains_ck_ch"
 
     # if seq[-1] in 'aeiou':
     #     yield "ends_with_vowel"
 
-    if real_num_pattern.search(seq):
-        yield "num_with_point"
+    # if real_num_pattern.search(seq):
+    #     yield "num_with_point"
 
     if eng_pattern.match(seq):
         yield "contains_latin_chars"
@@ -136,9 +138,9 @@ def features(sequence, i):
         prev = sequence[i - 1].split("\t")[0]
         yield "prev_short_word_shape=" + get_short_word_shape(prev)
         
-    if i > 0:
-        prev = sequence[i - 1].split("\t")[0]
-        yield "prev_is_eos=" + str(prev == ".")
+    # if i > 0:
+    #     prev = sequence[i - 1].split("\t")[0]
+    #     yield "prev_is_eos=" + str(prev == ".")
 
     if i < len(sequence) - 1:
         next_ = sequence[i + 1].split("\t")[0]
@@ -154,9 +156,9 @@ def features(sequence, i):
         next_ = sequence[i + 1].split("\t")[0]
         yield "next_short_word_shape=" + get_short_word_shape(next_)
         
-    if i < len(sequence) - 1:
-        next_ = sequence[i + 1].split("\t")[0]
-        yield "next_is_eos=" + str(next_ == ".")
+    # if i < len(sequence) - 1:
+    #     next_ = sequence[i + 1].split("\t")[0]
+    #     yield "next_is_eos=" + str(next_ == ".")
 
     if i < len(sequence) - 2:
         nnext = sequence[i + 2].split("\t")[0]
