@@ -44,16 +44,16 @@ def digits_count(seq):
 
 
 def non_alphabet_count(seq):
-    return sum(1 for j in seq if j not in punctuation and not re.match('^[a-z\d]$', j, re.I))
+    return sum(1 for j in seq if j not in punctuation and not eng_pattern.match(j))
 
 
 def get_word_shape(seq):
     return ''.join([
-        'C' if s in 'BCGWXZ' else
-        'c' if s in 'bcgwxz' else
-        'X' if re.search('[AD-VYÄÖ]', s) else
-        'x' if re.search('[ad-vyäö]', s) else
-        'd' if re.search('\d', s) else s
+        'C' if s in 'BCGFWXZ' else
+        'c' if s in 'bcgfwxz' else
+        'X' if re.match(r'^[AD-VYÄÖ]$', s) else
+        'x' if re.match(r'^[ad-vyäö]$', s) else
+        'd' if re.match(r'^\d$', s) else s
         for s in seq
     ])
 
@@ -87,7 +87,7 @@ def features(sequence, i):
     yield "first_letters=" + seq[:4] if len(seq) > 4 else seq
 
     # last 5 letters
-    yield "last_letters=" + seq[-5:] if len(seq) > 5 else seq
+    yield "last_letters=" + seq[-4:] if len(seq) > 4 else seq
 
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
@@ -131,7 +131,7 @@ def features(sequence, i):
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
         # last letters of the previous word
-        yield "prev_last_letters=" + (prev[-5:] if len(prev) > 5 else prev)
+        yield "prev_last_letters=" + (prev[-3:] if len(prev) > 3 else prev)
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
@@ -149,7 +149,7 @@ def features(sequence, i):
     if i < len(sequence) - 1:
         next_ = sequence[i + 1].split("\t")[0]
         # last letters of the next word
-        yield "next_last_letters=" + (next_[-5:] if len(next_) > 5 else next_)
+        yield "next_last_letters=" + (next_[-4:] if len(next_) > 4 else next_)
 
     if i < len(sequence) - 1:
         next_ = sequence[i + 1].split("\t")[0]
