@@ -8,13 +8,14 @@ import re
 
 from string import punctuation
 
+import pandas as pd
 from seqlearn.datasets import load_conll
 from seqlearn.evaluation import whole_sequence_accuracy
 from seqlearn.perceptron import StructuredPerceptron
-from sklearn.metrics.classification import accuracy_score, f1_score
+from sklearn.metrics.classification import accuracy_score, f1_score, classification_report
 
-real_num_pattern = re.compile('\d+([\.\,]\d)+')
-time_num_pattern = re.compile('\d+([\:\/]\d)+')
+real_num_pattern = re.compile('\d+([\.\,]\d+)+')
+time_num_pattern = re.compile('\d{2}([\:\/]\d{2})+')
 eng_pattern = re.compile('^[a-z]+$', re.I)
 currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
 
@@ -92,26 +93,24 @@ def features(sequence, i):
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
     yield "non_en_alphabet_count=" + str(non_alphabet_count(seq))
-    # yield "digits_count=" + str(digits_count(seq))
+    yield "digits_count=" + str(digits_count(seq))
 
     # is date descriptor
-    if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
+    # if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
+    if 'kuu' in seq.lower(): # or 'vuod' in seq.lower() or 'vuot' in seq.lower():
         yield "date_descriptor"
 
-    if seq[-2:] in (':n', 'en', 'in', 'an', 'un', 'on'):
+    if seq.endswith(':n'):
         yield "ends_with_n"
 
-    # if seq.endswith('us'):
-    #     yield "ends_with_us"
+    if re.search(r'\d{4}', seq):
+        yield "prob_year"
 
-    if 'ch' in seq.lower() or 'ck' in seq.lower():
-        yield "contains_ck_ch"
+    if 'ch' in seq.lower() or 'ck' in seq.lower() or 'ph' in seq.lower() or 'ew' in seq.lower() or 'ow' in seq.lower():
+        yield "contains_ck_ch_ph_ew"
 
-    # if seq[-1] in 'aeiou':
-    #     yield "ends_with_vowel"
-
-    # if real_num_pattern.search(seq):
-    #     yield "num_with_point"
+    if real_num_pattern.search(seq):
+        yield "num_with_point"
 
     if eng_pattern.match(seq):
         yield "contains_latin_chars"
@@ -182,20 +181,20 @@ y_pred = clf.predict(X_dev, lengths_dev)
 print("Whole seq accuracy    ", whole_sequence_accuracy(y_dev, y_pred, lengths_dev))
 print("Element-wise accuracy ", accuracy_score(y_dev, y_pred))
 print("Mean F1-score macro   ", f1_score(y_dev, y_pred, average="macro"))
-
-"""
-print("\nPredictions on test set")
-
-# читаем тестовое множество
-X_test, _, lengths_test = load_conll(open("../resources/test.data", "r"), features)
-y_pred = clf.predict(X_test, lengths_test)
+print(classification_report(y_dev, y_pred))
 
 print(pd.Series(y_pred).value_counts())
 
-print("Saving predicted as a submission")
+print("\nPredictions on test set")
 
-with open("submission.csv", "w") as wf:
-    wf.write("id,tag\n")
-    for id, tag in enumerate(list(y_pred)):
-        wf.write(str(id + 1) + "," + tag + "\n")
-"""
+# читаем тестовое множество
+X_test, y_test, lengths_test = load_conll(open("finer-data/data/digitoday-fixed.2015.test.csv", "r"), features)
+y_pred = clf.predict(X_test, lengths_test)
+print("Whole seq accuracy    ", whole_sequence_accuracy(y_test, y_pred, lengths_dev))
+print("Element-wise accuracy ", accuracy_score(y_test, y_pred))
+print("Mean F1-score macro   ", f1_score(y_test, y_pred, average="macro"))
+print(classification_report(y_test, y_pred))
+
+print(pd.Series(y_pred).value_counts())
+
+
