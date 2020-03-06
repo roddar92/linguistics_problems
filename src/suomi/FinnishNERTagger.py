@@ -16,7 +16,8 @@ from sklearn.metrics.classification import accuracy_score, f1_score, classificat
 
 real_num_pattern = re.compile('\d+([\.\,]\d+)+')
 time_num_pattern = re.compile('\d{2}([\:\/]\d{2})+')
-eng_pattern = re.compile('^[a-z]+$', re.I)
+eng_pattern = re.compile(r'^[a-z]+$', re.I)
+abbr_pattern = re.compile(r'([A-Z]{2,}|([A-Z]\.)+)')
 currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
 
 
@@ -91,22 +92,26 @@ def features(sequence, i):
 
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
-    yield "short_word_shape=" + get_short_word_shape(seq)
+    # yield "short_word_shape=" + get_short_word_shape(seq)
     yield "non_en_alphabet_count=" + str(non_alphabet_count(seq))
     yield "digits_count=" + str(digits_count(seq))
 
     # is date descriptor
     # if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
-    if 'kuu' in seq.lower(): # or 'vuod' in seq.lower() or 'vuot' in seq.lower():
+    if 'kuu' in seq.lower():
         yield "date_descriptor"
 
-    if seq.endswith(':n'):
-        yield "ends_with_n"
+    # if seq.endswith(':n'):
+    #     yield "ends_with_n"
 
-    if re.search(r'\d{4}', seq):
-        yield "prob_year"
+    if abbr_pattern.search(seq):
+        yield "abbr"
 
-    if 'ch' in seq.lower() or 'ck' in seq.lower() or 'ph' in seq.lower() or 'ew' in seq.lower() or 'ow' in seq.lower():
+    # if re.search(r'\d{4}', seq):
+    #     yield "prob_year"
+
+    if 'ch' in seq.lower() or 'ck' in seq.lower() or 'ph' in seq.lower() or \
+            'ew' in seq.lower() or 'ow' in seq.lower():
         yield "contains_ck_ch_ph_ew"
 
     if real_num_pattern.search(seq):
@@ -116,8 +121,8 @@ def features(sequence, i):
         yield "contains_latin_chars"
 
     # is organization descriptor
-    # if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
-    #     yield "org_descriptor"
+    if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
+        yield "org_descriptor"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
@@ -167,7 +172,7 @@ def features(sequence, i):
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("finer-data/data/digitoday.2014.train.csv", "r"), features)
 
-clf = StructuredPerceptron(decode="bestfirst", lr_exponent=.05, max_iter=10, verbose=1)
+clf = StructuredPerceptron(decode="bestfirst", lr_exponent=.1, max_iter=10, verbose=1, random_state=0)
 
 print("Fitting model " + str(clf))
 clf.fit(X_train, y_train, lengths_train)
@@ -198,3 +203,55 @@ print(classification_report(y_test, y_pred))
 print(pd.Series(y_pred).value_counts())
 
 
+"""
+Quality with random state=0
+Dev:
+Whole seq accuracy     0.9746450304259635
+Element-wise accuracy  0.998083161309
+/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/sklearn/metrics/classification.py:1135: UndefinedMetricWarning: F-score is ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+Mean F1-score macro    0.726506267891
+/Library/Frameworks/Python.framework/Versions/3.6/lib/python3.6/site-packages/sklearn/metrics/classification.py:1135: UndefinedMetricWarning: Precision and F-score are ill-defined and being set to 0.0 in labels with no predicted samples.
+  'precision', 'predicted', average, warn_for)
+             precision    recall  f1-score   support
+
+      B-LOC       0.93      0.55      0.69        47
+      B-ORG       1.00      1.00      1.00         3
+      B-PER       1.00      0.50      0.67         4
+      I-LOC       1.00      1.00      1.00        12
+      I-PER       0.00      0.00      0.00         1
+          O       1.00      1.00      1.00     13497
+
+avg / total       1.00      1.00      1.00     13564
+
+O        13519
+B-LOC       28
+I-LOC       12
+B-ORG        3
+B-PER        2
+dtype: int64
+
+Test:
+Whole seq accuracy     0.9695740365111561
+Element-wise accuracy  0.996721452914
+Mean F1-score macro    0.437923842113
+             precision    recall  f1-score   support
+
+     B-DATE       0.00      0.00      0.00         2
+      B-LOC       0.95      0.39      0.55        90
+      B-ORG       0.92      0.64      0.75       154
+      B-PER       0.75      0.22      0.34        27
+     I-DATE       0.00      0.00      0.00         1
+      I-LOC       0.86      0.86      0.86        14
+      I-PER       0.00      0.00      0.00         2
+          O       1.00      1.00      1.00     46072
+
+avg / total       1.00      1.00      1.00     46362
+
+O        46197
+B-ORG      106
+B-LOC       37
+I-LOC       14
+B-PER        8
+dtype: int64
+"""
