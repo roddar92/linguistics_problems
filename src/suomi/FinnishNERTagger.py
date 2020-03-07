@@ -14,7 +14,7 @@ from seqlearn.evaluation import whole_sequence_accuracy
 from seqlearn.perceptron import StructuredPerceptron
 from sklearn.metrics.classification import accuracy_score, f1_score, classification_report
 
-real_num_pattern = re.compile('\d+([\.\,]\d+)+')
+real_num_pattern = re.compile('\d+(([\.\,]\d+)+|\.)')
 time_num_pattern = re.compile('\d{2}([\:\/]\d{2})+')
 eng_pattern = re.compile(r'^[a-z]+$', re.I)
 abbr_pattern = re.compile(r'([A-Z]{2,}|([A-Z]\.)+)')
@@ -98,7 +98,8 @@ def features(sequence, i):
 
     # is date descriptor
     # if any(seq.lower().endswith(date_descr) for date_descr in FI_DATE_DESCRIPTORS):
-    if 'kuu' in seq.lower():
+    if 'kuu' in seq.lower() or 'voun' in seq.lower() or 'vout' in seq.lower() \
+            or 'voud' in seq.lower() or 'vous' in seq.lower():
         yield "date_descriptor"
 
     # if seq.endswith(':n'):
