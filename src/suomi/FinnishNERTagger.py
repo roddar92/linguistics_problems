@@ -111,6 +111,9 @@ def features(sequence, i):
     # if re.search(r'\d{4}', seq):
     #     yield "prob_year"
 
+    # if seq.isdigit():
+    #     yield 'is_digit'
+
     if 'ch' in seq.lower() or 'ck' in seq.lower() or 'ph' in seq.lower() or \
             'ew' in seq.lower() or 'ow' in seq.lower():
         yield "contains_ck_ch_ph_ew"
