@@ -257,32 +257,44 @@ if __name__ == "__main__":
     fsm = FinnishSyllableModule()
     rsm = RussianSyllableModule()
 
-    assert rsm.syllables_count("Вова") == 2
-    assert rsm.syllables_count("Вовочка") == 3
+    test_pairs = [
+        ('Вова', 2),
+        ('Вовочка', 3),
+        ('Коронация', 5),
+        ('водоПад', 3),
+        ('жест', 1),
+        ('санаторий', 4),
+        ('жест', 1),
+        ('Ломоносовская', 6),
+        ('Кошка', 2),
+        ('Василеостровская', 7),
+        ('лапа', 2),
+        ('тьма', 1),
+        ('резюме', 3),
+        ('вечер', 2),
+        ('лемма', 2),
+        ('землетрясение', 6),
+        ('Исландия', 4)
+    ]
+
+    for expect_arg, actual_result in test_pairs:
+        assert rsm.syllables_count(expect_arg) == actual_result
+
     assert rsm.syllables("Вовочка") == ["во", "во", "чка"]
     assert rsm.syllables("уезжать") == ["у", "е", "зжать"]
     assert rsm.syllables("инаогурация") == ["и", "на", "о", "гу", "ра", "ци", "я"]
-    assert rsm.syllables_count("Коронация") == 5
-    assert rsm.syllables_count("водоПад") == 3
     assert rsm.syllables("Анфиса") == ["ан", "фи", "са"]
     assert rsm.syllables("снайпер") == ["снай", "пер"]
     assert rsm.syllables("Петрополь") == ["пе", "тро", "поль"]
-    assert rsm.syllables_count("жест") == 1
     assert rsm.syllables("жест") == ["жест"]
     assert rsm.syllables("коронация") == ["ко", "ро", "на", "ци", "я"]
     assert rsm.syllables("йогурт") == ["йо", "гурт"]
     assert rsm.syllables("дверца") == ["двер", "ца"]
     assert rsm.syllables("корка") == ["кор", "ка"]
-    assert rsm.syllables_count("санаторий") == 4
     assert rsm.syllables("санаторий") == ["са", "на", "то", "рий"]
-    assert rsm.syllables_count("Ломоносовская") == 6
-    assert rsm.syllables_count("Кошка") == 2
     assert rsm.syllables("Кошка") == ["ко", "шка"]
     assert rsm.syllables("польский") == ["поль", "ский"]
     assert rsm.syllables("ласточка") == ["ла", "сто", "чка"]
-    assert rsm.syllables_count("Василеостровская") == 7
-    assert rsm.syllables_count("лапа") == 2
-    assert rsm.syllables_count("тьма") == 1
     assert rsm.syllables("тьма") == ["тьма"]
     assert rsm.syllables("наледь") == ["на", "ледь"]
     assert rsm.syllables("слякоть") == ["сля", "коть"]
@@ -291,16 +303,11 @@ if __name__ == "__main__":
     assert rsm.syllables("развиваться") == ["ра", "зви", "ва", "ться"]
     assert rsm.syllables("кашалот") == ["ка", "ша", "лот"]
     assert rsm.syllables("доченька") == ["до", "чень", "ка"]
-    assert rsm.syllables_count("резюме") == 3
     assert rsm.syllables("резюме") == ["ре", "зю", "ме"]
     assert rsm.syllables("белочка") == ["бе", "ло", "чка"]
-    assert rsm.syllables_count("вечер") == 2
-    assert rsm.syllables_count("лемма") == 2
-    assert rsm.syllables_count("землетрясение") == 6
     assert rsm.syllables("землетрясение") == ["зем", "ле", "тря", "се", "ни", "е"]
     assert rsm.syllables("царскосельский") == ["цар", "ско", "сель", "ский"]
     assert rsm.syllables("интервенция") == ["ин", "тер", "вен", "ци", "я"]
-    assert rsm.syllables_count("Исландия") == 4
     assert rsm.syllables("Шотландия") == ["шо", "тлан", "ди", "я"]
     assert rsm.syllables("фальшь") == ["фальшь"]
     assert rsm.syllables("фильм") == ["фильм"]
@@ -352,85 +359,28 @@ if __name__ == "__main__":
                           'lis', 'tyt', 'tä', 'mät', 'tö', 'myy',
                           'del', 'län', 'sä', 'kään', 'kö', 'hän']
 
-    assert esm.syllables_count("eye") == 1
-    assert esm.syllables_count("bed") == 1
-    assert esm.syllables_count("skinned") == 1
-    assert esm.syllables_count("apple") == 2
-    assert esm.syllables_count("beer") == 1
-    assert esm.syllables_count("plates") == 1
-    assert esm.syllables_count("bridges") == 2
-    assert esm.syllables_count("tasted") == 2
-    assert esm.syllables_count("close") == 1
-    assert esm.syllables_count("closed") == 1
-    assert esm.syllables_count("they") == 1
-    assert esm.syllables_count("their") == 1
-    assert esm.syllables_count("sway") == 1
-    assert esm.syllables_count("waits") == 1
-    assert esm.syllables_count("bought") == 1
-    assert esm.syllables_count("please") == 1
-    assert esm.syllables_count("fates") == 1
-    assert esm.syllables_count("chess") == 1
-    assert esm.syllables_count("sees") == 1
-    assert esm.syllables_count("cheese") == 1
-    assert esm.syllables_count("little") == 2
-    assert esm.syllables_count("some") == 1
-    assert esm.syllables_count("synchronized") == 3
-    assert esm.syllables_count("coughed") == 1
-    assert esm.syllables_count("oil") == 1
-    assert esm.syllables_count("bread") == 1
-    assert esm.syllables_count("cocked") == 1
-    assert esm.syllables_count("piled") == 1
-    assert esm.syllables_count("train") == 1
-    assert esm.syllables_count("training") == 2
-    assert esm.syllables_count("haiku") == 2
-    assert esm.syllables_count("every") == 2
-    assert esm.syllables_count("very") == 2
-    assert esm.syllables_count("sad") == 1
-    assert esm.syllables_count("fixed") == 1
-    assert esm.syllables_count("mirror") == 2
-    assert esm.syllables_count("tattoos") == 2
-    assert esm.syllables_count("freshly") == 2
-    assert esm.syllables_count("attractive") == 3
-    assert esm.syllables_count("bouquet") == 2
-    assert esm.syllables_count("butter") == 2
-    assert esm.syllables_count("machine") == 2
-    assert esm.syllables_count("machinery") == 4
-    assert esm.syllables_count("syllable") == 3
-    assert esm.syllables_count("technology") == 4
-    assert esm.syllables_count("tattoo") == 2
-    assert esm.syllables_count("brewery") == 2
-    assert esm.syllables_count("lovely") == 2
-    assert esm.syllables_count("family") == 3
-    assert esm.syllables_count("bravery") == 3
-    assert esm.syllables_count("trickery") == 3
-    assert esm.syllables_count("peaceful") == 2
-    assert esm.syllables_count("beautiful") == 3
-    assert esm.syllables_count("tilted") == 2
-    assert esm.syllables_count("environment") == 4
-    assert esm.syllables_count("likes") == 1
-    assert esm.syllables_count("liked") == 1
-    assert esm.syllables_count("tangled") == 2
-    assert esm.syllables_count("limited") == 3
-    assert esm.syllables_count("unfortunately") == 5
-    assert esm.syllables_count("square") == 1
-    assert esm.syllables_count("load") == 1
-    assert esm.syllables_count("watches") == 2
-    assert esm.syllables_count("loaded") == 2
-    assert esm.syllables_count("bee") == 1
-    assert esm.syllables_count("air") == 1
-    assert esm.syllables_count("handmade") == 2
-    assert esm.syllables_count("payed") == 1
-    assert esm.syllables_count("sadness") == 2
-    assert esm.syllables_count("played") == 1
-    assert esm.syllables_count("player") == 2
-    assert esm.syllables_count("later") == 2
-    assert esm.syllables_count("latest") == 2
-    assert esm.syllables_count("statement") == 2
-    assert esm.syllables_count("missed") == 1
-    assert esm.syllables_count("designed") == 2
-    assert esm.syllables_count("marked") == 1
-    assert esm.syllables_count("punishment") == 3
-    assert esm.syllables_count("committed") == 3
-    assert esm.syllables_count("pushed") == 1
-    assert esm.syllables_count("turned") == 1
-    assert esm.syllables_count("committed") == 3
+    test_pairs = [
+        ('eye', 1), ('bed', 1), ('skinned', 1), ('apple', 2),
+        ('beer', 1), ('plates', 1), ('bridges', 2), ('tasted', 2),
+        ('close', 1), ('closed', 1), ('they', 1), ('their', 1),
+        ('sway', 1), ('waits', 1), ('bought', 1), ('please', 1),
+        ('fates', 1), ('chess', 1), ('sees', 1), ('cheese', 1),
+        ('little', 2), ('some', 1), ('synchronized', 3), ('coughed', 1),
+        ('oil', 1), ('bread', 1), ('cocked', 1), ('piled', 1),
+        ('train', 1), ('training', 2), ('haiku', 2), ('every', 2),
+        ('very', 2), ('sad', 1), ('fixed', 1), ('mirror', 2),
+        ('tattoos', 2), ('freshly', 2), ('attractive', 3), ('bouquet', 2),
+        ('butter', 2), ('machine', 2), ('machinery', 4), ('syllable', 3),
+        ('technology', 4), ('tattoo', 2), ('brewery', 2), ('lovely', 2),
+        ('family', 3), ('bravery', 3), ('trickery', 3), ('peaceful', 2),
+        ('beautiful', 3), ('tilted', 2), ('environment', 4), ('likes', 1),
+        ('liked', 1), ('tangled', 2), ('limited', 3), ('unfortunately', 5),
+        ('square', 1), ('load', 1), ('watches', 2), ('loaded', 2),
+        ('bee', 1), ('air', 1), ('handmade', 2), ('payed', 1),
+        ('sadness', 2), ('played', 1), ('player', 2), ('later', 2),
+        ('latest', 2), ('statement', 2), ('missed', 1), ('designed', 2),
+        ('marked', 1), ('punishment', 3), ('committed', 3), ('pushed', 1), ('turned', 1)
+    ]
+
+    for expect_arg, actual_result in test_pairs:
+        assert esm.syllables_count(expect_arg) == actual_result
