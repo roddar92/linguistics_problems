@@ -54,7 +54,7 @@ def get_word_shape(seq):
         'c' if s in 'bcgfwxz' else
         'X' if re.match(r'^[AD-VYÄÖ]$', s) else
         'x' if re.match(r'^[ad-vyäö]$', s) else
-        'd' if re.match(r'^\d$', s) else s
+        'd' if s.isdigit() else s
         for s in seq
     ])
 
