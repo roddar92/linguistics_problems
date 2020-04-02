@@ -101,16 +101,14 @@ class RailwayTimetable(object):
 
     def get_trains_list(self, terminus, train_desc, time_flag=False):
         def project(train, terminus_station, train_description=None, projection=None):
+            main_criterion = train.get_arrival_location() == terminus_station
             if projection and train_description:
-                return train_description == getattr(train, projection)() and \
-                       train.get_arrival_location() == terminus_station
-            else:
-                return train.get_arrival_location() == terminus_station
+                main_criterion &= train_description == getattr(train, projection)()
+            return main_criterion
 
+        projection_criterion = None
         if train_desc:
             projection_criterion = 'get_no' if self.TRAIN_NO.match(train_desc) else 'get_name'
-        else:
-            projection_criterion = None
 
         trains = sorted([train for train in self.__timetable.values()
                          if project(train, terminus, train_desc, projection_criterion)],
