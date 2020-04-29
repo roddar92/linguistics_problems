@@ -36,13 +36,15 @@ class RegexTrie:
                 stack.append((node[ch], start + 1, prefix + ch))
             elif ch == '?':
                 for letter in node:
-                    if letter != 'is_leaf':
-                        stack.append((node[letter], start + 1, prefix + letter))
+                    if letter == 'is_leaf':
+                        continue
+                    stack.append((node[letter], start + 1, prefix + letter))
 
         return candidates
 
     def __dfs(self, key):
         candidates = set()
+        key_len = len(key)
 
         stack = [(self.root, 0, '', '')]
         while stack:
@@ -51,25 +53,24 @@ class RegexTrie:
             if 'is_leaf' in node and len(node) == 1 and next_ch not in ('', '*'):
                 continue
 
-            if start >= len(key) and 'is_leaf' in node:
+            if start >= key_len and 'is_leaf' in node:
                 candidates.add(prefix)
                 continue
 
-            if start < len(key):
-                ch = key[start]
-            elif key[start - 1] == '?':
-                ch = '$'
+            if start >= key_len:
+                ch = '$' if key[start - 1] == '?' else '*'
             else:
-                ch = '*'
+                ch = key[start]
 
             if ch in node:
                 stack.append((node[ch], start + 1, prefix + ch, ''))
             elif ch == '?':
                 for letter in node:
-                    if letter != 'is_leaf':
-                        stack.append((node[letter], start + 1, prefix + letter, ''))
+                    if letter == 'is_leaf':
+                        continue
+                    stack.append((node[letter], start + 1, prefix + letter, ''))
             elif ch == '*':
-                next_ch = key[start + 1] if start + 1 < len(key) else '*'
+                next_ch = key[start + 1] if start + 1 < key_len else '*'
 
                 for letter in node:
                     if letter == 'is_leaf' and next_ch == '*':
