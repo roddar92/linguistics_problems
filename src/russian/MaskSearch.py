@@ -63,12 +63,12 @@ class RegexTrie:
                 ch = key[start]
 
             if ch in node:
-                stack.append((node[ch], start + 1, prefix + ch, ''))
+                stack.append((node[ch], start + 1, prefix + ch, next_ch))
             elif ch == '?':
                 for letter in node:
                     if letter == 'is_leaf':
                         continue
-                    stack.append((node[letter], start + 1, prefix + letter, ''))
+                    stack.append((node[letter], start + 1, prefix + letter, next_ch))
             elif ch == '*':
                 next_ch = key[start + 1] if start + 1 < key_len else '*'
 
