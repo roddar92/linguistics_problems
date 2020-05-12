@@ -164,10 +164,7 @@ class RailwayTimetable(object):
 
             train = self.__timetable[train_desc]
             asked_terminus = train.get_arrival_location()
-            if asked_terminus == 'undefined':
-                return self.__class__.DEFAULT_ANSWER
-            else:
-                return asked_terminus
+            return self.__class__.DEFAULT_ANSWER if asked_terminus == 'undefined' else asked_terminus
         else:
             answer = {
                 train.get_arrival_location()
@@ -358,11 +355,7 @@ class RailwayTimetable(object):
     @staticmethod
     def extract_terminus(request):
         ind = request.index('to') + 1
-        location = []
-        while ind < len(request):
-            location.append(request[ind])
-            ind += 1
-        return ' '.join(location)[:-1]
+        return ' '.join(request[ind:])[:-1]
 
     @staticmethod
     def split_by_token(input_string, delimiter_token):
