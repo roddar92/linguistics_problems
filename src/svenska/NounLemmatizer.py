@@ -28,6 +28,9 @@ class SwedenNounLemmatizer:
         else:
             if word in self.irregular_nouns:
                 return self.irregular_nouns[word]
+            elif word.endswith('en'):
+                lemma = word[:-2] if not word.endswith('len') else word[:-1]
+                return f'ett {lemma}'
             elif word.endswith('erna'):
                 return word[:-4]
             elif word.endswith('larna'):
@@ -49,7 +52,9 @@ if __name__ == "__main__":
     assert q.get_lemma("tomaten") == "en tomat"
     assert q.get_lemma("gaffeln") == "en gaffel"
     assert q.get_lemma("faglarna", is_plural=True) == "fagel"
+    assert q.get_lemma("barnen", is_plural=True) == "ett barn"
     assert q.get_lemma("äpplet") == "ett äpple"
+    assert q.get_lemma("äpplen", is_plural=True) == "ett äpple"
     assert q.get_lemma("barnet") == "ett barn"
     assert q.get_lemma("älgen") == "en älg"
     assert q.get_lemma("rummet") == "ett rum"
