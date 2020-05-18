@@ -73,10 +73,9 @@ class RegexTrie:
                 next_ch = key[start + 1] if start + 1 < key_len else '*'
 
                 for letter in node:
-                    if letter == 'is_leaf' and next_ch == '*':
-                        candidates.add(prefix)
-
                     if letter == 'is_leaf':
+                        if next_ch == '*':
+                            candidates.add(prefix)
                         continue
 
                     add = 2 if letter == next_ch else 0
