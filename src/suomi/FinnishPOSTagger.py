@@ -19,15 +19,9 @@ time_num_pattern = re.compile('\d{2}([\:\/]\d{2})+')
 eng_pattern = re.compile(r'^[a-z]+$', re.I)
 abbr_pattern = re.compile(r'([A-Z]{2,}|([A-Z]\.)+)')
 currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
+case_endings = re.compile(r'(l[lt]|s[st])[aä]$', re.I)
 
 
-FI_DATE_DESCRIPTORS = {
-    "kuun", "kuu", "kuuta", "kuussa", "kuulta", "vuoden", "vuonna", "vuoteen", "vuodesta", "vappu"
-}
-FI_GEO_DESCRIPTORS = {
-    "kylä", "katu", "tie", "järvi", "joki", "mäki", "vuori", "salmi",
-    "vaara", "lahti", "linna", "koski", "niemi", "ranta", "suu", "maa"
-}
 FI_VOWELS = "aeäöiouy"
 
 
@@ -36,7 +30,7 @@ def is_vowel(symbol):
 
 
 def get_word_len(seq):
-    return str(len(seq))
+    return str(len(seq)) if len(seq) > 5 else 'short'
 
 
 def digits_count(seq):
@@ -77,8 +71,6 @@ def features(sequence, i):
 
     if i == len(sequence) - 1:
         yield "last"
-        
-    # yield "is_eos=" + str(seq == ".")
 
     # word's length
     yield "len=" + get_word_len(seq)
@@ -95,22 +87,17 @@ def features(sequence, i):
     yield "non_en_alphabet_count=" + str(non_alphabet_count(seq))
     yield "digits_count=" + str(digits_count(seq))
 
-    # is date descriptor
-    if 'kuu' in seq.lower() or 'voun' in seq.lower() or 'vout' in seq.lower() \
-            or 'voud' in seq.lower() or 'vous' in seq.lower():
-        yield "date_descriptor"
+    # if abbr_pattern.search(seq):
+    #     yield "abbr"
 
-    if abbr_pattern.search(seq):
-        yield "abbr"
+    # if seq.istitle():
+    #     yield 'is_title'
 
-    # if re.search(r'\d{4}', seq):
-    #     yield "prob_year"
+    # if seq.endswith('nen'):
+    #    yield "has_adj_ending"
 
-    # if seq.isdigit():
-    #     yield 'is_digit'
-
-    # if seq.isalpha():
-    #     yield 'is_alpha'
+    # if case_endings.match(seq):
+    #     yield "ends_with_case"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
@@ -121,6 +108,10 @@ def features(sequence, i):
         prev = sequence[i - 1].split("\t")[0]
         # last letters of the previous word
         yield "prev_last_letters=" + (prev[-4:] if len(prev) > 4 else prev)
+
+    if i > 0:
+        prev = sequence[i - 1].split("\t")[0]
+        yield "prev_word_shape=" + get_word_shape(prev)
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
@@ -138,13 +129,17 @@ def features(sequence, i):
 
     if i < len(sequence) - 1:
         next_ = sequence[i + 1].split("\t")[0]
+        yield "next_word_shape=" + get_word_shape(next_)
+
+    if i < len(sequence) - 1:
+        next_ = sequence[i + 1].split("\t")[0]
         yield "next_short_word_shape=" + get_short_word_shape(next_)
 
 
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("ftb1u-v1/ftb1u_train.tsv", "r"), features)
 
-clf = StructuredPerceptron(decode="viterbi", lr_exponent=.1, max_iter=10, verbose=1)
+clf = StructuredPerceptron(decode="viterbi", verbose=1)
 
 print("Fitting model " + str(clf))
 clf.fit(X_train, y_train, lengths_train)
