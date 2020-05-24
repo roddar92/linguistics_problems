@@ -96,8 +96,8 @@ def features(sequence, i):
     # if seq.endswith('nen'):
     #    yield "has_adj_ending"
 
-    # if case_endings.match(seq):
-    #     yield "ends_with_case"
+    if case_endings.match(seq):
+        yield "ends_with_case"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
@@ -139,7 +139,7 @@ def features(sequence, i):
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("ftb1u-v1/ftb1u_train.tsv", "r"), features)
 
-clf = StructuredPerceptron(decode="viterbi", verbose=1)
+clf = StructuredPerceptron(decode="viterbi", verbose=1, random_state=0)
 
 print("Fitting model " + str(clf))
 clf.fit(X_train, y_train, lengths_train)
@@ -159,26 +159,26 @@ print(pd.Series(y_pred).value_counts())
 
 """
 Test:
-Whole seq accuracy     0.7609970674486803
-Element-wise accuracy  0.964806656877
-Mean F1-score macro    0.967734966025
+Whole seq accuracy     0.768537913699204
+Element-wise accuracy  0.966079295154
+Mean F1-score macro    0.968156142864
              precision    recall  f1-score   support
 
-        ADJ       0.90      0.94      0.92      2655
-        ADP       0.94      0.94      0.94       664
-        ADV       0.96      0.95      0.96      4143
-       CONJ       1.00      0.99      0.99      1253
-        DET       0.95      0.88      0.92       971
-       INTJ       1.00      0.96      0.98        89
-       NOUN       0.97      0.93      0.95      9368
-        NUM       0.98      0.98      0.98       660
-       PRON       0.93      0.98      0.96      2726
+        ADJ       0.94      0.90      0.92      2655
+        ADP       0.93      0.94      0.93       664
+        ADV       0.97      0.93      0.95      4143
+       CONJ       1.00      0.99      1.00      1253
+        DET       0.89      0.96      0.92       971
+       INTJ       0.97      0.98      0.97        89
+       NOUN       0.94      0.97      0.95      9368
+        NUM       0.97      0.99      0.98       660
+       PRON       0.97      0.95      0.96      2726
       PROPN       0.98      0.99      0.98      1566
       PUNCT       1.00      1.00      1.00      5843
-      SCONJ       0.99      0.99      0.99      1077
-       VERB       0.96      0.98      0.97      9695
-          X       1.00      0.96      0.98        74
+      SCONJ       0.99      1.00      0.99      1077
+       VERB       0.98      0.97      0.97      9695
+          X       0.99      0.99      0.99        74
           _       1.00      1.00      1.00        76
 
-avg / total       0.97      0.96      0.96     40860
+avg / total       0.97      0.97      0.97     40860
 """
