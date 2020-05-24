@@ -78,7 +78,7 @@ def features(sequence, i):
     # first 4 letters
     yield "first_letters=" + seq[:4] if len(seq) > 4 else seq
 
-    # last 5 letters
+    # last 4 letters
     yield "last_letters=" + seq[-4:] if len(seq) > 4 else seq
 
     # word shape
