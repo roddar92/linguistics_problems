@@ -30,7 +30,7 @@ def is_vowel(symbol):
 
 
 def get_word_len(seq):
-    return str(len(seq)) if len(seq) > 5 else 'short'
+    return str(len(seq))
 
 
 def digits_count(seq):
