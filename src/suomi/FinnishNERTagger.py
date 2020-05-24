@@ -199,7 +199,7 @@ print("\nPredictions on test set")
 # читаем тестовое множество
 X_test, y_test, lengths_test = load_conll(open("finer-data/data/digitoday-fixed.2015.test.csv", "r"), features)
 y_pred = clf.predict(X_test, lengths_test)
-print("Whole seq accuracy    ", whole_sequence_accuracy(y_test, y_pred, lengths_dev))
+print("Whole seq accuracy    ", whole_sequence_accuracy(y_test, y_pred, lengths_test))
 print("Element-wise accuracy ", accuracy_score(y_test, y_pred))
 print("Mean F1-score macro   ", f1_score(y_test, y_pred, average="macro"))
 print(classification_report(y_test, y_pred))
