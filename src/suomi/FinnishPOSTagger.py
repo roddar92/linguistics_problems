@@ -84,7 +84,7 @@ def features(sequence, i):
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
-    yield "non_en_alphabet_count=" + str(non_alphabet_count(seq))
+    # yield "non_en_alphabet_count=" + str(non_alphabet_count(seq))
     yield "digits_count=" + str(digits_count(seq))
 
     # if abbr_pattern.search(seq):
