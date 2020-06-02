@@ -1,8 +1,8 @@
 # coding: utf-8
 
 """
-NER-tagging for Finnish news
-https://arxiv.org/abs/1908.04212
+POS-tagging for Finnish Helsinki corpora
+http://www.ling.helsinki.fi/kieliteknologia/tutkimus/treebank/index.shtml
 """
 import re
 
@@ -104,17 +104,9 @@ def features(sequence, i):
         # previous word's length
         yield "prev_len=" + str(get_word_len(prev))
 
-    if i > 0:
-        prev = sequence[i - 1].split("\t")[0]
         # last letters of the previous word
         yield "prev_last_letters=" + (prev[-4:] if len(prev) > 4 else prev)
-
-    if i > 0:
-        prev = sequence[i - 1].split("\t")[0]
         yield "prev_word_shape=" + get_word_shape(prev)
-
-    if i > 0:
-        prev = sequence[i - 1].split("\t")[0]
         yield "prev_short_word_shape=" + get_short_word_shape(prev)
 
     if i < len(sequence) - 1:
@@ -122,17 +114,9 @@ def features(sequence, i):
         # next word's length
         yield "next_len=" + str(get_word_len(next_))
 
-    if i < len(sequence) - 1:
-        next_ = sequence[i + 1].split("\t")[0]
         # last letters of the next word
         yield "next_last_letters=" + (next_[-4:] if len(next_) > 4 else next_)
-
-    if i < len(sequence) - 1:
-        next_ = sequence[i + 1].split("\t")[0]
         yield "next_word_shape=" + get_word_shape(next_)
-
-    if i < len(sequence) - 1:
-        next_ = sequence[i + 1].split("\t")[0]
         yield "next_short_word_shape=" + get_short_word_shape(next_)
 
 
