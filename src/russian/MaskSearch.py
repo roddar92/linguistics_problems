@@ -37,9 +37,8 @@ class RegexTrie:
                 stack.append((node[ch], start + 1, prefix + ch))
             elif ch == '?':
                 for letter in node:
-                    if letter == 'is_leaf':
-                        continue
-                    stack.append((node[letter], start + 1, prefix + letter))
+                    if letter != 'is_leaf':
+                        stack.append((node[letter], start + 1, prefix + letter))
 
         return candidates
 
@@ -68,9 +67,8 @@ class RegexTrie:
                 stack.append((node[ch], start + 1, prefix + ch, next_ch))
             elif ch == '?':
                 for letter in node:
-                    if letter == 'is_leaf':
-                        continue
-                    stack.append((node[letter], start + 1, prefix + letter, next_ch))
+                    if letter != 'is_leaf':
+                        stack.append((node[letter], start + 1, prefix + letter, next_ch))
             elif ch == '*':
                 next_ch = key[start + 1] if start + 1 < key_len else '*'
 
@@ -81,9 +79,10 @@ class RegexTrie:
                         continue
 
                     add = 2 if letter == next_ch else 0
-                    n_ch = '' if letter == next_ch else next_ch
+                    if letter == next_ch:
+                        next_ch = ''
 
-                    stack.append((node[letter], start + add, prefix + letter, n_ch))
+                    stack.append((node[letter], start + add, prefix + letter, next_ch))
         return candidates
 
 
