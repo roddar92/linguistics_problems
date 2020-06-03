@@ -22,11 +22,12 @@ class RegexTrie:
 
     def __dfs_light(self, key):
         candidates = []
+        key_len = len(key)
 
         stack = [(self.root, 0, '')]
         while stack:
             node, start, prefix = stack.pop()
-            if start == len(key):
+            if start == key_len:
                 if 'is_leaf' in node:
                     candidates.append(prefix)
                 continue
@@ -50,12 +51,13 @@ class RegexTrie:
         while stack:
             node, start, prefix, next_ch = stack.pop()
 
-            if 'is_leaf' in node and len(node) == 1 and next_ch not in ('', '*'):
-                continue
+            if 'is_leaf' in node:
+                if len(node) == 1 and next_ch not in ('', '*'):
+                    continue
 
-            if start >= key_len and 'is_leaf' in node:
-                candidates.add(prefix)
-                continue
+                if start >= key_len:
+                    candidates.add(prefix)
+                    continue
 
             if start >= key_len:
                 ch = '$' if key[start - 1] == '?' else '*'
