@@ -3,7 +3,10 @@ from src.russian.NaiveTokenizer import NaiveTokenizer
 
 
 class NaiveSentenceBoundaryDetector(object):
-    EOS = '.?!'
+    DOT = '.'
+    QUESTION = '?'
+    EXPRESSION = '!'
+    __EOS = (DOT, QUESTION, EXPRESSION, '...')
     MULTI_PUNCT = re.compile(r'([.?!]){2,}')
     ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
     ITD = re.compile(r'и т\. [дп]\.', re.I)
@@ -12,8 +15,8 @@ class NaiveSentenceBoundaryDetector(object):
     def __init__(self):
         self.tokenizer = NaiveTokenizer()
 
-    def __is_eos(self, previous_token):
-        return previous_token in ['...'] + list(self.EOS)
+    def __is_eos(self, token):
+        return token in self.__EOS
 
     def __is_standard_abbr(self, curr_sent):
         if len(curr_sent) >= 3 and self.ITD.search(f'{curr_sent[-3]} {curr_sent[-2]} {curr_sent[-1]}'):
@@ -35,10 +38,10 @@ class NaiveSentenceBoundaryDetector(object):
         for token in self.tokenizer.tokenize(text):
             ttype, val = token.Type, token.Value
             if ttype not in ('WORD', 'NUMBER', 'URL', 'QUOTE', 'LBR', 'LQUOTE', 'RBR', 'RQUOTE'):
-                if val in self.EOS or self.MULTI_PUNCT.search(val):
-                    if val in '?!' or self.MULTI_PUNCT.search(val):
+                if self.__is_eos(val) or self.MULTI_PUNCT.search(val):
+                    if val in (self.QUESTION, self.EXPRESSION) or self.MULTI_PUNCT.search(val):
                         _current_status = _STATUS_MISS
-                    elif val == '.':
+                    elif val == self.DOT:
                         if len(_prev_token) <= 1:
                             _current_status = _STATUS_MISS
                         else:
@@ -61,7 +64,7 @@ class NaiveSentenceBoundaryDetector(object):
                     _current_status = _STATUS_MISS
             else:
                 if _prev_token:
-                    if _prev_token in self.EOS or self.MULTI_PUNCT.search(_prev_token):
+                    if self.__is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token):
                         _current_status = _STATUS_EXPTED
                     elif _prev_ttype in ('RBR', 'RQUOTE'):
                         _current_status = _STATUS_EXPTED
@@ -117,4 +120,6 @@ if __name__ == '__main__':
 
     sbd = NaiveSentenceBoundaryDetector()
     for test_text in test_texts:
-        print(list(sbd.extract_sentences(test_text)))
+        for sentence in list(sbd.extract_sentences(test_text)):
+            print(sentence)
+        print()
