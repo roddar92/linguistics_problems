@@ -128,26 +128,18 @@ def features(sequence, i):
     if any(seq == org_descr for org_descr in FI_ORG_DESCRIPTORS):
         yield "org_descriptor"
 
-    if i > 0:
-        prev = sequence[i - 1].split("\t")[0]
-        # previous word's length
-        yield "prev_len=" + str(get_word_len(prev))
-
     if i > 1:
         pprev = sequence[i - 2].split("\t")[0]
         yield "pprev_short_word_shape=" + get_short_word_shape(pprev)
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
+        # previous word's length
+        yield "prev_len=" + str(get_word_len(prev))
+
         # last letters of the previous word
         yield "prev_last_letters=" + (prev[-3:] if len(prev) > 3 else prev)
-
-    if i > 0:
-        prev = sequence[i - 1].split("\t")[0]
         yield "prev_short_word_shape=" + get_short_word_shape(prev)
-        
-    # if i > 0:
-    #     prev = sequence[i - 1].split("\t")[0]
     #     yield "prev_is_eos=" + str(prev == ".")
 
     if i < len(sequence) - 1:
@@ -155,17 +147,9 @@ def features(sequence, i):
         # next word's length
         yield "next_len=" + str(get_word_len(next_))
 
-    if i < len(sequence) - 1:
-        next_ = sequence[i + 1].split("\t")[0]
         # last letters of the next word
         yield "next_last_letters=" + (next_[-4:] if len(next_) > 4 else next_)
-
-    if i < len(sequence) - 1:
-        next_ = sequence[i + 1].split("\t")[0]
         yield "next_short_word_shape=" + get_short_word_shape(next_)
-        
-    # if i < len(sequence) - 1:
-    #     next_ = sequence[i + 1].split("\t")[0]
     #     yield "next_is_eos=" + str(next_ == ".")
 
     if i < len(sequence) - 2:
