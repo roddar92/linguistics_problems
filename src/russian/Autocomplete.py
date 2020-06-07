@@ -26,19 +26,20 @@ class Trie:
             curr = curr[letter]
         return curr
 
-    def __preorder_for_most_freq(self, node, prefix):
-        key, max_count = prefix, -1
+    @staticmethod
+    def __preorder_for_most_freq(node, key):
+        max_key, max_count = key, -1
         stack = [(node, key)]
 
         while stack:
             node, prefix = stack.pop()
             if 'score' in node and node['score'] > max_count:
                 max_count = node['score']
-                key = prefix
+                max_key = prefix
             for ch in node:
                 if ch != 'score':
                     stack.append((node[ch], prefix + ch))
-        return key, max_count
+        return max_key, max_count
 
 
 class AutoComplete:
