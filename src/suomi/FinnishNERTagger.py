@@ -78,8 +78,6 @@ def features(sequence, i):
 
     if i == len(sequence) - 1:
         yield "last\""""
-        
-    # yield "is_eos=" + str(seq == ".")
 
     # word's length
     yield "len=" + get_word_len(seq)
@@ -140,7 +138,6 @@ def features(sequence, i):
         # last letters of the previous word
         yield "prev_last_letters=" + (prev[-3:] if len(prev) > 3 else prev)
         yield "prev_short_word_shape=" + get_short_word_shape(prev)
-    #     yield "prev_is_eos=" + str(prev == ".")
 
     if i < len(sequence) - 1:
         next_ = sequence[i + 1].split("\t")[0]
@@ -150,7 +147,6 @@ def features(sequence, i):
         # last letters of the next word
         yield "next_last_letters=" + (next_[-4:] if len(next_) > 4 else next_)
         yield "next_short_word_shape=" + get_short_word_shape(next_)
-    #     yield "next_is_eos=" + str(next_ == ".")
 
     if i < len(sequence) - 2:
         nnext = sequence[i + 2].split("\t")[0]
@@ -160,7 +156,7 @@ def features(sequence, i):
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("finer-data/data/digitoday.2014.train.csv", "r"), features)
 
-clf = StructuredPerceptron(decode="bestfirst", lr_exponent=.1, max_iter=10, verbose=1, random_state=0)
+clf = StructuredPerceptron(decode="bestfirst", verbose=1, random_state=0)
 
 print("Fitting model " + str(clf))
 clf.fit(X_train, y_train, lengths_train)
