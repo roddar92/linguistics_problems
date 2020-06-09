@@ -37,6 +37,8 @@ Source code:
 - [English Adjective Comparisoner](src/english/Comparative_or_Superlative.py)
 - [Common English question generator](src/english/Question.py)
 - [Finnish Predicative Sentences](src/suomi/FinnishPredicativeQuestioner.py)
+- [Finnish POS-tagger](src/suomi/FinnishPOSTagger.py)
+- [Finnish case tagger](src/suomi/finnish-ending-pos-bilstm-case-tagger.ipynb)
 - [Russian POS-tagger](src/russian/NaivePosTagger.py)
 
 #### Syntax
