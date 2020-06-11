@@ -81,7 +81,7 @@ class FinnishPredicativeQuestioner(object):
                 else:
                     result.append("OLLEET")
             else:
-                if word[3:] in "VAT MME TTE":
+                if word[-3:] in "VAT MME TTE".split():
                     result.append("ETTE")
                     result.append("OLEET")
                 else:
@@ -91,7 +91,7 @@ class FinnishPredicativeQuestioner(object):
             if self.is_single_person(person) or self.is_plural_person(person):
                 result.append(self.negative[person])
             else:
-                if word[3:] in "VAT MME TTE":
+                if word[-3:] in "VAT MME TTE".split():
                     result.append("ETTE")
                 else:
                     result.append("EI")
@@ -187,6 +187,7 @@ if __name__ == "__main__":
 
     assert q.get_negative_predicative_sentence("OLIKO* HÄN TÄÄLLÄ?") == "HÄN EI OLLUT TÄÄLLÄ"
     assert q.get_negative_predicative_sentence("HE OLIVAT* TÄÄLLÄ") == "HE EIVÄT OLLEET TÄÄLLÄ"
+    assert q.get_negative_predicative_sentence("ME OLIMME* TÄÄLLÄ") == "ME EMME OLLEET TÄÄLLÄ"
     assert q.get_negative_predicative_sentence("ONKO* HÄN TÄÄLLÄ?") == "HÄN EI OLE TÄÄLLÄ"
     assert q.get_negative_predicative_sentence("HÄN ON* TÄÄLLÄ?") == "HÄN EI OLE TÄÄLLÄ"
 
