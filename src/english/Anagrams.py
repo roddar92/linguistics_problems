@@ -12,7 +12,7 @@ class AnagramDistance:
 
         for ch in word2:
             char_count[ch] -= 1
-        return sum([-v for v in char_count.values() if v < 0])
+        return sum(-v for v in char_count.values() if v < 0)
 
 
 class AnagramVocabulary:
@@ -23,6 +23,13 @@ class AnagramVocabulary:
         if words and isinstance(words, list):
             self.__make_vocabulary(words)
 
+    @staticmethod
+    def group_anagrams(words):
+        groups = defaultdict(list)
+        for word in words:
+            groups[str(tuple(word.count(ch) for ch in ascii_lowercase))].append(word)
+        return groups
+
     def __make_vocabulary(self, words):
         for word in words:
             nearest_word = [w for w in self.vocabulary if self.anagram_dist.distance(word, w) == 0]
@@ -30,12 +37,6 @@ class AnagramVocabulary:
                 self.vocabulary[word] = []
             else:
                 self.vocabulary[nearest_word[0]] += [word]
-
-    def group_anagrams(self, words):
-        groups = defaultdict(list)
-        for word in words:
-            groups[str([word.count(ch) for ch in ascii_lowercase])].append(word)
-        return groups
 
     def add_words(self, words):
         self.__make_vocabulary(words)
