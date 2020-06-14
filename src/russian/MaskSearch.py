@@ -21,7 +21,7 @@ class RegexTrie:
         return self.__dfs_light(key)
 
     def __dfs_light(self, key):
-        candidates = []
+        candidates = set()
         key_len = len(key)
 
         stack = [(self.root, 0, '')]
@@ -29,7 +29,7 @@ class RegexTrie:
             node, start, prefix = stack.pop()
             if start == key_len:
                 if 'is_leaf' in node:
-                    candidates.append(prefix)
+                    candidates.add(prefix)
                 continue
 
             ch = key[start]
@@ -109,12 +109,12 @@ if __name__ == '__main__':
         trie.add(w)
 
     test_pairs = [
-        ('?', []),
-        ('???', ['ale']),
-        ('t?mato', ['timato', 'tomato']),
-        ('ap?le', ['apfle', 'apple']),
-        ('a??le', ['apfle', 'apple']),
-        ('orange', ['orange'])
+        ('?', set()),
+        ('???', {'ale'}),
+        ('t?mato', {'timato', 'tomato'}),
+        ('ap?le', {'apfle', 'apple'}),
+        ('a??le', {'apfle', 'apple'}),
+        ('orange', {'orange'})
     ]
 
     for arg, expected in test_pairs:
