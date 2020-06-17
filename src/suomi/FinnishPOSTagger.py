@@ -14,11 +14,12 @@ from seqlearn.evaluation import whole_sequence_accuracy
 from seqlearn.perceptron import StructuredPerceptron
 from sklearn.metrics.classification import accuracy_score, f1_score, classification_report
 
-real_num_pattern = re.compile('\d+(([\.\,]\d+)+|\.)')
-time_num_pattern = re.compile('\d{2}([\:\/]\d{2})+')
+# real_num_pattern = re.compile('\d+(([\.\,]\d+)+|\.)')
+# time_num_pattern = re.compile('\d{2}([\:\/]\d{2})+')
 eng_pattern = re.compile(r'^[a-z]+$', re.I)
 abbr_pattern = re.compile(r'([A-Z]{2,}|([A-Z]\.)+)')
-currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
+# currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
+
 case_endings = re.compile(r'(l[lt]|s[st])[aä]$', re.I)
 
 
@@ -93,8 +94,8 @@ def features(sequence, i):
     # if seq.istitle():
     #     yield 'is_title'
 
-    # if seq.endswith('nen'):
-    #    yield "has_adj_ending"
+    if seq.endswith('nen'):
+       yield "has_adj_ending"
 
     if case_endings.match(seq):
         yield "ends_with_case"
@@ -143,26 +144,26 @@ print(pd.Series(y_pred).value_counts())
 
 """
 Test:
-Whole seq accuracy     0.768537913699204
-Element-wise accuracy  0.966079295154
-Mean F1-score macro    0.968156142864
+Whole seq accuracy     0.7888563049853372
+Element-wise accuracy  0.969799314733
+Mean F1-score macro    0.972377272795
              precision    recall  f1-score   support
 
-        ADJ       0.94      0.90      0.92      2655
-        ADP       0.93      0.94      0.93       664
-        ADV       0.97      0.93      0.95      4143
+        ADJ       0.94      0.92      0.93      2655
+        ADP       0.92      0.95      0.93       664
+        ADV       0.97      0.95      0.96      4143
        CONJ       1.00      0.99      1.00      1253
-        DET       0.89      0.96      0.92       971
-       INTJ       0.97      0.98      0.97        89
-       NOUN       0.94      0.97      0.95      9368
+        DET       0.88      0.96      0.92       971
+       INTJ       1.00      0.99      0.99        89
+       NOUN       0.95      0.97      0.96      9368
         NUM       0.97      0.99      0.98       660
-       PRON       0.97      0.95      0.96      2726
-      PROPN       0.98      0.99      0.98      1566
+       PRON       0.97      0.96      0.96      2726
+      PROPN       0.99      0.98      0.98      1566
       PUNCT       1.00      1.00      1.00      5843
       SCONJ       0.99      1.00      0.99      1077
-       VERB       0.98      0.97      0.97      9695
-          X       0.99      0.99      0.99        74
-          _       1.00      1.00      1.00        76
+       VERB       0.98      0.97      0.98      9695
+          X       1.00      1.00      1.00        74
+          _       0.99      1.00      0.99        76
 
 avg / total       0.97      0.97      0.97     40860
 """
