@@ -3,14 +3,12 @@ from src.russian.NaiveTokenizer import NaiveTokenizer
 
 
 class NaiveSentenceBoundaryDetector(object):
-    DOT = '.'
-    QUESTION = '?'
-    EXPRESSION = '!'
-    __EOS = (DOT, QUESTION, EXPRESSION, '...')
-    MULTI_PUNCT = re.compile(r'([.?!]){2,}')
-    ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
-    ITD = re.compile(r'и т\. [дп]\.', re.I)
-    IDR = re.compile(r'и [дп]р\.', re.I)
+    __DOT, __QUESTION, __EXPRESSION = '.', '?', '!'
+    __EOS = (__DOT, __QUESTION, __EXPRESSION, '...')
+    __MULTI_PUNCT = re.compile(r'([.?!]){2,}')
+    __ABBR_WITH_POINTS = re.compile(r'([A-ZА-Я]\.){3,}')
+    __ITD = re.compile(r'и т\. [дп]\.', re.I)
+    __IDR = re.compile(r'и [дп]р\.', re.I)
 
     def __init__(self):
         self.tokenizer = NaiveTokenizer()
@@ -19,9 +17,9 @@ class NaiveSentenceBoundaryDetector(object):
         return token in self.__EOS
 
     def __is_standard_abbr(self, curr_sent):
-        if len(curr_sent) >= 3 and self.ITD.search(f'{curr_sent[-3]} {curr_sent[-2]} {curr_sent[-1]}'):
+        if len(curr_sent) >= 3 and self.__ITD.search(f'{curr_sent[-3]} {curr_sent[-2]} {curr_sent[-1]}'):
             return True
-        elif len(curr_sent) >= 2 and self.IDR.search(f'{curr_sent[-2]} {curr_sent[-1]}'):
+        elif len(curr_sent) >= 2 and self.__IDR.search(f'{curr_sent[-2]} {curr_sent[-1]}'):
             return True
         else:
             return False
@@ -38,10 +36,10 @@ class NaiveSentenceBoundaryDetector(object):
         for token in self.tokenizer.tokenize(text):
             ttype, val = token.Type, token.Value
             if ttype not in ('WORD', 'NUMBER', 'URL', 'QUOTE', 'LBR', 'LQUOTE', 'RBR', 'RQUOTE'):
-                if self.__is_eos(val) or self.MULTI_PUNCT.search(val):
-                    if val in (self.QUESTION, self.EXPRESSION) or self.MULTI_PUNCT.search(val):
+                if self.__is_eos(val) or self.__MULTI_PUNCT.search(val):
+                    if val in (self.__QUESTION, self.__EXPRESSION) or self.__MULTI_PUNCT.search(val):
                         _current_status = _STATUS_MISS
-                    elif val == self.DOT:
+                    elif val == self.__DOT:
                         if len(_prev_token) <= 1:
                             _current_status = _STATUS_MISS
                         else:
@@ -49,7 +47,7 @@ class NaiveSentenceBoundaryDetector(object):
             elif ttype == 'QUOTE':
                 _inside_quotes = not _inside_quotes
 
-                if not _inside_quotes and (self.__is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
+                if not _inside_quotes and (self.__is_eos(_prev_token) or self.__MULTI_PUNCT.search(_prev_token)):
                     _current_status = _STATUS_EXPTED
                 else:
                     _current_status = _STATUS_MISS
@@ -58,19 +56,19 @@ class NaiveSentenceBoundaryDetector(object):
             elif ttype in ('RBR', 'RQUOTE'):
                 _brackets_count -= 1
 
-                if _brackets_count == 0 and (self.__is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token)):
+                if _brackets_count == 0 and (self.__is_eos(_prev_token) or self.__MULTI_PUNCT.search(_prev_token)):
                     _current_status = _STATUS_EXPTED
                 else:
                     _current_status = _STATUS_MISS
             else:
                 if _prev_token:
-                    if self.__is_eos(_prev_token) or self.MULTI_PUNCT.search(_prev_token):
+                    if self.__is_eos(_prev_token) or self.__MULTI_PUNCT.search(_prev_token):
                         _current_status = _STATUS_EXPTED
                     elif _prev_ttype in ('RBR', 'RQUOTE'):
                         _current_status = _STATUS_EXPTED
                     elif _prev_ttype == 'QUOTE' and not _inside_quotes:
                         _current_status = _STATUS_EXPTED
-                    elif self.ABBR_WITH_POINTS.search(_prev_token) or self.__is_standard_abbr(current_sentence):
+                    elif self.__ABBR_WITH_POINTS.search(_prev_token) or self.__is_standard_abbr(current_sentence):
                         _current_status = _STATUS_EXPTED
                     elif _current_status == _STATUS_EXPTED and val.istitle():
                         _current_status = _STATUS_SPLIT
