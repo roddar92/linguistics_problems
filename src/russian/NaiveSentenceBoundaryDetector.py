@@ -17,9 +17,9 @@ class NaiveSentenceBoundaryDetector(object):
         return token in self.__EOS
 
     def __is_standard_abbr(self, curr_sent):
-        if len(curr_sent) >= 3 and self.__ITD.search(f'{curr_sent[-3]} {curr_sent[-2]} {curr_sent[-1]}'):
+        if len(curr_sent) >= 3 and self.__ITD.search(' '.join(curr_sent[-3:])):
             return True
-        elif len(curr_sent) >= 2 and self.__IDR.search(f'{curr_sent[-2]} {curr_sent[-1]}'):
+        elif len(curr_sent) >= 2 and self.__IDR.search(' '.join(curr_sent[-2:])):
             return True
         else:
             return False
