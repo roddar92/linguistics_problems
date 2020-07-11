@@ -15,7 +15,7 @@ class RussianCaser(object):
                        "табло табу такси тире фламинго фортепиано фото хачапури шимпанзе шоссе эскимо эссе".split()
 
     def find_last_vowel_index(self, word):
-        return [i for i in range(len(word)) if self.is_vowel(word[i])][-1]
+        return [i for i, c in enumerate(word) if self.is_vowel(c)][-1]
 
     def dative_single(self, word, gen=None):
         """
@@ -40,10 +40,8 @@ class RussianCaser(object):
             elif gen == 'm':
                 if word in 'мох рот ров сон узел ветер огонь корень пень ноготь'.split():
                     last_vowel_index = self.find_last_vowel_index(word)
-                    if word[-1] == 'ь':
-                        return word[:last_vowel_index] + word[-2] + 'ю'
-                    else:
-                        return word[:last_vowel_index] + word[-1] + 'у'
+                    case_ending = word[-2] + 'ю' if word[-1] == 'ь' else word[-1] + 'у'
+                    return word[:last_vowel_index] + case_ending
                 elif word in 'улей лев лёд лён'.split():
                     return word[:-2] + 'ью' if word[-1] == 'йь' else word[:-2] + 'ь' + word[-1] + 'у'
                 elif word[-1] in 'йь':
@@ -82,10 +80,7 @@ class RussianCaser(object):
             elif word[-1] in 'ая':
                 return word + 'м'
             else:
-                if word[-2] in 'вилнрть':
-                    return word[:-1] + 'ям'
-                else:
-                    return word[:-1] + 'ам'
+                return word[:-1] + ('ям' if word[-2] in 'вилнрть' else 'ам')
 
 
 if __name__ == "__main__":
