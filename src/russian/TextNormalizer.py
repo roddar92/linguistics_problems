@@ -76,6 +76,11 @@ class Number2TextConverter:
         7: 'десятимиллионная',
     }
 
+    FRAC_NOM = {
+        'один': 'одна',
+        'два': 'две'
+    }
+
     __ROMAN_REGEX = re.compile(r'^[IVXLCDM]+$', re.IGNORECASE)
     __DECIMAL = re.compile(r'(\d+)[.,](\d+)', re.IGNORECASE)
 
@@ -115,12 +120,7 @@ class Number2TextConverter:
 
         def _change_last_word(frac_str):
             last_word = frac_str.pop()
-            if last_word == 'один':
-                frac_str.append('одна')
-            elif last_word == 'два':
-                frac_str.append('две')
-            else:
-                frac_str.append(last_word)
+            frac_str.append(self.FRAC_NOM.get(last_word, last_word))
             return frac_str
 
         if type(number) == float:
@@ -427,6 +427,7 @@ if __name__ == '__main__':
     assert converter.convert(5000214, ordered=True) == 'пять миллионов двести четырнадцатый'
     assert converter.convert(3.31) == 'три целые тридцать одна сотая'
     assert converter.convert(2.35) == 'две целые тридцать пять сотых'
+    assert converter.convert(21.37) == 'двадцать одна целая тридцать семь сотых'
 
     normalizer = TextNormalizer()
     assert list(normalizer.normalize(['80-е']))[-1] == 'восьмидесятые'
