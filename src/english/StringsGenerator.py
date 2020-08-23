@@ -7,11 +7,10 @@ class StringGenerator:
     def generate_string_list(strings, generation_prob=.75):
         result = set()
 
-        global_alphabet = strings
-        for letter in global_alphabet:
-            global_alphabet.remove(letter)
+        for letter in strings:
+            strings.remove(letter)
             stack = [
-                (global_alphabet, [letter], generation_prob)
+                (strings, [letter], generation_prob)
             ]
             while stack:
                 alphabet, prefix, gen_prob = stack.pop()
@@ -27,7 +26,7 @@ class StringGenerator:
                     )
                     alphabet.append(next_letter)
 
-            global_alphabet.append(letter)
+            strings.append(letter)
         return result
 
 
