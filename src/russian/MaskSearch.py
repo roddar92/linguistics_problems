@@ -24,21 +24,21 @@ class RegexTrie:
         candidates = set()
         key_len = len(key)
 
-        stack = [(self.root, 0, '')]
+        stack = [(self.root, 0, [])]
         while stack:
             node, start, prefix = stack.pop()
             if start == key_len:
                 if 'is_leaf' in node:
-                    candidates.add(prefix)
+                    candidates.add(''.join(prefix))
                 continue
 
             ch = key[start]
             if ch in node:
-                stack.append((node[ch], start + 1, prefix + ch))
+                stack.append((node[ch], start + 1, prefix + [ch]))
             elif ch == '?':
                 for letter in node:
                     if letter != 'is_leaf':
-                        stack.append((node[letter], start + 1, prefix + letter))
+                        stack.append((node[letter], start + 1, prefix + [letter]))
 
         return candidates
 
@@ -46,7 +46,7 @@ class RegexTrie:
         candidates = set()
         key_len = len(key)
 
-        stack = [(self.root, 0, '', '')]
+        stack = [(self.root, 0, [], '')]
         while stack:
             node, start, prefix, next_ch = stack.pop()
 
@@ -55,7 +55,7 @@ class RegexTrie:
                     continue
 
                 if start >= key_len:
-                    candidates.add(prefix)
+                    candidates.add(''.join(prefix))
                     continue
 
             if start >= key_len:
@@ -64,25 +64,25 @@ class RegexTrie:
                 ch = key[start]
 
             if ch in node:
-                stack.append((node[ch], start + 1, prefix + ch, next_ch))
+                stack.append((node[ch], start + 1, prefix + [ch], next_ch))
             elif ch == '?':
                 for letter in node:
                     if letter != 'is_leaf':
-                        stack.append((node[letter], start + 1, prefix + letter, next_ch))
+                        stack.append((node[letter], start + 1, prefix + [letter], next_ch))
             elif ch == '*':
                 next_ch = key[start + 1] if start + 1 < key_len else '*'
 
                 for letter in node:
                     if letter == 'is_leaf':
                         if next_ch == '*':
-                            candidates.add(prefix)
+                            candidates.add(''.join(prefix))
                         continue
 
                     add = 2 if letter == next_ch else 0
                     if letter == next_ch:
                         next_ch = ''
 
-                    stack.append((node[letter], start + add, prefix + letter, next_ch))
+                    stack.append((node[letter], start + add, prefix + [letter], next_ch))
         return candidates
 
 
