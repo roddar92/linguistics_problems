@@ -1,3 +1,4 @@
+from collections import Counter
 from random import choice, choices
 from string import ascii_uppercase, ascii_lowercase
 
@@ -17,7 +18,8 @@ class StringGenerator:
                 stop_prob = 1 - gen_prob
                 rand_num = choices(range(2), [stop_prob, gen_prob])[-1]
                 if rand_num == 0:
-                    result.add(''.join(prefix))
+                    full_string = ''.join(prefix)
+                    result.add(full_string)
                 else:
                     next_letter = choice(alphabet)
                     alphabet.remove(next_letter)
@@ -37,4 +39,6 @@ if __name__ == '__main__':
     print('Length:', len(data))
     print('Count of multi-chars:', len(multi_letter_subset))
     print('Count of chars:', len(data) - len(multi_letter_subset))
-    print('Max string len:', max(multi_letter_subset))
+    print('Fetched lengths:')
+    for l, count in Counter(map(len, data)).most_common():
+        print(f'Length: {l} - Count: {count}')
