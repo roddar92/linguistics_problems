@@ -39,7 +39,7 @@ def digits_count(seq):
 
 
 def non_alphabet_count(seq):
-    return sum(1 for j in seq if j not in punctuation and not eng_pattern.match(j))
+    return sum(1 for j in seq if j not in punctuation and not j.isdigit() and not eng_pattern.match(j))
 
 
 def get_word_shape(seq):
@@ -85,16 +85,16 @@ def features(sequence, i):
     # word shape
     yield "word_shape=" + str(get_word_shape(seq))
     yield "short_word_shape=" + get_short_word_shape(seq)
-    # yield "non_en_alphabet_count=" + str(non_alphabet_count(seq))
+    yield "non_en_alphabet_count=" + str(non_alphabet_count(seq))
     yield "digits_count=" + str(digits_count(seq))
 
-    # if abbr_pattern.search(seq):
-    #     yield "abbr"
+    if abbr_pattern.search(seq):
+        yield "abbr"
 
     # if seq.istitle():
     #     yield 'is_title'
 
-    if seq.endswith('nen'):
+    if seq.endswith('en'):
        yield "has_adj_ending"
 
     if case_endings.match(seq):
@@ -124,7 +124,7 @@ def features(sequence, i):
 # читаем обучающее множество
 X_train, y_train, lengths_train = load_conll(open("ftb1u-v1/ftb1u_train.tsv", "r"), features)
 
-clf = StructuredPerceptron(decode="viterbi", verbose=1, random_state=0)
+clf = StructuredPerceptron(decode="viterbi", verbose=1)
 
 print("Fitting model " + str(clf))
 clf.fit(X_train, y_train, lengths_train)
@@ -140,30 +140,3 @@ print("Mean F1-score macro   ", f1_score(y_test, y_pred, average="macro"))
 print(classification_report(y_test, y_pred))
 
 print(pd.Series(y_pred).value_counts())
-
-
-"""
-Test:
-Whole seq accuracy     0.7888563049853372
-Element-wise accuracy  0.969799314733
-Mean F1-score macro    0.972377272795
-             precision    recall  f1-score   support
-
-        ADJ       0.94      0.92      0.93      2655
-        ADP       0.92      0.95      0.93       664
-        ADV       0.97      0.95      0.96      4143
-       CONJ       1.00      0.99      1.00      1253
-        DET       0.88      0.96      0.92       971
-       INTJ       1.00      0.99      0.99        89
-       NOUN       0.95      0.97      0.96      9368
-        NUM       0.97      0.99      0.98       660
-       PRON       0.97      0.96      0.96      2726
-      PROPN       0.99      0.98      0.98      1566
-      PUNCT       1.00      1.00      1.00      5843
-      SCONJ       0.99      1.00      0.99      1077
-       VERB       0.98      0.97      0.98      9695
-          X       1.00      1.00      1.00        74
-          _       0.99      1.00      0.99        76
-
-avg / total       0.97      0.97      0.97     40860
-"""
