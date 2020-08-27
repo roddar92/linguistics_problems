@@ -14,12 +14,9 @@ from seqlearn.evaluation import whole_sequence_accuracy
 from seqlearn.perceptron import StructuredPerceptron
 from sklearn.metrics.classification import accuracy_score, f1_score, classification_report
 
-# real_num_pattern = re.compile('\d+(([\.\,]\d+)+|\.)')
-# time_num_pattern = re.compile('\d{2}([\:\/]\d{2})+')
+
 eng_pattern = re.compile(r'^[a-z]+$', re.I)
 abbr_pattern = re.compile(r'([A-Z]{2,}|([A-Z]\.)+)')
-# currency_pattern = re.compile('[\$€£¢¥₽\+\-\*\/\^\=]')
-
 case_endings = re.compile(r'(l[lt]|s[st])[aä]$', re.I)
 
 
@@ -39,7 +36,7 @@ def digits_count(seq):
 
 
 def non_alphabet_count(seq):
-    return sum(1 for j in seq if j not in punctuation and not j.isdigit() and not eng_pattern.match(j))
+    return sum(1 for j in seq if j not in punctuation and not j.isdigit() and eng_pattern.match(j))
 
 
 def get_word_shape(seq):
@@ -91,14 +88,14 @@ def features(sequence, i):
     if abbr_pattern.search(seq):
         yield "abbr"
 
-    # if seq.istitle():
-    #     yield 'is_title'
-
     if seq.endswith('en'):
-       yield "has_adj_ending"
+        yield "has_adj_ending"
 
     if case_endings.match(seq):
         yield "ends_with_case"
+
+    if seq.endswith('es') or seq.endswith('ed') or seq[-1] in 'prt':
+        yield "ends_with_foreign_consonants"
 
     if i > 0:
         prev = sequence[i - 1].split("\t")[0]
