@@ -8,27 +8,27 @@ class StringGenerator:
     def generate_string_list(strings, generation_prob=.75):
         result = set()
 
-        for letter in strings:
-            strings.remove(letter)
+        for curr_str in strings:
+            strings.remove(curr_str)
             stack = [
-                (strings, [letter], generation_prob)
+                (strings, [curr_str], generation_prob)
             ]
             while stack:
-                alphabet, prefix, gen_prob = stack.pop()
+                rest_strings, prefix, gen_prob = stack.pop()
                 stop_prob = 1 - gen_prob
-                rand_num = choices(range(2), [stop_prob, gen_prob])[-1]
+                rand_num = choices([0, 1], [stop_prob, gen_prob])[-1]
                 if rand_num == 0:
                     full_string = ''.join(prefix)
                     result.add(full_string)
                 else:
-                    next_letter = choice(alphabet)
-                    alphabet.remove(next_letter)
+                    next_str = choice(rest_strings)
+                    rest_strings.remove(next_str)
                     stack.append(
-                        (alphabet, prefix + [next_letter], gen_prob ** 2)
+                        (rest_strings, prefix + [next_str], gen_prob ** 2)
                     )
-                    alphabet.append(next_letter)
+                    rest_strings.append(next_str)
 
-            strings.append(letter)
+            strings.append(curr_str)
         return result
 
 
