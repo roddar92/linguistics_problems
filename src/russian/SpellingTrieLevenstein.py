@@ -36,13 +36,15 @@ class SpellingLevensteinTree:
                 current_row.append(min(insert_or_del, replace))
                 min_dist = min(min_dist, current_row[-1])
 
+            if min_dist > dist:
+                return
+
             if current_row[-1] <= dist and 'is_leaf' in curr_node:
                 candidates.append((''.join(curr_prefix), current_row[-1]))
 
-            if min_dist <= dist:
-                for ll in curr_node:
-                    if ll != 'is_leaf':
-                        __dfs(curr_node[ll], curr_prefix + [ll], current_row)
+            for ll in curr_node:
+                if ll != 'is_leaf':
+                    __dfs(curr_node[ll], curr_prefix + [ll], current_row)
 
         chars = len(word) + 1
         __dfs(node, prefix, last_row)
