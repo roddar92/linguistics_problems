@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 
 class SpellingLevensteinTree:
@@ -23,24 +23,34 @@ class SpellingLevensteinTree:
         for word in words:
             self.add(word)
 
-    def __search_dfs(self, node, word, dist, candidates, prefix, last_row):
+    @staticmethod
+    def __best_candidates(word: str, dist: int, candidates: List[Tuple[str, int]],
+                          node: Dict[str, Dict], prefix: List[str], last_row: List[int]) -> None:
+        def __dfs(curr_node, curr_prefix, prev_row):
+            current_row = [prev_row[0] + 1]
+            min_dist = current_row[0]
+
+            for i in range(1, chars):
+                insert_or_del = min(current_row[i - 1], prev_row[i]) + 1
+                replace = prev_row[i - 1] + int(word[i - 1] != curr_prefix[-1])
+                current_row.append(min(insert_or_del, replace))
+                min_dist = min(min_dist, current_row[-1])
+
+            if current_row[-1] <= dist and 'is_leaf' in curr_node:
+                candidates.append((''.join(curr_prefix), current_row[-1]))
+
+            if min_dist <= dist:
+                for ll in curr_node:
+                    if ll != 'is_leaf':
+                        __dfs(curr_node[ll], curr_prefix + [ll], current_row)
+
         chars = len(word) + 1
-        current_row = [last_row[0] + 1]
+        __dfs(node, prefix, last_row)
 
-        for i in range(1, chars):
-            insert_or_del = min(current_row[i - 1] + 1, last_row[i] + 1)
-            replace = last_row[i - 1] + int(word[i - 1] != prefix[-1])
-            current_row.append(min(insert_or_del, replace))
-
-        if current_row[-1] <= dist and 'is_leaf' in node:
-            candidates.append((''.join(prefix), current_row[-1]))
-
-        if min(current_row) <= dist:
-            for ll in node:
-                if ll != 'is_leaf':
-                    self.__search_dfs(node[ll], word, dist, candidates, prefix + [ll], current_row)
-
-    def find_longest_prefix(self, word):
+    def find_longest_prefix(self, word: str) -> str:
+        """
+        Find the longest word prefix in a trie dictionary
+        """
         pos, node = -1, self.root
         for i, letter in enumerate(word):
             if letter not in node:
@@ -56,7 +66,7 @@ class SpellingLevensteinTree:
         candidates = []
         current_row = list(range(len(word) + 1))
         for letter in self.root:
-            self.__search_dfs(self.root[letter], word, distance, candidates, [letter], current_row)
+            self.__best_candidates(word, distance, candidates, self.root[letter], [letter], current_row)
         return candidates
 
 
