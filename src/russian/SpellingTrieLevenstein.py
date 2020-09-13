@@ -4,11 +4,14 @@ from typing import Dict, List, Tuple
 class SpellingLevensteinTree:
     def __init__(self):
         """
-        Initialize your data structure here.
+        Initialize if trie data structure
         """
         self.root = {}
 
     def add(self, word: str) -> None:
+        """
+        Add new word into trie
+        """
         node = self.root
         for l in word:
             if l not in node:
@@ -24,8 +27,8 @@ class SpellingLevensteinTree:
             self.add(word)
 
     @staticmethod
-    def __best_candidates(word: str, dist: int, candidates: List[Tuple[str, int]],
-                          node: Dict[str, Dict], prefix: List[str], last_row: List[int]) -> None:
+    def __find_best_candidates(word: str, dist: int, candidates: List[Tuple[str, int]],
+                               node: Dict[str, Dict], prefix: List[str], last_row: List[int]) -> None:
         def __dfs(curr_node, curr_prefix, prev_row):
             current_row = [prev_row[0] + 1]
             min_dist = current_row[0]
@@ -68,7 +71,7 @@ class SpellingLevensteinTree:
         candidates = []
         current_row = list(range(len(word) + 1))
         for letter in self.root:
-            self.__best_candidates(word, distance, candidates, self.root[letter], [letter], current_row)
+            self.__find_best_candidates(word, distance, candidates, self.root[letter], [letter], current_row)
         return candidates
 
 
