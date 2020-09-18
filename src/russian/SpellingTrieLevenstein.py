@@ -64,9 +64,8 @@ class SpellingLevensteinTree:
                     __dfs(curr_node[ll], curr_prefix + [ll], curr_row)
 
         candidates = SortedListWithKey(key=lambda x: x[-1])
-        current_row = list(range(len(word) + 1))
         for letter in self.root:
-            __dfs(self.root[letter], [letter], current_row)
+            __dfs(self.root[letter], [letter], range(len(word) + 1))
         return candidates
 
 
