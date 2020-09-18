@@ -6,7 +6,7 @@ from math import log2, sqrt
 from collections import Counter
 
 from nltk import bigrams, word_tokenize
-from sortedcontainers import SortedList
+from sortedcontainers import SortedListWithKey
 
 
 class Metric(ABC):
@@ -140,7 +140,7 @@ class CollocationExtractor:
     def extract_collocations(self, metric_class):
         assert issubclass(metric_class, Metric)
         metric = metric_class()
-        collocations = SortedList(key=lambda x: -x[0])
+        collocations = SortedListWithKey(key=lambda x: -x[0])
         
         unigram_counts = self.language_model.get_unigrams()
         bigram_counts = self.language_model.get_bigrams()
