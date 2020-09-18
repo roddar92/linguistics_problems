@@ -1,5 +1,5 @@
 from collections import namedtuple
-from sortedcontainers import SortedList
+from sortedcontainers import SortedListWithKey
 
 
 class Trie:
@@ -45,7 +45,7 @@ class Trie:
 class AutoComplete:
     def __init__(self, vocab=None):
         self.node = namedtuple('Node', 'word count')
-        self.heap = SortedList(key=lambda x: -x.count)
+        self.heap = SortedListWithKey(key=lambda x: -x.count)
         self.dictionary = Trie()
         if vocab:
             assert type(vocab) == dict
