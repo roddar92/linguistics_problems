@@ -48,9 +48,11 @@ class SpellingLevensteinTree:
             min_dist = curr_row[0]
 
             for i in range(1, len(word) + 1):
-                insert_or_del = min(curr_row[i - 1], prev_row[i]) + 1
-                replace = prev_row[i - 1] + int(word[i - 1] != curr_prefix[-1])
-                curr_row.append(min(insert_or_del, replace))
+                curr_row.append(min(
+                    curr_row[i - 1] + 1,
+                    prev_row[i] + 1,
+                    prev_row[i - 1] + (word[i - 1] != curr_prefix[-1])
+                ))
                 min_dist = min(min_dist, curr_row[-1])
 
             if min_dist > distance:
