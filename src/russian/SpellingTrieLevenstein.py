@@ -3,11 +3,13 @@ from typing import List
 
 
 class SpellingLevensteinTree:
-    def __init__(self):
+    def __init__(self, use_damerau_modification=False):
         """
         Initialize if trie data structure
+        :param use_damerau_modification Use Damerau-Levenstein distance, otherwise standard Lenevstein metric
         """
         self.root = SortedDict()
+        self.use_damerau_modification = use_damerau_modification
 
     def add(self, word: str) -> None:
         """
@@ -41,9 +43,9 @@ class SpellingLevensteinTree:
 
     def search(self, word: str, distance=0) -> SortedListWithKey:
         """
-        Returns candidates list with words that equal to the given word after its modifying with Levenstein distance
+        Returns candidates list with words that equal to the given word after its modifying with Levenstein (DL) distance
         """
-        def __dfs(curr_node, curr_prefix, prev_row):
+        def __dfs(curr_node, curr_prefix, prevprev_row, prev_row):
             curr_row = [prev_row[0] + 1]
             min_dist = curr_row[0]
 
@@ -53,6 +55,12 @@ class SpellingLevensteinTree:
                     prev_row[i] + 1,
                     prev_row[i - 1] + (word[i - 1] != curr_prefix[-1])
                 ))
+
+                if self.use_damerau_modification:
+                    if len(curr_prefix) > 1 and word[i - 1] == curr_prefix[-2] and \
+                            word[i - 2] == curr_prefix[-1] and word[i - 1] != curr_prefix[-1]:
+                        curr_row[-1] = min(curr_row[-1], prevprev_row[i - 2] + 1)
+
                 min_dist = min(min_dist, curr_row[-1])
 
             if min_dist > distance:
@@ -63,15 +71,18 @@ class SpellingLevensteinTree:
 
             for ll in curr_node:
                 if ll != 'is_leaf':
-                    __dfs(curr_node[ll], curr_prefix + [ll], curr_row)
+                    __dfs(curr_node[ll], curr_prefix + [ll],
+                          prev_row if self.use_damerau_modification else None, curr_row)
 
         candidates = SortedListWithKey(key=lambda x: x[-1])
         for letter in self.root:
-            __dfs(self.root[letter], [letter], range(len(word) + 1))
+            __dfs(self.root[letter], [letter], None, range(len(word) + 1))
         return candidates
 
 
 if __name__ == '__main__':
+
+    # Test standard Levenstein Trie
     dictionary = SpellingLevensteinTree()
     dictionary.build_dict(['hello', 'hallo', 'leetcode', 'hell'])
 
@@ -89,3 +100,11 @@ if __name__ == '__main__':
     assert dictionary.find_longest_prefix('hkloo') == 'h'
     assert dictionary.find_longest_prefix('lettcode') == 'le'
     assert dictionary.find_longest_prefix('hello') == 'hello'
+    assert dictionary.search('leetcdoe', 2) == [('leetcode', 2)]
+
+    # Test Damerau-Levenstein Trie
+    dictionary = SpellingLevensteinTree(use_damerau_modification=True)
+    dictionary.build_dict(['hello', 'hallo', 'leetcode', 'hell'])
+
+    assert dictionary.search('leetcdoe', 2) == [('leetcode', 1)]
+    assert dictionary.search('eletcode', 2) == [('leetcode', 1)]
