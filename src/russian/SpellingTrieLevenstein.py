@@ -7,7 +7,7 @@ class SpellingLevensteinTree:
         """
         Initialize if trie data structure
         """
-        self.root = {}
+        self.root = SortedDict()
 
     def add(self, word: str) -> None:
         """
