@@ -14,6 +14,8 @@ class SpellingLevensteinTree:
     def add(self, word: str) -> None:
         """
         Add new word into trie
+        :param word new string for the dictionary
+        :return
         """
         node = self.root
         for l in word:
@@ -25,6 +27,8 @@ class SpellingLevensteinTree:
     def build_dict(self, words: List[str]) -> None:
         """
         Build a dictionary through a list of words
+        :param words list of words for dictionary creating
+        :return
         """
         for word in words:
             self.add(word)
@@ -32,6 +36,8 @@ class SpellingLevensteinTree:
     def find_longest_prefix(self, word: str) -> str:
         """
         Find the longest word prefix in a trie dictionary
+        :param word any string
+        :return the maximum prefix in the dictionary
         """
         pos, node = -1, self.root
         for i, letter in enumerate(word):
@@ -44,8 +50,11 @@ class SpellingLevensteinTree:
     def search(self, word: str, distance=0) -> SortedListWithKey:
         """
         Returns candidates list with words that equal to the given word after its modifying with Levenstein (DL) distance
+        :param word Misspelled word
+        :param distance given maximum distance for candidates collecting where theit distance could be less than given distance
+        :return array of candidates with their distances
         """
-        def __dfs(curr_node, curr_prefix, prevprev_row, prev_row):
+        def __dfs(node, prefix, prevprev_row, prev_row):
             curr_row = [prev_row[0] + 1]
             min_dist = curr_row[0]
 
@@ -53,12 +62,12 @@ class SpellingLevensteinTree:
                 curr_row.append(min(
                     curr_row[i - 1] + 1,
                     prev_row[i] + 1,
-                    prev_row[i - 1] + (word[i - 1] != curr_prefix[-1])
+                    prev_row[i - 1] + (word[i - 1] != prefix[-1])
                 ))
 
                 if self.use_damerau_modification:
-                    if len(curr_prefix) > 1 and word[i - 1] == curr_prefix[-2] and \
-                            word[i - 2] == curr_prefix[-1] and word[i - 1] != curr_prefix[-1]:
+                    if len(prefix) > 1 and i - 1 > 0 and word[i - 1] == prefix[-2] and \
+                            word[i - 1] != prefix[-1] and word[i - 2] == prefix[-1]:
                         curr_row[-1] = min(curr_row[-1], prevprev_row[i - 2] + 1)
 
                 min_dist = min(min_dist, curr_row[-1])
@@ -66,12 +75,12 @@ class SpellingLevensteinTree:
             if min_dist > distance:
                 return
 
-            if curr_row[-1] <= distance and 'is_leaf' in curr_node:
-                candidates.add((''.join(curr_prefix), curr_row[-1]))
+            if curr_row[-1] <= distance and 'is_leaf' in node:
+                candidates.add((''.join(prefix), curr_row[-1]))
 
-            for ll in curr_node:
+            for ll in node:
                 if ll != 'is_leaf':
-                    __dfs(curr_node[ll], curr_prefix + [ll],
+                    __dfs(node[ll], prefix + [ll],
                           prev_row if self.use_damerau_modification else None, curr_row)
 
         candidates = SortedListWithKey(key=lambda x: x[-1])
