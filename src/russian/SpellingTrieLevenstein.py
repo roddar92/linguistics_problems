@@ -115,5 +115,6 @@ if __name__ == '__main__':
     dictionary = SpellingLevensteinTree(use_damerau_modification=True)
     dictionary.build_dict(['hello', 'hallo', 'leetcode', 'hell'])
 
+    assert dictionary.search('ehllo', 2) == [('hello', 1), ('hallo', 2), ('hell', 2)]
     assert dictionary.search('leetcdoe', 2) == [('leetcode', 1)]
     assert dictionary.search('eletcode', 2) == [('leetcode', 1)]
