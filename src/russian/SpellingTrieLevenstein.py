@@ -49,44 +49,50 @@ class SpellingLevensteinTree:
 
     def search(self, word: str, distance=0) -> SortedListWithKey:
         """
-        Returns candidates list with words that equal to the given word after its modifying with Levenstein (DL) distance
+        Returns candidates list of words that equal to the given word after its modifying with Levenstein (DL) distance
         :param word Misspelled word
-        :param distance given maximum distance for candidates collecting where theit distance could be less than given distance
+        :param distance Maximum distance for candidates where their cost could be less than given parameter
         :return array of candidates with their distances
         """
-        def __dfs(node, prefix, prevprev_row, prev_row):
-            curr_row = [prev_row[0] + 1]
-            min_dist = curr_row[0]
 
-            for i in range(1, len(word) + 1):
-                curr_row.append(min(
-                    curr_row[i - 1] + 1,
-                    prev_row[i] + 1,
-                    prev_row[i - 1] + (word[i - 1] != prefix[-1])
-                ))
+        candidates, stack = SortedListWithKey(key=lambda x: (x[-1], x[0])), []
+        for letter in self.root:
+            stack.append((self.root[letter], [letter], None, range(len(word) + 1)))
 
-                if self.use_damerau_modification:
-                    if len(prefix) > 1 and i - 1 > 0 and word[i - 1] == prefix[-2] and \
-                            word[i - 1] != prefix[-1] and word[i - 2] == prefix[-1]:
-                        curr_row[-1] = min(curr_row[-1], prevprev_row[i - 2] + 1)
-
-                min_dist = min(min_dist, curr_row[-1])
+        while stack:
+            node, prefix, pre_prev_row, prev_row = stack.pop()
+            curr_row, min_dist = self.__calculate_distance(word, prefix, pre_prev_row, prev_row)
 
             if min_dist > distance:
-                return
+                continue
 
             if curr_row[-1] <= distance and 'is_leaf' in node:
                 candidates.add((''.join(prefix), curr_row[-1]))
 
             for ll in node:
                 if ll != 'is_leaf':
-                    __dfs(node[ll], prefix + [ll],
-                          prev_row if self.use_damerau_modification else None, curr_row)
+                    stack.append((node[ll], prefix + [ll],
+                                  prev_row if self.use_damerau_modification else None, curr_row))
 
-        candidates = SortedListWithKey(key=lambda x: x[-1])
-        for letter in self.root:
-            __dfs(self.root[letter], [letter], None, range(len(word) + 1))
         return candidates
+
+    def __calculate_distance(self, word, prefix, pre_prev_row, prev_row):
+        curr_row = [prev_row[0] + 1]
+        min_dist = curr_row[0]
+        for i in range(1, len(word) + 1):
+            curr_row.append(min(
+                curr_row[i - 1] + 1,
+                prev_row[i] + 1,
+                prev_row[i - 1] + (word[i - 1] != prefix[-1])
+            ))
+
+            if self.use_damerau_modification:
+                if len(prefix) > 1 and i - 1 > 0 and word[i - 1] == prefix[-2] and \
+                        word[i - 1] != prefix[-1] and word[i - 2] == prefix[-1]:
+                    curr_row[-1] = min(curr_row[-1], pre_prev_row[i - 2] + 1)
+
+            min_dist = min(min_dist, curr_row[-1])
+        return curr_row, min_dist
 
 
 if __name__ == '__main__':
