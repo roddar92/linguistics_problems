@@ -142,17 +142,16 @@ class CognateWordChecker(object):
     @staticmethod
     def __find_lcs(a, b):
         m, n = 1 + len(a), 1 + len(b)
-        mem = [[0] * n for _ in range(m)]
+        prev, curr = [0] * n, [0]
         lcs, end = 0, 0
         for i in range(1, m):
             for j in range(1, n):
-                if a[i - 1] == b[j - 1]:
-                    mem[i][j] = mem[i - 1][j - 1] + 1
-                    if mem[i][j] > lcs:
-                        lcs = mem[i][j]
-                        end = i
-                else:
-                    mem[i][j] = 0
+                curr.append(prev[j - 1] + 1 if a[i - 1] == b[j - 1] else 0)
+                if curr[-1] > lcs:
+                    lcs = curr[-1]
+                    end = i
+            prev = curr
+            curr = [0]
         return a[end - lcs: end]
 
     def has_words_same_root(self, w1, w2):
