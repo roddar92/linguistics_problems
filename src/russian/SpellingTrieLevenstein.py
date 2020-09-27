@@ -18,10 +18,10 @@ class SpellingLevensteinTree:
         :return
         """
         node = self.root
-        for l in word:
-            if l not in node:
-                node[l] = SortedDict()
-            node = node[l]
+        for letter in word:
+            if letter not in node:
+                node[letter] = SortedDict()
+            node = node[letter]
         node['is_leaf'] = True
 
     def build_dict(self, words: List[str]) -> None:
@@ -55,9 +55,8 @@ class SpellingLevensteinTree:
         :return array of candidates with their distances
         """
 
-        candidates, stack = SortedListWithKey(key=lambda x: (x[-1], x[0])), []
-        for letter in self.root:
-            stack.append((self.root[letter], [letter], None, range(len(word) + 1)))
+        candidates = SortedListWithKey(key=lambda x: x[::-1])
+        stack = [(self.root[letter], [letter], None, [*range(len(word) + 1)]) for letter in self.root]
 
         while stack:
             node, prefix, pre_prev_row, prev_row = stack.pop()
@@ -69,10 +68,10 @@ class SpellingLevensteinTree:
             if curr_row[-1] <= distance and 'is_leaf' in node:
                 candidates.add((''.join(prefix), curr_row[-1]))
 
-            for ll in node:
-                if ll != 'is_leaf':
-                    stack.append((node[ll], prefix + [ll],
-                                  prev_row if self.use_damerau_modification else None, curr_row))
+            stack.extend(
+                (node[letter], prefix + [letter], prev_row if self.use_damerau_modification else None, curr_row)
+                for letter in node if letter != 'is_leaf'
+            )
 
         return candidates
 
