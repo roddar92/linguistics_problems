@@ -54,9 +54,8 @@ class SpellingLevensteinTree:
         :param distance Maximum distance for candidates where their cost could be less than given parameter
         :return array of candidates with their distances
         """
-
         candidates = SortedListWithKey(key=lambda x: x[::-1])
-        stack = [(self.root[letter], [letter], None, [*range(len(word) + 1)]) for letter in self.root]
+        stack = [(children, [letter], None, [*range(len(word) + 1)]) for letter, children in self.root.items()]
 
         while stack:
             node, prefix, pre_prev_row, prev_row = stack.pop()
@@ -69,13 +68,21 @@ class SpellingLevensteinTree:
                 candidates.add((''.join(prefix), curr_row[-1]))
 
             stack.extend(
-                (node[letter], prefix + [letter], prev_row if self.use_damerau_modification else None, curr_row)
-                for letter in node if letter != 'is_leaf'
+                (children, prefix + [letter], prev_row if self.use_damerau_modification else None, curr_row)
+                for letter, children in node.items() if letter != 'is_leaf'
             )
 
         return candidates
 
     def __calculate_distance(self, word, prefix, pre_prev_row, prev_row):
+        """
+        Calculate Levenstein (DL) distance for input word and the current prefix
+        :param word Misspelled word
+        :param prefix The current prefix traversed in the trie
+        :param pre_prev_row The row for DL distance calculation
+        :param prev_row The row for Levenstein distance calculation
+        :return the last calculated row and the minimum distance
+        """
         curr_row = [prev_row[0] + 1]
         min_dist = curr_row[0]
         for i in range(1, len(word) + 1):
