@@ -6,9 +6,8 @@ class CamelCaseMatcher:
         return filter(lambda name: self.__is_matched(pattern, name), camel_case_names)
 
     @staticmethod
-    def __is_matched(pattern, query) -> bool:
-        lp = len(pattern)
-        i = 0
+    def __is_matched(pattern: str, query: str) -> bool:
+        i, lp = 0, len(pattern)
         for c in query:
             if i < lp and c == pattern[i]:
                 i += 1
