@@ -1,5 +1,5 @@
 from sortedcontainers import SortedDict, SortedListWithKey
-from typing import List
+from typing import List, Optional
 
 
 class SpellingLevensteinTree:
@@ -74,7 +74,8 @@ class SpellingLevensteinTree:
 
         return candidates
 
-    def __calculate_distance(self, word, prefix, pre_prev_row, prev_row):
+    def __calculate_distance(self, word: str, prefix: List[str],
+                             pre_prev_row: Optional[List[int]], prev_row: List[int]):
         """
         Calculate Levenstein (DL) distance for input word and the current prefix
         :param word Misspelled word
