@@ -3,6 +3,8 @@ from typing import List, Optional
 
 
 class SpellingLevensteinTree:
+    __END = 'is_leaf'
+
     def __init__(self, use_damerau_modification=False):
         """
         Initialize if trie data structure
@@ -10,6 +12,10 @@ class SpellingLevensteinTree:
         """
         self.root = SortedDict()
         self.use_damerau_modification = use_damerau_modification
+
+    @staticmethod
+    def __get_row_len(word):
+        return len(word) + 1
 
     def add(self, word: str) -> None:
         """
@@ -22,7 +28,7 @@ class SpellingLevensteinTree:
             if letter not in node:
                 node[letter] = SortedDict()
             node = node[letter]
-        node['is_leaf'] = True
+        node[self.__END] = True
 
     def build_dict(self, words: List[str]) -> None:
         """
@@ -39,13 +45,11 @@ class SpellingLevensteinTree:
         :param word any string
         :return the maximum prefix in the dictionary
         """
-        pos, node = -1, self.root
-        for i, letter in enumerate(word):
-            if letter not in node:
-                pos = i
-                break
-            node = node[letter]
-        return word[:pos] if pos >= 0 else word
+        i, node = 0, self.root
+        while i < len(word) and word[i] in node:
+            node = node[word[i]]
+            i += 1
+        return word[:i] if i >= 0 else word
 
     def search(self, word: str, distance=0) -> SortedListWithKey:
         """
@@ -55,7 +59,8 @@ class SpellingLevensteinTree:
         :return array of candidates with their distances
         """
         candidates = SortedListWithKey(key=lambda x: x[::-1])
-        stack = [(children, [letter], None, [*range(len(word) + 1)]) for letter, children in self.root.items()]
+        stack = [(children, [letter], None, [*range(self.__get_row_len(word))])
+                 for letter, children in self.root.items()]
 
         while stack:
             node, prefix, pre_prev_row, prev_row = stack.pop()
@@ -64,12 +69,12 @@ class SpellingLevensteinTree:
             if min_dist > distance:
                 continue
 
-            if curr_row[-1] <= distance and 'is_leaf' in node:
+            if curr_row[-1] <= distance and self.__END in node:
                 candidates.add((''.join(prefix), curr_row[-1]))
 
             stack.extend(
                 (children, prefix + [letter], prev_row if self.use_damerau_modification else None, curr_row)
-                for letter, children in node.items() if letter != 'is_leaf'
+                for letter, children in node.items() if letter != self.__END
             )
 
         return candidates
@@ -86,7 +91,7 @@ class SpellingLevensteinTree:
         """
         curr_row = [prev_row[0] + 1]
         min_dist = curr_row[0]
-        for i in range(1, len(word) + 1):
+        for i in range(1, self.__get_row_len(word)):
             curr_row.append(min(
                 curr_row[i - 1] + 1,
                 prev_row[i] + 1,
