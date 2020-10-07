@@ -155,14 +155,12 @@ class PhraseTemplateTrie:
         self.__add_subtree(phrase, label, self.root)
 
     def get_label_for_phrase(self, phrase):
-        node = self.root
-        for word in phrase:
-            word = word.lower()
-            if word not in node:
-                return ''
-            node = node[word]
+        i, node = 0, self.root
+        while i < len(phrase) and phrase[i].lower() in node:
+            node = node[phrase[i].lower()]
+            i += 1
 
-        return node['label']
+        return node.get('label', '')
 
 
 if __name__ == '__main__':
