@@ -45,8 +45,9 @@ class SpellingLevensteinTree:
         :param word any string
         :return the maximum prefix in the dictionary
         """
+        word_len = len(word)
         i, node = 0, self.root
-        while i < len(word) and word[i] in node:
+        while i < word_len and word[i] in node:
             node = node[word[i]]
             i += 1
         return word[:i] if i >= 0 else word
