@@ -28,23 +28,21 @@ class SpellingHammingDictionary:
             candidates.append((''.join(prefix), cost))
             return
 
-        if start - len(word) > cost:
+        if start >= len(word):
             return
 
-        letter = word[start] if start < len(word) else '*'
-        for ll in node:
+        letter = word[start]
+        for ll, children in node.items():
             if ll != 'is_leaf':
-                one = int(letter != ll)
-                self.__search_dfs(node[ll], word, dist, candidates, prefix + [ll], cost + one, start + 1)
+                self.__search_dfs(children, word, dist, candidates,
+                                  prefix + [ll], cost + int(letter != ll), start + 1)
 
     def find_longest_prefix(self, word):
-        pos, node = -1, self.root
-        for i, letter in enumerate(word):
-            if letter not in node:
-                pos = i
-                break
-            node = node[letter]
-        return word[:pos] if pos >= 0 else word
+        i, node, word_len = 0, self.root, len(word)
+        while i < word_len and word[i] in node:
+            node = node[word[i]]
+            i += 1
+        return word[:i] if i >= 0 else word
 
     def search(self, word: str, distance=0) -> List[Tuple[str, int]]:
         """
