@@ -3,6 +3,8 @@ from time import time
 
 
 class RegexTrie:
+    __END = 'is_leaf'
+
     def __init__(self):
         self.root = {}
 
@@ -50,7 +52,7 @@ class RegexTrie:
         while stack:
             node, start, prefix, next_ch = stack.pop()
 
-            if 'is_leaf' in node:
+            if self.__END in node:
                 if len(node) == 1 and next_ch not in ('', '*'):
                     continue
 
@@ -67,13 +69,13 @@ class RegexTrie:
                 stack.append((node[ch], start + 1, prefix + [ch], next_ch))
             elif ch == '?':
                 for letter, children in node.items():
-                    if letter != 'is_leaf':
+                    if letter != self.__END:
                         stack.append((children, start + 1, prefix + [letter], next_ch))
             elif ch == '*':
                 next_ch = key[start + 1] if start + 1 < key_len else '*'
 
                 for letter, children in node.items():
-                    if letter == 'is_leaf':
+                    if letter == self.__END:
                         if next_ch == '*':
                             candidates.add(''.join(prefix))
                         continue
