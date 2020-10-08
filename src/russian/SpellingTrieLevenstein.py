@@ -14,7 +14,7 @@ class SpellingLevensteinTree:
         self.use_damerau_modification = use_damerau_modification
 
     @staticmethod
-    def __get_row_len(word):
+    def __get_row_len(word: str) -> int:
         return len(word) + 1
 
     def add(self, word: str) -> None:
