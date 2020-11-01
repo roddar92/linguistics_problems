@@ -99,7 +99,7 @@ class SpellingLevensteinTree:
             ))
 
             if self.use_damerau_modification:
-                if len(prefix) > 1 and i - 1 > 0 and word[i - 1] == prefix[-2] and \
+                if len(prefix) > 1 and i >= 1 and word[i - 1] == prefix[-2] and \
                         word[i - 1] != prefix[-1] and word[i - 2] == prefix[-1]:
                     curr_row[-1] = min(curr_row[-1], pre_prev_row[i - 2] + 1)
 
