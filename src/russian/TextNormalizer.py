@@ -363,7 +363,7 @@ class TextNormalizer:
                 yield self.numb2text.convert(int(token), grammems=grammems, ordered=ordered)
             elif token in self.UNITS:
                 units = self.UNITS[token]
-                if self.__ROMAN_REGEX.match(tokens[i - 1]) or self.__NUMBERS.match(tokens[i - 1]):
+                if i >= 1 and self.__ROMAN_REGEX.match(tokens[i - 1]) or self.__NUMBERS.match(tokens[i - 1]):
                     prev_token = tokens[i - 1]
                     n = self.numb2text.roman2arabic(prev_token) \
                         if self.__ROMAN_REGEX.match(prev_token) else int(prev_token)
