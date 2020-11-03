@@ -150,7 +150,7 @@ class Number2TextConverter:
         answer = []
         for i, n in enumerate(decomposition):
             ordered_condition = ordered and i == len(decomposition) - 1
-            key = 1 if ordered_condition else 0
+            key = int(ordered_condition)
             if n >= 1000:
                 if n >= 1000000000:
                     t = 1000000000
@@ -298,14 +298,18 @@ class TextNormalizer:
     def remove_spaces_between_zeros(cls, text):
         return cls.__NUMBERS_WITH_ZEROS.sub(r'\2', text)
 
-    def __extract_parameters_for_number(self, text):
+    def __extract_parameters_for_number(self, token, i, tokens_len):
         ordered = True
-        match = self.__NUMB_WITH_ORD_ENDINGS.search(text)
+        match = self.__NUMB_WITH_ORD_ENDINGS.search(token)
         if not match:
-            match = self.__NUMB_WITH_ENDINGS.search(text)
+            match = self.__NUMB_WITH_ENDINGS.search(token)
             ordered = False
         number, ending = int(match.group(1)), match.group(2)
         grammems = self.ENDING_TO_GRAMMEME[ending]
+        if token.endswith('х') and i >= tokens_len - 1:
+            ordered = False
+            if number in (2, 3) and 'plur' in grammems:
+                grammems.remove('plur')
         return number, ordered, grammems
 
     def calculate_parameters_by_neighbours(self, text_fragment):
@@ -352,11 +356,8 @@ class TextNormalizer:
                     tokens[a:i] + tokens[i:b])
 
             if self.__NUMB_WITH_ORD_ENDINGS.search(token) or self.__NUMB_WITH_ENDINGS.search(token):
-                number, ordered, grammems = self.__extract_parameters_for_number(token)
-                if number in [2, 3] and token.endswith('х'):
-                    yield 'двух' if number == 2 else 'трех'
-                else:
-                    yield self.numb2text.convert(number, grammems=grammems, ordered=ordered)
+                number, ordered, grammems = self.__extract_parameters_for_number(token, i, len(tokens))
+                yield self.numb2text.convert(number, grammems=grammems, ordered=ordered)
             elif self.__ROMAN_REGEX.match(token):
                 yield self.numb2text.convert(token, grammems=grammems, ordered=ordered)
             elif self.__NUMBERS.match(token):
@@ -433,7 +434,9 @@ if __name__ == '__main__':
     assert list(normalizer.normalize(['80-е']))[-1] == 'восьмидесятые'
     assert list(normalizer.normalize(['80-х']))[-1] == 'восьмидесятых'
     assert list(normalizer.normalize(['21й']))[-1] == 'двадцать первый'
-    assert list(normalizer.normalize(['3х']))[-1] == 'трех'
+    assert list(normalizer.normalize(['3й']))[-1] == 'третий'
+    assert list(normalizer.normalize(['3х']))[-1] == 'трёх'
+    assert list(normalizer.normalize(['2х']))[-1] == 'двух'
     assert ' '.join(normalizer.normalize(['21', 'июня'])) == 'двадцать первое июня'
     assert ' '.join(normalizer.normalize(['23', 'июля', '1806', 'года'])) == \
            'двадцать третье июля тысяча восемсот шестого года'
