@@ -17,8 +17,8 @@ class CharLevelLanguageModel:
             for char in f.read():
                 self.__lm[n_chars][char] += 1
                 n_chars = n_chars[1:] + char
-        self.__lm = {hist: self.__normalize(chars) for hist, chars in self.__lm.items()}
 
+        self.__lm = {hist: self.__normalize(chars) for hist, chars in self.__lm.items()}
         return self
 
     @staticmethod
