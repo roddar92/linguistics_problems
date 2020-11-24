@@ -190,7 +190,7 @@ class DiminutiveGenerator:
     def __select_hists_by_char(hists, char):
         candidates = []
         for h, d in hists:
-            curr_transits = [(k, _) for k, _ in d if k[0] == char]
+            curr_transits = [k for k in d if k[0][0] == char]
             if curr_transits:
                 candidates += [(h, curr_transits)]
         return candidates
@@ -216,7 +216,7 @@ class DiminutiveGenerator:
             index, letter, max_hist = default_params
 
         # select transits with first character which equal the letter of a name
-        max_hist_for_letter = [(tr, _) for tr, _ in max_hist if tr[0] == letter]
+        max_hist_for_letter = [tr for tr in max_hist if tr[0][0] == letter]
         if max_hist_for_letter:
             max_hist = max_hist_for_letter
 
