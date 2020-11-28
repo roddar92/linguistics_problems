@@ -30,13 +30,12 @@ class LetterCaseGenerator:
             prefix, ind = stack.pop()
             if ind == len(text):
                 variants.add(prefix)
+                continue
 
-            if ind < len(text):
-                letter = text[ind]
-
-                processed_letter = letter if letter.isdigit() else letter.lower()
-                stack.append((prefix + processed_letter, ind + 1))
-                stack.append((prefix + letter.upper(), ind + 1))
+            letter = text[ind]
+            processed_letter = letter if letter.isdigit() else letter.lower()
+            stack.append((prefix + processed_letter, ind + 1))
+            stack.append((prefix + letter.upper(), ind + 1))
 
         return variants
             
