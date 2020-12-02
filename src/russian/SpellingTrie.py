@@ -42,7 +42,7 @@ class SpellingHammingDictionary:
         while i < word_len and word[i] in node:
             node = node[word[i]]
             i += 1
-        return word[:i] if i >= 0 else word
+        return word[:i]
 
     def search(self, word: str, distance=0) -> List[Tuple[str, int]]:
         """
