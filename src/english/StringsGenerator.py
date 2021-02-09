@@ -15,11 +15,9 @@ class StringGenerator:
             ]
             while stack:
                 rest_strings, prefix, gen_prob = stack.pop()
-                stop_prob = 1 - gen_prob
-                rand_num = choices([0, 1], [stop_prob, gen_prob])[-1]
+                rand_num = choices([0, 1], [1 - gen_prob, gen_prob])[-1]
                 if rand_num == 0:
-                    full_string = ''.join(prefix)
-                    result.add(full_string)
+                    result.add(''.join(prefix))
                 else:
                     next_str = choice(rest_strings)
                     rest_strings.remove(next_str)
