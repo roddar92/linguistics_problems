@@ -8,10 +8,10 @@ class StringGenerator:
     def generate_string_list(strings, generation_prob=.75):
         result = set()
 
-        for curr_str in strings:
+        for curr_str in strings.copy():
             strings.remove(curr_str)
             stack = [
-                (strings, [curr_str], generation_prob)
+                (strings.copy(), [curr_str], generation_prob)
             ]
             while stack:
                 rest_strings, prefix, gen_prob = stack.pop()
