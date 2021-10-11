@@ -38,6 +38,31 @@ class AnagramVocabulary:
             else:
                 self.vocabulary[nearest_word[0]] += [word]
 
+    def find_anagrams(self, text, pattern):
+        cP, cS = Counter(pattern), Counter(text[:len(pattern)])
+        indices, start = [], 0
+
+        for end in range(len(pattern), len(text)):
+            if cS == cP:
+                indices.append(start)
+
+            start_ch, end_ch = text[start], text[end]
+            if cS[start_ch] == 1:
+                cS.pop(start_ch)
+            else:
+                cS[start_ch] -= 1
+
+            if end_ch not in cS:
+                cS[end_ch] = 1
+            else:
+                cS[end_ch] += 1
+
+            start += 1
+
+        if cS == cP:
+            indices.append(start)
+        return indices
+
     def add_words(self, words):
         self.__make_vocabulary(words)
 
