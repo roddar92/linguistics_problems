@@ -50,10 +50,10 @@ class RegexTrie:
 
         stack = [(self.root, 0, [], '')]
         while stack:
-            node, start, prefix, next_ch = stack.pop()
+            node, start, prefix, after_star_ch = stack.pop()
 
             if self.__END in node:
-                if len(node) == 1 and next_ch not in ('', '*'):
+                if len(node) == 1 and after_star_ch.isalpha():
                     continue
 
                 if start >= key_len:
@@ -66,25 +66,26 @@ class RegexTrie:
                 ch = key[start]
 
             if ch in node:
-                stack.append((node[ch], start + 1, prefix + [ch], next_ch))
+                stack.append((node[ch], start + 1, prefix + [ch], after_star_ch))
             elif ch == '?':
                 for letter, children in node.items():
                     if letter != self.__END:
-                        stack.append((children, start + 1, prefix + [letter], next_ch))
+                        stack.append((children, start + 1, prefix + [letter], after_star_ch))
             elif ch == '*':
-                next_ch = key[start + 1] if start + 1 < key_len else '*'
+                if after_star_ch == '':
+                    after_star_ch = key[start + 1] if start + 1 < key_len else '*'
 
                 for letter, children in node.items():
                     if letter == self.__END:
-                        if next_ch == '*':
+                        if after_star_ch == '*':
                             candidates.add(''.join(prefix))
                         continue
 
-                    add = 2 if letter == next_ch else 0
-                    if letter == next_ch:
-                        next_ch = ''
+                    add = 2 if letter == after_star_ch else 0
+                    if letter == after_star_ch:
+                        after_star_ch = ''
 
-                    stack.append((children, start + add, prefix + [letter], next_ch))
+                    stack.append((children, start + add, prefix + [letter], after_star_ch))
         return candidates
 
 
