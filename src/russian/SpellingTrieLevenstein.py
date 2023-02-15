@@ -93,7 +93,7 @@ class SpellingLevensteinTree:
         min_dist = curr_row[0]
         for i in range(1, self.__get_row_len(word)):
             curr_row.append(min(
-                curr_row[i - 1] + 1,
+                curr_row[-1] + 1,
                 prev_row[i] + 1,
                 prev_row[i - 1] + (word[i - 1] != prefix[-1])
             ))
