@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 import re
 
-from .rules import categories_rules as topics
-from .rules import century_rules as centuries
-from .rules import herou_rules as herous
+from rules import categories_rules as topics
+from rules import century_rules as centuries
+from rules import herou_rules as herous
 
 
 class RulesParser(object):
@@ -55,4 +55,4 @@ class RulesParser(object):
             return 'john silver'
 
     def normalize_century(self, word):
-        re.findall(self.centuries.century, word)
+        return re.findall(self.centuries.century, word)
