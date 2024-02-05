@@ -42,8 +42,9 @@ class TScore(Metric):
         p_w1 = freq_w1 / vocab_size
         p_w2 = freq_w2 / vocab_size
         p_w12 = freq_w12 / vocab_size
-        diff = p_w12 - p_w1 * p_w2
-        s = p_w12 * (1 - p_w12)
+        mu = p_w1 * p_w2
+        diff = p_w12 - mu
+        s = mu * (1 - mu)
         return diff / sqrt(s / vocab_size)
 
 
