@@ -39,28 +39,22 @@ class AnagramVocabulary:
                 self.vocabulary[nearest_word[0]] += [word]
 
     def find_anagrams(self, text, pattern):
-        cP, cS = Counter(pattern), Counter(text[:len(pattern)])
-        indices, start = [], 0
+        p_len, text_len = len(pattern), len(text)
 
-        for end in range(len(pattern), len(text)):
-            if cS == cP:
-                indices.append(start)
+        cP = Counter(pattern)
+        cS = Counter(text[:p_len])
 
-            start_ch, end_ch = text[start], text[end]
-            if cS[start_ch] == 1:
-                cS.pop(start_ch)
-            else:
-                cS[start_ch] -= 1
+        indices = []
+        for i in range(text_len - p_len + 1):
+            if cP == cS:
+                indices.append(i)
+            cS[text[i]] -= 1
+            if cS[text[i]] == 0:
+                cS.pop(text[i])
 
-            if end_ch not in cS:
-                cS[end_ch] = 1
-            else:
-                cS[end_ch] += 1
+            if i + p_len < text_len:
+                cS[text[i + p_len]] += 1
 
-            start += 1
-
-        if cS == cP:
-            indices.append(start)
         return indices
 
     def add_words(self, words):
@@ -81,3 +75,4 @@ if __name__ == '__main__':
     dictionary = ['abcd', 'bba', 'tuf', 'abc', 'ab', 'bc', 'abb', 'bca', 'prs', 'aaa', 'bbb', 'fut', 'dacb']
     anagram_voc = AnagramVocabulary()
     print(anagram_voc.group_anagrams(dictionary))
+    assert anagram_voc.find_anagrams('cbaebabacd', 'abc') == [0, 6]
