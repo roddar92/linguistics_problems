@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import random
 import re
 import string
 
@@ -73,6 +74,8 @@ class Transliterator:
             'т': ['t'],
             'ы': ['y']
         }
+
+        self.__AFTER_SHARP_CHARS = ['j', 'i', 'y']
 
         self.__COMPLEX_PHONEMES = {
             'jog': ['й', 'о', 'г'],
@@ -234,7 +237,7 @@ class Transliterator:
         return word
 
     def transliterate(self, text):
-        return text.translate(self.__keys)
+        return text.translate(self.__keys).replace('#', random.choice(self.__AFTER_SHARP_CHARS))
 
     def inverse_transliterate(self, text):
         elems = []
@@ -261,7 +264,7 @@ class Transliterator:
                 elems += answer
                 i += 2
             else:
-                output_symbol = self.__inverted_phonemes[text[i]] if text[i] in self.__inverted_phonemes else text[i]
+                output_symbol = self.__inverted_phonemes.get(text[i], text[i])
                 elems += [output_symbol]
                 i += 1
 
@@ -288,6 +291,7 @@ if __name__ == '__main__':
     assert translit.transliterate('я поймал бабочку') == 'ya pojmal babochku'
     assert translit.transliterate('Эти летние дожди!') == 'Aeti lеtniе dozhdi!'
     assert translit.transliterate('Железнодорожный романс') == 'Zhеlеznodorozhnyj romans'
+    assert translit.transliterate('подъезд') in ['podyеzd', 'podjеzd', 'podiеzd']
 
     assert translit.inverse_transliterate('Neizbezhnyj') == 'Нeизбeжный'
     assert translit.inverse_transliterate('Shveciia') == 'Швeция'
