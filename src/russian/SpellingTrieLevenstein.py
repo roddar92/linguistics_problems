@@ -58,13 +58,17 @@ class SpellingLevensteinTree:
         :param distance Maximum distance for candidates where their cost could be less than given parameter
         :return array of candidates with their distances
         """
+
+        _calc_distance = self.__calculate_distance
+        _get_row_len = self.__get_row_len
+
         candidates = SortedListWithKey(key=lambda x: x[::-1])
-        stack = [(children, [letter], None, [*range(self.__get_row_len(word))])
+        stack = [(children, [letter], None, [*range(_get_row_len(word))])
                  for letter, children in self.root.items()]
 
         while stack:
             node, prefix, pre_prev_row, prev_row = stack.pop()
-            curr_row, min_dist = self.__calculate_distance(word, prefix, pre_prev_row, prev_row)
+            curr_row, min_dist = _calc_distance(word, prefix, pre_prev_row, prev_row)
 
             if min_dist > distance:
                 continue
@@ -89,9 +93,11 @@ class SpellingLevensteinTree:
         :param prev_row The row for Levenstein distance calculation
         :return the last calculated row and the minimum distance
         """
+        _get_row_len = self.__get_row_len
+
         curr_row = [prev_row[0] + 1]
         min_dist = curr_row[0]
-        for i in range(1, self.__get_row_len(word)):
+        for i in range(1, _get_row_len(word)):
             curr_row.append(min(
                 curr_row[-1] + 1,
                 prev_row[i] + 1,
@@ -115,6 +121,7 @@ if __name__ == '__main__':
 
     assert dictionary.search('hello') == [('hello', 0)]
     assert dictionary.search('hhllo', 1) == [('hallo', 1), ('hello', 1)]
+    assert dictionary.search('ehllo', 2) == [('hallo', 2), ('hello', 2)]
     assert dictionary.search('hhllo', 2) == [('hallo', 1), ('hello', 1), ('hell', 2)]
     assert dictionary.search('hkelo', 2) == [('hallo', 2), ('hell', 2), ('hello', 2)]
     assert not dictionary.search('hklo')
