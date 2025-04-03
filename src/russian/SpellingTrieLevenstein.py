@@ -95,19 +95,20 @@ class SpellingLevensteinTree:
         """
         _get_row_len = self.__get_row_len
 
-        curr_row = [prev_row[0] + 1]
+        curr_row = [0] * len(prev_row)
+        curr_row[0] = prev_row[0] + 1
         min_dist = curr_row[0]
         for i in range(1, _get_row_len(word)):
-            curr_row.append(min(
-                curr_row[-1] + 1,
+            curr_row[i] = min(
+                curr_row[i - 1] + 1,
                 prev_row[i] + 1,
                 prev_row[i - 1] + (word[i - 1] != prefix[-1])
-            ))
+            )
 
             if self.use_damerau_modification:
                 if len(prefix) > 1 and i >= 1 and word[i - 1] == prefix[-2] and \
                         word[i - 1] != prefix[-1] and word[i - 2] == prefix[-1]:
-                    curr_row[-1] = min(curr_row[-1], pre_prev_row[i - 2] + 1)
+                    curr_row[i] = min(curr_row[i], pre_prev_row[i - 2] + 1)
 
             min_dist = min(min_dist, curr_row[-1])
         return curr_row, min_dist
