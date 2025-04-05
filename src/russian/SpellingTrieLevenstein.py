@@ -63,11 +63,11 @@ class SpellingLevensteinTree:
         _get_row_len = self.__get_row_len
 
         candidates = SortedListWithKey(key=lambda x: x[::-1])
-        stack = [(children, [letter], None, [*range(_get_row_len(word))])
+        stack = [([letter], children, None, [*range(_get_row_len(word))])
                  for letter, children in self.root.items()]
 
         while stack:
-            node, prefix, pre_prev_row, prev_row = stack.pop()
+            prefix, node, pre_prev_row, prev_row = stack.pop()
             curr_row, min_dist = _calc_distance(word, prefix, pre_prev_row, prev_row)
 
             if min_dist > distance:
@@ -77,7 +77,7 @@ class SpellingLevensteinTree:
                 candidates.add((''.join(prefix), curr_row[-1]))
 
             stack.extend(
-                (children, prefix + [letter], prev_row if self.use_damerau_modification else None, curr_row)
+                (prefix + [letter], children, prev_row if self.use_damerau_modification else None, curr_row)
                 for letter, children in node.items() if letter != self.__END
             )
 
@@ -97,7 +97,6 @@ class SpellingLevensteinTree:
 
         curr_row = [0] * len(prev_row)
         curr_row[0] = prev_row[0] + 1
-        min_dist = curr_row[0]
         for i in range(1, _get_row_len(word)):
             curr_row[i] = min(
                 curr_row[i - 1] + 1,
@@ -110,7 +109,7 @@ class SpellingLevensteinTree:
                         word[i - 1] != prefix[-1] and word[i - 2] == prefix[-1]:
                     curr_row[i] = min(curr_row[i], pre_prev_row[i - 2] + 1)
 
-            min_dist = min(min_dist, curr_row[-1])
+        min_dist = min(curr_row)
         return curr_row, min_dist
 
 
