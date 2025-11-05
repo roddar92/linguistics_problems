@@ -145,8 +145,8 @@ class Transliterator:
         return letter in 'ъь'
 
     @staticmethod
-    def __is_of_word_start(elems, i):
-        return i == 0 or not elems[-1].isalpha()
+    def __is_of_word_start(elements, i):
+        return i == 0 or not elements[-1].isalpha()
 
     def __has_s_affix(self, text, i):
         return text[i:i + 2] in ['ie', 'ye', 'je'] and self.__E_AFFIX.search(text[:i])
