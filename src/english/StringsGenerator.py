@@ -3,6 +3,9 @@ from random import choice, choices
 from string import ascii_uppercase, ascii_lowercase
 
 
+CONSTANT_STRINGS = list(ascii_uppercase + ascii_lowercase)
+
+
 class StringGenerator:
     @staticmethod
     def generate_string_list(strings, generation_prob=.75):
@@ -31,7 +34,7 @@ class StringGenerator:
 
 
 if __name__ == '__main__':
-    data = StringGenerator.generate_string_list(list(ascii_uppercase + ascii_lowercase))
+    data = StringGenerator.generate_string_list(CONSTANT_STRINGS)
     multi_letter_subset = list(filter(lambda x: x > 1, map(len, data)))
     print('Set:', data)
     print('Length:', len(data))
