@@ -114,22 +114,47 @@ class DeltaMethod:
     def __calc_classical_delta(self):
         delta_scores = {}
         pairs = list(combinations(self.filenames, 2))
-        tokens = self.token_means.keys()
+        tokens = list(self.token_means.keys())
 
         for doc1, doc2 in tqdm(pairs, total=len(pairs), desc='Calculate Delta'):
             delta_scores[(doc1, doc2)] = sum(
                 abs(self.__z(doc1, token) - self.__z(doc2, token))
                 for token in tokens
-            )
+            ) / len(tokens)
         return delta_scores
 
-    def calculate_delta(self, corpus_path, topn_words=100):
+    def __calc_cosine_delta(self):
+        delta_scores = {}
+        pairs = list(combinations(self.filenames, 2))
+        tokens = list(self.token_means.keys())
+
+        for doc1, doc2 in tqdm(pairs, total=len(pairs), desc='Calculate Cosine Delta'):
+            u, v = np.zeros(len(tokens)), np.zeros(len(tokens))
+            for i, token in enumerate(tokens):
+                u[i], v[i] = self.__z(doc1, token), self.__z(doc2, token)
+
+            u_norm, v_norm = np.linalg.norm(u), np.linalg.norm(v)
+            if u_norm == 0 or v_norm == 0:
+                cosine = 0.0
+            else:
+                cosine = np.dot(u, v) / (u_norm * v_norm)
+
+            delta_scores[(doc1, doc2)] = 1 - cosine
+        return delta_scores
+
+    def calculate_delta(self, corpus_path, topn_words=100, mode='classic'):
+        assert mode in ('classic', 'cosine')
         self.build_corpus(corpus_path, topn_words)
-        return self.__calc_classical_delta()
+
+        if mode == 'classic':
+            ds = self.__calc_classical_delta()
+        else:
+            ds = self.__calc_cosine_delta()
+        return ds
 
     def calculate_delta_zscores(self, delta_scores):
         if not delta_scores:
-            print("Delta distances are not from Normal distribution. Impossible to compute Delta Z-scores!")
+            print("Delta distances are not empty. Impossible to compute Delta Z-scores!")
             return {}
 
         all_distances = list(delta_scores.values())
@@ -155,9 +180,7 @@ class DeltaMethod:
     def print_confident_pairs(self, delta_scores, threshold=-1.5):
         sorted_pairs = sorted(self.calculate_delta_zscores(delta_scores).items(), key=lambda x: x[1])
 
-        print(
-            f"Pairs with the most similar confidence (Z-score < {threshold})"
-        )
+        print(f"Pairs with the most similar confidence (Z-score < {threshold})")
         found = False
         for (doc1, doc2), z_val in sorted_pairs:
             if z_val <= threshold:
@@ -169,7 +192,7 @@ class DeltaMethod:
         if not found:
             print("Not found any pair.")
 
-    def predict_author_confidence(self, anonymous_doc, delta_scores, verbose=1):
+    def predict_author_confidence(self, anonymous_doc, delta_scores, verbose=0):
         author_distances = {}
 
         for (doc1, doc2), dist in delta_scores.items():
@@ -240,4 +263,4 @@ if __name__ == '__main__':
 
     dm.plot_dendrogram(deltas)
     dm.print_confident_pairs(deltas)
-    dm.predict_author_confidence('Tolstoy_AK_Upyr.txt', deltas)
+    dm.predict_author_confidence('Tolstoy_AK_Upyr.txt', deltas, verbose=1)
