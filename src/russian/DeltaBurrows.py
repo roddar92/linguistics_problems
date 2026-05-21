@@ -135,7 +135,7 @@ class DeltaMethod:
         all_distances = list(delta_scores.values())
         _, pval = shapiro(all_distances)
         if pval < self.alpha:
-            print("Warning: Standard derivation is 0. Impossible to compute Z-score.")
+            print("Warning: Deltas are not in Normal distribution. Impossible to compute Z-score.")
             return {pair: 0.0 for pair in delta_scores.keys()}
 
         mean_delta = np.mean(all_distances)
@@ -235,7 +235,7 @@ class DeltaMethod:
 
 if __name__ == '__main__':
     dm = DeltaMethod()
-    dir_path = '../resources/corpus/tolstye.zip'
+    dir_path = './resources/corpus/tolstye.zip'
     deltas = dm.calculate_delta(dir_path)
 
     dm.plot_dendrogram(deltas)
