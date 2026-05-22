@@ -111,46 +111,39 @@ class DeltaMethod:
         m, s = self.token_means[token], self.token_stds[token]
         return (token_doc_count - m) / s
 
-    def __calc_classical_delta(self):
-        delta_scores = {}
-        pairs = list(combinations(self.filenames, 2))
-        tokens = list(self.token_means.keys())
+    def __calc_cosine(self, u, v):
+        u_norm, v_norm = np.linalg.norm(u), np.linalg.norm(v)
+        if u_norm == 0 or v_norm == 0:
+            cosine = 0.0
+        else:
+            cosine = np.dot(u, v) / (u_norm * v_norm)
+        return cosine
 
-        for doc1, doc2 in tqdm(pairs, total=len(pairs), desc='Calculate Delta'):
-            delta_scores[(doc1, doc2)] = sum(
-                abs(self.__z(doc1, token) - self.__z(doc2, token))
-                for token in tokens
-            ) / len(tokens)
-        return delta_scores
+    def __calc_classical_delta(self, u, v):
+        return np.mean(np.abs(u - v))
 
-    def __calc_cosine_delta(self):
-        delta_scores = {}
-        pairs = list(combinations(self.filenames, 2))
-        tokens = list(self.token_means.keys())
+    def __calc_cosine_delta(self, u, v):
+        cosine = self.__calc_cosine(u, v)
+        return 1 - cosine
 
-        for doc1, doc2 in tqdm(pairs, total=len(pairs), desc='Calculate Cosine Delta'):
-            u, v = np.zeros(len(tokens)), np.zeros(len(tokens))
-            for i, token in enumerate(tokens):
-                u[i], v[i] = self.__z(doc1, token), self.__z(doc2, token)
-
-            u_norm, v_norm = np.linalg.norm(u), np.linalg.norm(v)
-            if u_norm == 0 or v_norm == 0:
-                cosine = 0.0
-            else:
-                cosine = np.dot(u, v) / (u_norm * v_norm)
-
-            delta_scores[(doc1, doc2)] = 1 - cosine
-        return delta_scores
-
-    def calculate_delta(self, corpus_path, topn_words=100, mode='classic'):
-        assert mode in ('classic', 'cosine')
+    def calculate_delta(self, corpus_path, topn_words=100, method='classic'):
+        assert method in ('classic', 'cosine')
         self.build_corpus(corpus_path, topn_words)
 
-        if mode == 'classic':
-            ds = self.__calc_classical_delta()
+        delta_scores = {}
+        pairs = list(combinations(self.filenames, 2))
+        tokens = list(self.token_means.keys())
+
+        if method == 'classic':
+            __func = self.__calc_classical_delta
         else:
-            ds = self.__calc_cosine_delta()
-        return ds
+            __func = self.__calc_cosine_delta
+
+        for doc1, doc2 in tqdm(pairs, total=len(pairs), desc='Calculate Cosine Delta'):
+            u = np.array([self.__z(doc1, token) for token in tokens])
+            v = np.array([self.__z(doc2, token) for token in tokens])
+            delta_scores[(doc1, doc2)] = __func(u, v)
+        return delta_scores
 
     def calculate_delta_zscores(self, delta_scores):
         if not delta_scores:
@@ -259,8 +252,17 @@ class DeltaMethod:
 if __name__ == '__main__':
     dm = DeltaMethod()
     dir_path = './resources/corpus/tolstye.zip'
-    deltas = dm.calculate_delta(dir_path)
+
+    # Classical Delta
+    deltas = dm.calculate_delta(dir_path, method='classic')
 
     dm.plot_dendrogram(deltas)
     dm.print_confident_pairs(deltas)
-    dm.predict_author_confidence('Tolstoy_AK_Upyr.txt', deltas, verbose=1)
+    dm.predict_author_confidence('corpus/Tolstoy_AK_Upyr.txt', deltas, verbose=1)
+
+    # Cosine Delta
+    deltas = dm.calculate_delta(dir_path, method='cosine')
+
+    dm.plot_dendrogram(deltas)
+    dm.print_confident_pairs(deltas)
+    dm.predict_author_confidence('corpus/Tolstoy_AK_Upyr.txt', deltas, verbose=1)
